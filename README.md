@@ -27,3 +27,4 @@ A **Trust Me Bro Benchmark** is any AI evaluation where:
 
 This phenomenon was named after the repeated pattern of AI labs claiming state-of-the-art results on benchmarks like SWE-Bench, TerminalBench, and WebArena — only for researchers to discover the scores were achieved through exploitation, cherry-picking, or outright gaming.
 
+Contribute to this website [here](https://github.com/ajnart/trustmebrobenchmarks.com)
