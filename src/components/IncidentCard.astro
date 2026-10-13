@@ -1,6 +1,6 @@
 ---
 import type { Incident, IncidentStatus } from '../data/incidents';
-import { incidentHref } from '../data/incidents';
+import { incidentHref, incidentSlug } from '../data/incidents';
 import { tweetById, tweetUrl } from '../data/tweets';
 import { compact, shortDate } from '../lib/scores';
 
@@ -19,6 +19,7 @@ const STATUS_CLASS: Record<IncidentStatus, string> = {
   Unfalsifiable: 'badge',
 };
 const Heading = standalone ? 'h1' : 'h2';
+const vtName = `view-transition-name: i-${incidentSlug(inc)}`;
 ---
 
 <article class="card inc" id={inc.id}>
@@ -38,8 +39,8 @@ const Heading = standalone ? 'h1' : 'h2';
     </div>
   </header>
   <Heading class="title">
-    {standalone && inc.title}
-    {!standalone && <a href={incidentHref(inc)}>{inc.title}</a>}
+    {standalone && <span class="vt-name" style={vtName}>{inc.title}</span>}
+    {!standalone && <a class="vt-name" href={incidentHref(inc)} style={vtName}>{inc.title}</a>}
   </Heading>
   <p class="subject">Subject: {inc.subject}</p>
   <div class="cf">

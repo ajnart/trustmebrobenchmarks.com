@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import TweetCard from '../components/TweetCard.astro';
 import { BENCHMARKS, INDEX_BENCHMARKS } from '../data/benchmarks';
 import { AVAILABLE, MODELS } from '../data/models';
 import { TWEETS, tweetUrl } from '../data/tweets';
@@ -37,7 +38,7 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
 <Base
   title="Methodology and Known Limitations"
   description={`The ${INDEX_NAME} technical report: index construction, model selection, contamination, confidence intervals of ±∞, and an actual disclaimer.`}
-  article={{ published: '2026-10-01', type: 'TechArticle' }}
+  article={{ published: '2026-10-01', type: 'TechArticle', citations: refs }}
   breadcrumbs={[{ name: 'Methodology', path: '/methodology/' }]}
 >
   <section class="container paper-head">
@@ -48,10 +49,13 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
   </section>
 
   <section class="container paper">
-    <aside class="toc">
+    <nav class="toc" aria-label="Contents">
       <span>Contents</span>
-      {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
-    </aside>
+      <div class="toc-list">
+        <i class="toc-ind" aria-hidden="true"></i>
+        {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
+      </div>
+    </nav>
     <article class="prose">
       <div class="abstract" id="abstract">
         <h2>Abstract</h2>
@@ -169,7 +173,7 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
 
       <h2 id="acknowledgements">Acknowledgements</h2>
       <p>
-        We thank the authors of the original meme benchmarks, without whom this report would have had to invent its own jokes:
+        We thank the authors of the original meme benchmarks, without whom this report would have had to invent its own jokes:{' '}
         {
           sources.map((s, i) => (
             <>
@@ -184,14 +188,13 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
       </p>
 
       <h2 id="references">References</h2>
+      <p>{refs.length} primary sources in chronological order, quoted verbatim and linked to the original post.</p>
       <ol class="refs">
         {
-          refs.map((t) => (
-            <li>
-              {t.name} (@{t.handle}). {t.date}. "{t.text.length > 140 ? `${t.text.slice(0, 140).trim()}…` : t.text}"{' '}
-              <a class="link" href={tweetUrl(t)} target="_blank" rel="noopener">
-                x.com/{t.handle}/status/{t.id}
-              </a>
+          refs.map((t, i) => (
+            <li id={`ref-${i + 1}`}>
+              <span class="ref-n">[{i + 1}]</span>
+              <TweetCard tweet={t} media={false} />
             </li>
           ))
         }
@@ -199,6 +202,45 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
     </article>
   </section>
 </Base>
+
+<script>
+  const list = document.querySelector<HTMLElement>('.toc-list');
+  const ind = document.querySelector<HTMLElement>('.toc-ind');
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc-list a')];
+  const targets = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))));
+  let current = -1;
+  let frame = 0;
+
+  const activate = (i: number) => {
+    if (i === current || !list || !ind) return;
+    current = i;
+    links.forEach((a, j) => {
+      if (j === i) a.setAttribute('aria-current', 'location');
+      else a.removeAttribute('aria-current');
+    });
+    ind.style.setProperty('--y', `${links[i].offsetTop}px`);
+    ind.style.setProperty('--h', `${links[i].offsetHeight}px`);
+    list.dataset.ready = '';
+  };
+
+  const update = () => {
+    const line = innerHeight * 0.3;
+    let i = 0;
+    targets.forEach((t, j) => {
+      if (t && t.getBoundingClientRect().top <= line) i = j;
+    });
+    activate(i);
+  };
+
+  const schedule = () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(update);
+  };
+
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule);
+  update();
+</script>
 
 <style>
   .paper-head {
@@ -233,7 +275,8 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
     top: 100px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
     font-size: 14px;
   }
   .toc span {
@@ -242,16 +285,48 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--muted);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .toc-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-left: 1px solid var(--line);
+  }
+  .toc-ind {
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 2px;
+    height: var(--h, 0px);
+    transform: translateY(var(--y, 0px));
+    border-radius: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.2s;
+  }
+  .toc-list[data-ready] .toc-ind {
+    opacity: 1;
   }
   .toc a {
-    padding: 5px 10px;
-    border-radius: 6px;
-    color: var(--ink-2);
+    padding: 5px 12px;
+    border-radius: 0 6px 6px 0;
+    color: var(--muted);
+    transition:
+      color 0.15s,
+      background 0.15s;
   }
   .toc a:hover {
     background: var(--bg-pill);
     color: var(--ink);
+  }
+  .toc a[aria-current] {
+    color: var(--ink);
+    font-weight: 550;
   }
   .abstract {
     background: var(--bg-subtle);
@@ -325,13 +400,26 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
     margin-bottom: 0;
   }
   .refs {
-    font-size: 14px;
+    list-style: none;
+    padding: 0;
+    columns: 2 320px;
+    column-gap: 14px;
     font-family: var(--sans);
-    color: var(--ink-2);
+    font-size: 15px;
+    line-height: 1.5;
   }
   .refs li {
-    margin: 0.5em 0;
-    overflow-wrap: anywhere;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 0 14px;
+    break-inside: avoid;
+    scroll-margin-top: 100px;
+  }
+  .ref-n {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
   }
   @media (max-width: 960px) {
     .paper-head > * {

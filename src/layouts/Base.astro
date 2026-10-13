@@ -21,13 +21,14 @@ import {
   type Crumb,
   type JsonLd,
 } from '../lib/seo';
+import type { Tweet } from '../data/tweets';
 
 interface Props {
   title?: string;
   description?: string;
   imageAlt?: string;
   pageType?: string;
-  article?: { published: string; type?: string };
+  article?: { published: string; type?: string; citations?: Tweet[] };
   breadcrumbs?: Crumb[];
   schema?: JsonLd[];
   noindex?: boolean;
@@ -42,13 +43,24 @@ const image = absolute(ogImagePath(Astro.url.pathname));
 const alt = imageAlt ?? `${shareTitle}. A satirical AI benchmark chart from ${SITE_NAME}.`;
 const modified = BUILD_DATE.toISOString();
 const isHome = Astro.url.pathname === '/';
+const pages = {
+  and: [
+    { href_matches: '/*' },
+    { not: { href_matches: ['/og/*', '/*.png', '/*.ico', '/*.svg', '/*.xml', '/*.txt', '/*.webmanifest'] } },
+    { not: { selector_matches: '[target], [download], [data-no-prerender]' } },
+  ],
+};
+const speculation = {
+  prefetch: [{ where: pages, eagerness: 'eager' }],
+  prerender: [{ where: pages, eagerness: 'moderate' }],
+};
 
 const nodes: JsonLd[] = [
   organization(),
   website(),
   webPage({ url, type: isHome ? 'WebPage' : pageType, name: shareTitle, description, image, hasBreadcrumb: !isHome, modified }),
   ...(isHome ? [] : [breadcrumbList(url, breadcrumbs)]),
-  ...(articleMeta ? [article({ url, headline: shareTitle, description, image, published: articleMeta.published, modified, type: articleMeta.type })] : []),
+  ...(articleMeta ? [article({ url, headline: shareTitle, description, image, modified, ...articleMeta })] : []),
   ...schema,
 ];
 ---
@@ -62,21 +74,6 @@ const nodes: JsonLd[] = [
     <meta name="description" content={description} />
     <link rel="canonical" href={url} />
     <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
-    <meta name="author" content={SITE_NAME} />
-    <meta name="generator" content={Astro.generator} />
-    <meta name="application-name" content={SITE_NAME} />
-    <meta name="apple-mobile-web-app-title" content="Trust Me Bro" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
-
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
-    <Font cssVariable="--ff-sans" preload={[{ subset: 'latin' }]} />
-    <Font cssVariable="--ff-serif" preload={[{ subset: 'latin', style: 'normal' }]} />
-    <Font cssVariable="--ff-mono" />
 
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:locale" content="en_US" />
@@ -99,13 +96,111 @@ const nodes: JsonLd[] = [
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={image} />
     <meta name="twitter:image:alt" content={alt} />
+    <link rel="image_src" href={image} />
+
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="author" content={SITE_NAME} />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="application-name" content={SITE_NAME} />
+    <meta name="apple-mobile-web-app-title" content="Trust Me Bro" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <Font cssVariable="--ff-sans" preload={[{ subset: 'latin' }]} />
+    <Font cssVariable="--ff-serif" preload={[{ subset: 'latin', style: 'normal' }]} />
+    <Font cssVariable="--ff-mono" />
 
     <script type="application/ld+json" set:html={graph(nodes)} />
+    <script type="speculationrules" set:html={JSON.stringify(speculation)} />
     <script is:inline>
-      try {
-        const t = localStorage.getItem('tmb-theme') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.dataset.theme = t;
-      } catch {}
+      (() => {
+        const root = document.documentElement;
+        const theme = () => {
+          try {
+            root.dataset.theme = localStorage.getItem('tmb-theme') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          } catch {}
+        };
+        theme();
+        document.addEventListener('prerenderingchange', theme);
+        addEventListener('pageshow', (e) => e.persisted && theme());
+
+        const KEY = 'tmb-vt';
+        const read = (k) => {
+          try {
+            return JSON.parse(sessionStorage.getItem(k) ?? 'null');
+          } catch {
+            return null;
+          }
+        };
+        const write = (k, v) => {
+          try {
+            sessionStorage.setItem(k, JSON.stringify(v));
+          } catch {}
+        };
+
+        addEventListener(
+          'click',
+          (e) => {
+            const a = e.target instanceof Element && e.target.closest('a[href]');
+            if (!a || a.target || a.origin !== location.origin || (a.pathname === location.pathname && a.hash)) return;
+            let x = e.clientX;
+            let y = e.clientY;
+            if (!e.detail) {
+              const r = a.getBoundingClientRect();
+              x = r.left + r.width / 2;
+              y = r.top + r.height / 2;
+            }
+            write(KEY, { x, y, t: Date.now() });
+          },
+          true,
+        );
+
+        addEventListener('pagereveal', (e) => {
+          const vt = e.viewTransition;
+          if (!vt) return;
+          const act = window.navigation?.activation;
+          const fresh = read(KEY);
+          try {
+            sessionStorage.removeItem(KEY);
+          } catch {}
+          let mode = 'reveal';
+          let p = null;
+          if (act?.navigationType === 'traverse' && act.from && act.entry) {
+            let key = act.entry.key;
+            if (act.entry.index < act.from.index) {
+              mode = 'conceal';
+              key = act.from.key;
+            }
+            p = read(`${KEY}:${key}`);
+          } else if (fresh && Date.now() - fresh.t < 10000) {
+            p = fresh;
+            if (act?.entry) write(`${KEY}:${act.entry.key}`, fresh);
+          }
+          if (!p) return;
+          root.dataset.vt = mode;
+          const r = Math.hypot(Math.max(p.x, innerWidth - p.x), Math.max(p.y, innerHeight - p.y));
+          const clip = [`circle(0px at ${p.x}px ${p.y}px)`, `circle(${r}px at ${p.x}px ${p.y}px)`];
+          const depth = [{ transform: 'none', opacity: 1 }, { transform: 'scale(0.985)', opacity: 0.7 }];
+          const opts = { duration: 560, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both' };
+          let front = 'new';
+          let behind = 'old';
+          if (mode === 'conceal') {
+            front = 'old';
+            behind = 'new';
+            clip.reverse();
+            depth.reverse();
+          }
+          vt.ready.then(() => {
+            root.animate({ clipPath: clip }, { ...opts, pseudoElement: `::view-transition-${front}(root)` });
+            root.animate(depth, { ...opts, pseudoElement: `::view-transition-${behind}(root)` });
+          });
+          vt.finished.finally(() => delete root.dataset.vt);
+        });
+      })();
     </script>
   </head>
   <body>

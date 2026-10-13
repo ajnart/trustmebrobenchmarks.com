@@ -1,9 +1,10 @@
 import { REPO_URL, SITE_NAME } from './site';
+import { tweetUrl, type Tweet } from '../data/tweets';
 
 export const SITE_URL = 'https://trustmebrobenchmarks.com';
 export const SITE_TAGLINE = 'Independent* analysis of AI';
 export const DEFAULT_DESCRIPTION =
-  'Independent* analysis of AI models and TMBBs: trust-me-bro benchmarks, as Fireship calls them. Satire: every score is made up, every quoted post is real.';
+  'Independent* analysis of AI models and TMBBs (trust-me-bro benchmarks). Satire: every score is made up, every quoted post is real.';
 export const OG_SIZE = { width: 1200, height: 630 };
 
 export type JsonLd = Record<string, unknown>;
@@ -95,7 +96,27 @@ export const itemList = (name: string, items: { name: string; path: string }[]):
   itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, url: absolute(it.path) })),
 });
 
-export const article = (a: { url: string; headline: string; description: string; image: string; published: string; modified: string; type?: string }): JsonLd => ({
+export const socialPosting = (t: Tweet): JsonLd => ({
+  '@type': 'SocialMediaPosting',
+  url: tweetUrl(t),
+  headline: clip(t.text, 110),
+  datePublished: t.date,
+  author: { '@type': 'Person', name: t.name, url: `https://x.com/${t.handle}` },
+  interactionStatistic: { '@type': 'InteractionCounter', interactionType: 'https://schema.org/LikeAction', userInteractionCount: t.likes },
+});
+
+export interface ArticleLd {
+  url: string;
+  headline: string;
+  description: string;
+  image: string;
+  published: string;
+  modified: string;
+  type?: string;
+  citations?: Tweet[];
+}
+
+export const article = (a: ArticleLd): JsonLd => ({
   '@type': a.type ?? 'Article',
   '@id': `${a.url}#article`,
   headline: a.headline,
@@ -108,4 +129,5 @@ export const article = (a: { url: string; headline: string; description: string;
   mainEntityOfPage: { '@id': `${a.url}#webpage` },
   genre: 'Satire',
   inLanguage: 'en',
+  ...(a.citations?.length && { citation: a.citations.map(socialPosting) }),
 });

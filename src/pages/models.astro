@@ -71,7 +71,7 @@ const available = MODELS.filter((m) => m.status === 'available').length;
                           {lab(m.lab).mark}
                         </span>
                         <div>
-                          <a class="mlink" href={`/models/${m.id}/`}>{m.name}</a>
+                          <a class="mlink vt-name" href={`/models/${m.id}/`} style={`view-transition-name: m-${m.id}`}>{m.name}</a>
                           {m.variant && <span class="variant"> ({m.variant})</span>}
                           <div class="sub">
                             {lab(m.lab).name}

@@ -4,8 +4,6 @@ import ChartCard from '../components/ChartCard.astro';
 import TabBar from '../components/TabBar.astro';
 import TweetCard from '../components/TweetCard.astro';
 import { Marquee } from '@/components/ui/marquee';
-import { BorderBeam } from '@/components/ui/border-beam';
-import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
 import BarChart from '../components/charts/BarChart.astro';
 import ScatterChart from '../components/charts/ScatterChart.astro';
 import DumbbellChart from '../components/charts/DumbbellChart.astro';
@@ -18,7 +16,7 @@ import { lab } from '../data/labs';
 import { MODELS } from '../data/models';
 import { TWEETS } from '../data/tweets';
 import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
-import { fmt, indexRows, rows } from '../lib/scores';
+import { BUILD_ISO, fmt, indexRows, rows, shortDate } from '../lib/scores';
 import { itemList } from '../lib/seo';
 import {
   claimDumbbells,
@@ -41,13 +39,36 @@ const featuredIncidents = INCIDENTS.filter((i) => ['TMB-2024-0001', 'TMB-2026-00
 const yearFmt = (t: number) => new Date(t).toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' }).replace(' ', " '");
 const usd = (v: number) => `$${v}`;
 const evalCount = INDEX_BENCHMARKS.length;
+const studioPanels = [
+  {
+    title: 'The data',
+    base: 0,
+    lie: '1.0',
+    crime: false,
+    bars: [
+      { cls: 'them', h: 50.1 / 60, label: '50.1', sota: false },
+      { cls: 'us', h: 52.8 / 60, label: '52.8', sota: false },
+    ],
+  },
+  {
+    title: 'The launch post',
+    base: 49.5,
+    lie: '83.5',
+    crime: true,
+    bars: [
+      { cls: 'them', h: 0.6 / 3.696, label: '50.1', sota: false },
+      { cls: 'us', h: 3.3 / 3.696, label: '52.8*', sota: true },
+    ],
+  },
+];
 ---
 
 <Base schema={[itemList(`${INDEX_NAME}: released models`, indexRows(false).slice(0, 10).map((r) => ({ name: `${r.model.name}: ${r.value}`, path: `/models/${r.model.id}/` })))]}>
   <section class="container hero">
     <div class="hero-l">
-      <a class="tmbb" href="/methodology/#tmbb">
-        <AnimatedShinyText className="mx-0 max-w-none text-[13.5px] font-medium">Now tracking TMBBs, as Fireship calls them →</AnimatedShinyText>
+      <a class="status" href="/methodology/">
+        <i class="live" aria-hidden="true"></i>
+        <span>Index {INDEX_VERSION} · {MODELS.length} models · Updated {shortDate(BUILD_ISO)}</span>
       </a>
       <h1 class="display">Independent<span class="ast">*</span><br />analysis of AI</h1>
       <p class="lede">Understand the AI landscape to choose the best model and provider for your use case. Or for your launch post.</p>
@@ -85,14 +106,41 @@ const evalCount = INDEX_BENCHMARKS.length;
 
   <section class="container duo">
     <a class="card studio" href="/chart-crime-studio/">
-      <BorderBeam client:visible size={120} duration={9} colorFrom="#7b2a85" colorTo="#e57399" borderWidth={1.5} />
-      <span class="eyebrow">New · by Trust Me Bro</span>
-      <h3 class="h2">Chart Crime Studio</h3>
-      <p>Turn a 2.7-point lead into a towering victory. Drag the y-axis baseline, remove the labels, and export a launch-day chart your competitors will quote-tweet for a week.</p>
-      <div class="studio-demo" aria-hidden="true">
-        <div class="sd-col"><i style="height:22%"></i><span>Them<br />50.1</span></div>
-        <div class="sd-col"><i class="us" style="height:96%"></i><span>Us<br />52.8</span></div>
-        <div class="sd-axis">y-axis starts at 50</div>
+      <div class="studio-copy">
+        <span class="eyebrow">New tool · Chart Crime Studio</span>
+        <h3 class="h2">Make a 2.7-point lead look like a landslide</h3>
+        <p>Truncate the y-axis, hide the labels, add an asterisk. Tufte's Lie Factor is computed live, so you know exactly how much you are lying.</p>
+      </div>
+      <div class="sd" aria-hidden="true">
+        {
+          studioPanels.map((p) => (
+            <figure class:list={['sd-panel', { crime: p.crime }]}>
+              <figcaption>
+                <b>{p.title}</b>
+                <span>y-axis from {p.base}</span>
+              </figcaption>
+              <div class="sd-plot">
+                {p.bars.map((b) => (
+                  <div class="sd-col">
+                    <div class:list={['sd-bar', b.cls]} style={`--h:${b.h}`}>
+                      <span>
+                        {b.sota && <em>SOTA</em>}
+                        {b.label}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div class="sd-names">
+                <span>Them</span>
+                <span>Us</span>
+              </div>
+              <p class="sd-lf">
+                Lie Factor <b>{p.lie}</b>
+              </p>
+            </figure>
+          ))
+        }
       </div>
       <span class="arrow-link">Open the studio →</span>
     </a>
@@ -371,19 +419,49 @@ const evalCount = INDEX_BENCHMARKS.length;
     flex-direction: column;
     gap: 24px;
   }
-  .tmbb {
+  .status {
     align-self: flex-start;
     display: inline-flex;
     align-items: center;
+    gap: 9px;
     height: 32px;
-    padding: 0 14px;
+    padding: 0 14px 0 12px;
     border-radius: 999px;
     border: 1px solid var(--line);
     background: var(--bg-subtle);
-    transition: border-color 0.15s;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
   }
-  .tmbb:hover {
+  .status:hover {
     border-color: var(--line-strong);
+    color: var(--ink);
+  }
+  .live {
+    position: relative;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--good);
+  }
+  .live::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--good);
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  @keyframes ping {
+    75%,
+    100% {
+      transform: scale(2.6);
+      opacity: 0;
+    }
   }
   .hero-foot {
     margin: 18px 0 0;
@@ -440,73 +518,143 @@ const evalCount = INDEX_BENCHMARKS.length;
     margin-top: 16px;
   }
   .studio {
-    position: relative;
-    overflow: hidden;
     padding: 28px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    background: linear-gradient(160deg, var(--accent-soft), var(--surface) 55%);
-    transition: border-color 0.15s;
+    gap: 24px;
+    background: linear-gradient(160deg, var(--accent-soft), var(--surface) 50%);
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
   }
   .studio:hover {
-    border-color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+    box-shadow: var(--shadow-lg);
   }
-  .studio p {
-    margin: 0;
-    color: var(--ink-2);
-    max-width: 520px;
-  }
-  .studio-demo {
-    position: relative;
+  .studio-copy {
     display: flex;
-    gap: 22px;
-    align-items: flex-end;
-    height: 150px;
-    margin: 12px 0 6px;
-    padding: 0 0 0 64px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .studio-copy p {
+    margin: 0;
+    max-width: 520px;
+    color: var(--ink-2);
+  }
+  .sd {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    min-height: 300px;
+  }
+  .sd-panel {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 16px 18px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .sd-panel figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 2px 8px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .sd-panel figcaption b {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .sd-panel figcaption span {
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .crime figcaption span {
+    color: var(--bad);
+  }
+  .sd-plot {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 44px;
     border-bottom: 1px solid var(--line-strong);
+    background: repeating-linear-gradient(to top, transparent 0 calc(25% - 1px), var(--grid) calc(25% - 1px) 25%);
   }
   .sd-col {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+  }
+  .sd-bar {
+    position: relative;
+    width: min(64px, 70%);
+    height: calc(var(--h) * 100%);
+    border-radius: 5px 5px 0 0;
+    background: var(--faint);
+    transition: height 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .sd-bar.us {
+    background: var(--accent);
+  }
+  .sd-bar span {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
-    height: 100%;
-    width: 64px;
-    font-size: 12px;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .sd-bar em {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 9.5px;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .sd-names {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 8px;
     text-align: center;
+    font-size: 12px;
     color: var(--muted);
   }
-  .sd-col i {
-    width: 100%;
-    background: var(--line-strong);
-    border-radius: 4px 4px 0 0;
-    display: block;
+  .sd-lf {
+    display: flex;
+    justify-content: space-between;
+    margin: 12px 0 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--muted);
   }
-  .sd-col i.us {
-    background: var(--accent);
+  .sd-lf b {
+    font-weight: 650;
+    color: var(--good);
+    font-variant-numeric: tabular-nums;
   }
-  .sd-col span {
-    margin-top: 6px;
-    line-height: 1.25;
-    position: absolute;
-    bottom: -38px;
-  }
-  .sd-col {
-    position: relative;
-  }
-  .sd-axis {
-    position: absolute;
-    left: 0;
-    bottom: 4px;
-    font-size: 11px;
+  .crime .sd-lf b {
     color: var(--bad);
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
   }
   .studio .arrow-link {
-    margin-top: 30px;
     color: var(--accent);
   }
   .changelog {

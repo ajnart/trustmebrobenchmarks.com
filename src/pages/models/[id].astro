@@ -91,7 +91,7 @@ const description = clip(
       <span class="mark" style={`color:${L.color}`}>{L.mark}</span>
       <div>
         <h1 class="h1">
-          {m.name}
+          <span class="vt-name" style={`view-transition-name: m-${m.id}`}>{m.name}</span>
           {m.variant && <span class="variant"> ({m.variant})</span>}
         </h1>
         <div class="badges">

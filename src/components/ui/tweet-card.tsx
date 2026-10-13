@@ -100,7 +100,7 @@ export const TweetHeader = ({ tweet }: { tweet: EnrichedTweet }) => (
       <a
         href={tweet.user.url}
         target="_blank"
-        rel="noreferrer"
+        rel="nofollow ugc noopener"
         className="shrink-0"
       >
         <img
@@ -118,7 +118,7 @@ export const TweetHeader = ({ tweet }: { tweet: EnrichedTweet }) => (
         <a
           href={tweet.user.url}
           target="_blank"
-          rel="noreferrer"
+          rel="nofollow ugc noopener"
           className="text-foreground flex items-center font-medium whitespace-nowrap transition-opacity hover:opacity-80"
         >
           {truncate(tweet.user.name, 20)}
@@ -130,7 +130,7 @@ export const TweetHeader = ({ tweet }: { tweet: EnrichedTweet }) => (
           <a
             href={tweet.user.url}
             target="_blank"
-            rel="noreferrer"
+            rel="nofollow ugc noopener"
             className="text-muted-foreground hover:text-foreground text-sm transition-colors"
           >
             @{truncate(tweet.user.screen_name, 16)}
@@ -138,7 +138,7 @@ export const TweetHeader = ({ tweet }: { tweet: EnrichedTweet }) => (
         </div>
       </div>
     </div>
-    <a href={tweet.url} target="_blank" rel="noreferrer">
+    <a href={tweet.url} target="_blank" rel="nofollow ugc noopener">
       <span className="sr-only">Link to tweet</span>
       <Twitter className="text-muted-foreground hover:text-foreground size-5 items-start transition-all ease-in-out hover:scale-105" />
     </a>
@@ -158,7 +158,7 @@ export const TweetBody = ({ tweet }: { tweet: EnrichedTweet }) => (
               key={idx}
               href={entity.href}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="nofollow ugc noopener"
               className="text-muted-foreground hover:text-foreground text-[15px] font-normal transition-colors"
             >
               <span>{entity.text}</span>
@@ -276,7 +276,7 @@ export const TweetFooter = ({ tweet }: { tweet: EnrichedTweet }) => (
     <a
       href={tweet.url}
       target="_blank"
-      rel="noopener noreferrer"
+      rel="nofollow ugc noopener"
       className="text-accent ml-auto font-medium hover:underline"
     >
       Open on X ↗

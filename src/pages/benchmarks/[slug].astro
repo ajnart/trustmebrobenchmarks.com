@@ -54,7 +54,7 @@ const schema = b.computed === 'random-axis' ? [] : [itemList(`${b.name} results`
   description={description}
   imageAlt={`${b.name} leaderboard${top ? `. Top results: ${top}` : ''}. Satirical, fabricated scores.`}
   pageType="WebPage"
-  article={{ published, type: 'TechArticle' }}
+  article={{ published, type: 'TechArticle', citations: tweets }}
   breadcrumbs={crumbs}
   schema={schema}
 >
@@ -65,7 +65,7 @@ const schema = b.computed === 'random-axis' ? [] : [itemList(`${b.name} results`
       {b.badge && <span class="badge badge-accent">{b.badge}</span>}
       {b.indexWeight > 0 && <span class="badge badge-good">In {INDEX_NAME} · weight {b.indexWeight}×</span>}
     </div>
-    <h1 class="h1">{b.name}</h1>
+    <h1 class="h1"><span class="vt-name" style={`view-transition-name: b-${b.slug}`}>{b.name}</span></h1>
     <p class="lede">{b.tagline}</p>
   </section>
 

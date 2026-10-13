@@ -72,7 +72,7 @@ const reading = (r: number) => {
                 {b.better === 'unclear' && 'Direction unclear'}
               </span>
             </div>
-            <h2>{b.name}</h2>
+            <h2><span class="vt-name" style={`view-transition-name: b-${b.slug}`}>{b.name}</span></h2>
             <p class="tag">{b.tagline}</p>
             <p class="abs">{b.abstract}</p>
             <ol>

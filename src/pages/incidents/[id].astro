@@ -36,7 +36,7 @@ const crumbs = [
   title={inc.title}
   description={clip(`${inc.status}: ${inc.claim} ${inc.finding}`)}
   imageAlt={`Incident ${inc.id}: ${inc.title}. Status: ${inc.status}, severity ${inc.severity} of 5.`}
-  article={{ published: inc.date, type: 'Article' }}
+  article={{ published: inc.date, type: 'Article', citations: tweets }}
   breadcrumbs={crumbs}
 >
   <section class="container ih">

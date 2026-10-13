@@ -54,7 +54,10 @@ export default defineConfig({
     },
   ],
   build: { format: 'directory' },
-  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
-  experimental: { clientPrerender: true },
-  vite: { plugins: [tailwindcss()], resolve: { noExternal: ['react-tweet'] } },
+  vite: {
+    plugins: [tailwindcss()],
+    resolve: { noExternal: ['react-tweet'] },
+    ssr: { external: ['@resvg/resvg-js'] },
+    optimizeDeps: { exclude: ['@resvg/resvg-js'] },
+  },
 });
