@@ -1,0 +1,109 @@
+astro.config.mjs
+  s_be89b7a9d2d196::t_63912224373d22 1,3-6,10-55,57-59
+bun.lock
+  s_be89b7a9d2d196::t_5a5aa00cefb115 1-33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127,129,131,133,135,137,139,141,143,145,147,149,151,153,155,157,159,161,163,165,167,169,171,173,175,177,179,181,183,185,187,189,191,193,195,197,199,201,203,205,207,209,211,213,215,217,219,221,223,225,227,229,231,233,235,237,239,241,243,245,247,249,251,253,255,257,259,261,263,265,267,269,271,273,275,277,279,281,283,285,287,289,291,293,295,297,299,301,303,305,307,309,311,313,315,317,319,321,323,325,327,329,331,333,335,337,339,341,343,345,347,349,351,353,355,357,359,361,363,365,367,369,371,373,375,377,379,381,383,385,387,389,391,393,395,397,399,401,403,405,407,409,411,413,415,417,419,421,423,425,427,429,431,433,435,437,439,441,443,445,447,449,451,453,455,457,459,461,463,465,467,469,471,473,475,477,479,481,483,485,487,489,491,493,495,497,499,501,503,505,507,509,511,513,515,517,519,521,523,525,527,529,531,533,535,537,539,541,543,545,547,549,551,553,555,557,559,561,563,565,567,569,571,573,575,577,579,581,583,585,587,589,591,593,595,597,599,601,603,605,607,609,611,613,615,617,619,621,623,625,627,629,631,633,635,637,639,641,643,645,647,649,651,653,655,657,659,661,663,665,667,669,671,673,675,677,679-967
+components.json
+  s_be89b7a9d2d196::t_d1eacbea007861 1-24
+package.json
+  s_be89b7a9d2d196::t_793f83dc08fe9c 6,14,16-22,26-33
+src/components/Breadcrumbs.astro
+  s_be89b7a9d2d196::t_d04f957a4b8834 1-46
+src/components/Footer.astro
+  s_be89b7a9d2d196::t_89aaa7b884239e 41-45,62-63,90,92-97,99-100
+src/components/IncidentCard.astro
+  s_be89b7a9d2d196::t_da0c548b3d6fc8 1-224
+src/components/PrevNext.astro
+  s_be89b7a9d2d196::t_d7f38b71cf44f7 1-38
+src/components/Ticker.astro
+  s_be89b7a9d2d196::t_0092e2668ffa3b 1-23
+src/components/TweetCard.astro
+  s_be89b7a9d2d196::t_74bdf927aa6e29 2,4,9-10,12-13,18-50,55,67-68,72,79,81,84,87,92-93,97-98,104
+src/components/ui/animated-shiny-text.tsx
+  s_be89b7a9d2d196::t_778b120b1b2e03 1-42
+src/components/ui/border-beam.tsx
+  s_be89b7a9d2d196::t_b99b1598727131 1-107
+src/components/ui/marquee.tsx
+  s_be89b7a9d2d196::t_8697de94653371 1-75
+src/components/ui/number-ticker.tsx
+  s_be89b7a9d2d196::t_6baf768877bbfc 1-72
+src/components/ui/tweet-card.tsx
+  s_be89b7a9d2d196::t_5e0a2dcce1194e 1-354
+src/data/changelog.ts
+  s_be89b7a9d2d196::t_93beeedfa0c7b4 9-12,15,17,30
+src/data/incidents.ts
+  s_be89b7a9d2d196::t_5fa2924b414144 20,35,53,116,168,182,200,218,267-269
+src/data/labs.ts
+  s_be89b7a9d2d196::t_e78e7b35ea4542 24
+src/data/tweets.ts
+  s_be89b7a9d2d196::t_2c6330f8d0881e 32-58
+src/layouts/Base.astro
+  s_be89b7a9d2d196::t_37437bde0110db 2,4,8-23,28-33,36-53,57,63-84,86-98,100-103,106-107,112,114,154,157-179
+src/lib/icons.ts
+  s_be89b7a9d2d196::t_a21bf5e55df00c 1-35
+src/lib/og-pages.ts
+  s_be89b7a9d2d196::t_ad91f14f9166ba 1-172
+src/lib/seo.ts
+  s_be89b7a9d2d196::t_30c1922bccf57f 1-111
+src/lib/utils.ts
+  s_be89b7a9d2d196::t_693d88290df22a 1-6
+src/lib/views.ts
+  s_be89b7a9d2d196::t_543da4779b7228 13
+src/lib/x.ts
+  s_be89b7a9d2d196::t_66753be9a359d6 1-36
+src/pages/404.astro
+  s_be89b7a9d2d196::t_e1c6823fb0aae7 5
+src/pages/[icon].png.ts
+  s_be89b7a9d2d196::t_0a759a1ded906b 1-13
+src/pages/benchmarks/[slug].astro
+  s_be89b7a9d2d196::t_d6ac8170ca38b3 3-4,16,42-49,52-60,62,125,175,184
+src/pages/benchmarks/index.astro
+  s_be89b7a9d2d196::t_a4f31edb0c432d 8,45-51
+src/pages/chart-crime-studio.astro
+  s_be89b7a9d2d196::t_532c6c35d5dd0b 6,23-40,656
+src/pages/favicon.ico.ts
+  s_be89b7a9d2d196::t_c55bc617501470 1-4
+src/pages/favicon.svg.ts
+  s_be89b7a9d2d196::t_46ae368dbc642f 1-4
+src/pages/in-the-wild.astro
+  s_be89b7a9d2d196::t_05049893aa3eba 5-7,18-43,50-53,125,131
+src/pages/incidents.astro
+  s_be89b7a9d2d196::t_f625a05665b4c1 4-7,14-20,27,31,41,85,91,134-136
+src/pages/incidents/[id].astro
+  s_be89b7a9d2d196::t_d7ffc825e9e2ff 1-205
+src/pages/index.astro
+  s_be89b7a9d2d196::t_b381302ad3853e 6-8,19,21-22,37-39,46,49-51,88,162,315-324,337,369-387,443-444,614-620,622-623
+src/pages/methodology.astro
+  s_be89b7a9d2d196::t_beb02dd30c00d2 12,37-42,67-79
+src/pages/models.astro
+  s_be89b7a9d2d196::t_b22bc19668682b 8,31-37,74,262-268
+src/pages/models/[id].astro
+  s_be89b7a9d2d196::t_6b265b4a120854 1-410
+src/pages/og/[...key].png.ts
+  s_be89b7a9d2d196::t_e88d1373e48ddc 1-8
+src/pages/robots.txt.ts
+  s_be89b7a9d2d196::t_8b717af84164cf 1-7
+src/pages/site.webmanifest.ts
+  s_be89b7a9d2d196::t_c7438fad51e18d 1-20
+src/styles/global.css
+  s_be89b7a9d2d196::t_2a6511f54c3bb6 25-27,57-62,64-68,70-80,82-85,87-91,93-97,99-102,104-108,111,493-567
+src/styles/tailwind.css
+  s_be89b7a9d2d196::t_a81db1158c27a2 1-66
+tsconfig.json
+  s_be89b7a9d2d196::t_d74693aee46003 4-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1b23402fd63bbdea177b702aa6fbd564b3ad87ae",
+  "prompts": {},
+  "sessions": {
+    "s_be89b7a9d2d196": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1b9968ea-0b77-44b8-b96a-2d9025367343",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
