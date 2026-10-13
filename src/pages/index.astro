@@ -1,0 +1,648 @@
+---
+import Base from '../layouts/Base.astro';
+import ChartCard from '../components/ChartCard.astro';
+import TabBar from '../components/TabBar.astro';
+import TweetCard from '../components/TweetCard.astro';
+import BarChart from '../components/charts/BarChart.astro';
+import ScatterChart from '../components/charts/ScatterChart.astro';
+import DumbbellChart from '../components/charts/DumbbellChart.astro';
+import GanttChart from '../components/charts/GanttChart.astro';
+import StackedBarChart from '../components/charts/StackedBarChart.astro';
+import { ANNOUNCEMENTS, CHANGELOG } from '../data/changelog';
+import { BENCHMARKS, INDEX_BENCHMARKS } from '../data/benchmarks';
+import { INCIDENTS } from '../data/incidents';
+import { lab } from '../data/labs';
+import { MODELS } from '../data/models';
+import { TWEETS, tweetById } from '../data/tweets';
+import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
+import { fmt, rows } from '../lib/scores';
+import {
+  claimDumbbells,
+  contextDumbbells,
+  costBars,
+  costStacks,
+  indexBars,
+  indexVsClaim,
+  indexVsCost,
+  indexVsSpeed,
+  overTime,
+  shipSpans,
+  speedBars,
+} from '../lib/views';
+
+const featuredTweets = [
+  '2107486601563500581',
+  '2109733498114417013',
+  '2026396163637731794',
+  '1831767014341538166',
+  '2066456715650793956',
+  '2105397170266636594',
+].map(tweetById);
+const featuredIncidents = INCIDENTS.filter((i) => ['TMB-2024-0001', 'TMB-2026-0006', 'TMB-2026-0010'].includes(i.id));
+const yearFmt = (t: number) => new Date(t).toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' }).replace(' ', " '");
+const usd = (v: number) => `$${v}`;
+const evalCount = INDEX_BENCHMARKS.length;
+---
+
+<Base>
+  <section class="container hero">
+    <div class="hero-l">
+      <h1 class="display">Independent<span class="ast">*</span><br />analysis of AI</h1>
+      <p class="lede">Understand the AI landscape to choose the best model and provider for your use case. Or for your launch post.</p>
+      <p class="hero-foot">* Independent of evidence. {MODELS.length} models, {BENCHMARKS.length} evaluations, 0 reproducible results.</p>
+    </div>
+    <div class="hero-r">
+      {
+        ANNOUNCEMENTS.map((a) => (
+          <a class="ann" href={a.href}>
+            <div>
+              <span class="eyebrow">New</span>
+              <h3>{a.title}</h3>
+              <p>{a.body}</p>
+            </div>
+            <span class="ann-arrow" aria-hidden="true">
+              ↗
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container highlights">
+    <ChartCard title="Intelligence" subtitle={`${INDEX_NAME} · Higher is better`} marker="#7c3aed" size="sm" href="#intelligence">
+      <BarChart bars={indexBars({ limit: 12 })} slotWidth={40} plotHeight={210} labelArea={112} max={100} breakAbove={100} ariaLabel="Intelligence highlights" />
+    </ChartCard>
+    <ChartCard title="Speed" subtitle="Output tokens per second · Higher is better" marker="#facc15" size="sm" href="#tradeoffs">
+      <BarChart bars={speedBars(12)} slotWidth={40} plotHeight={210} labelArea={112} max={400} breakAbove={400} ariaLabel="Speed highlights" />
+    </ChartCard>
+    <ChartCard title="Cost per Task" subtitle="Average cost (USD) per TMB Index task · Lower is better" marker="#f97316" size="sm" href="#cost">
+      <BarChart bars={costBars(12)} slotWidth={40} plotHeight={210} labelArea={112} ariaLabel="Cost highlights" />
+    </ChartCard>
+  </section>
+
+  <section class="container duo">
+    <a class="card studio" href="/chart-crime-studio/">
+      <span class="eyebrow">New · by Trust Me Bro</span>
+      <h3 class="h2">Chart Crime Studio</h3>
+      <p>Turn a 2.7-point lead into a towering victory. Drag the y-axis baseline, remove the labels, and export a launch-day chart your competitors will quote-tweet for a week.</p>
+      <div class="studio-demo" aria-hidden="true">
+        <div class="sd-col"><i style="height:22%"></i><span>Them<br />50.1</span></div>
+        <div class="sd-col"><i class="us" style="height:96%"></i><span>Us<br />52.8</span></div>
+        <div class="sd-axis">y-axis starts at 50</div>
+      </div>
+      <span class="arrow-link">Open the studio →</span>
+    </a>
+    <div class="card changelog">
+      <h3 class="h3">Changelog</h3>
+      <ul>
+        {
+          CHANGELOG.map((c) => (
+            <li>
+              <a href={c.href}>
+                <span class="cl-kind">
+                  {c.kind} · {c.date}
+                </span>
+                <span class="cl-title">{c.title}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="container section" id="intelligence">
+    <div class="section-head">
+      <span class="eyebrow">Intelligence</span>
+      <h2 class="h1">{INDEX_NAME}</h2>
+      <p>
+        {INDEX_NAME} {INDEX_VERSION} incorporates {evalCount} evaluations:{' '}
+        {
+          INDEX_BENCHMARKS.map((b, i) => (
+            <>
+              <a class="link" href={`/benchmarks/${b.slug}/`}>
+                {b.name}
+              </a>
+              {i < INDEX_BENCHMARKS.length - 1 ? ', ' : '.'}
+            </>
+          ))
+        }
+      </p>
+    </div>
+    <ChartCard title={INDEX_NAME} subtitle="Higher is better · Hatched bars are self-reported by models that cannot currently be used">
+      <div data-tabs>
+        <TabBar
+          tabs={[
+            { id: 'all', label: 'All models' },
+            { id: 'released', label: 'Released models only' },
+            { id: 'claims', label: 'Self-reported scores' },
+          ]}
+        />
+        <div data-panel="all">
+          <BarChart bars={indexBars()} max={100} breakAbove={100} showAxis minWidth={900} ariaLabel="TMB Intelligence Index, all models" />
+        </div>
+        <div data-panel="released" hidden>
+          <BarChart bars={indexBars({ vapor: false })} max={100} showAxis minWidth={900} ariaLabel="TMB Intelligence Index, released models" />
+        </div>
+        <div data-panel="claims" hidden>
+          <BarChart
+            bars={[...MODELS]
+              .sort((a, b) => b.claimed - a.claimed)
+              .map((m) => ({
+                id: m.id,
+                label: m.variant ? `${m.name} (${m.variant})` : m.name,
+                value: m.claimed,
+                display: m.claimLabel === 'AGI' ? 'AGI' : String(m.claimed),
+                color: lab(m.lab).color,
+                mark: lab(m.lab).mark,
+                href: `/models/#${m.id}`,
+                tip: `<b>${m.name}</b><div class="tip-sub">${lab(m.lab).name}</div><div style="margin-top:6px">Self-reported: ${m.claimLabel ?? m.claimed}</div>`,
+              }))}
+            max={100}
+            breakAbove={100}
+            showAxis
+            minWidth={900}
+            ariaLabel="Self-reported scores"
+          />
+        </div>
+      </div>
+      <Fragment slot="foot">
+        * Hatched bars: no publicly available API, weights, or evidence. Scored from the announcement. Bars exceeding 100 are truncated with an axis break, a
+        courtesy rarely extended in the other direction. Index composition and weights: <a class="link" href="/methodology/#index">Methodology §1</a>.
+      </Fragment>
+    </ChartCard>
+  </section>
+
+  <section class="container section" id="tradeoffs">
+    <div class="section-head">
+      <span class="eyebrow">Trade-offs</span>
+      <h2 class="h1">Intelligence vs. everything else</h2>
+      <p>The upper-left is where models are smart and cheap. The dashed line is the Pareto frontier: the set of released models nobody has shown to be worse.</p>
+    </div>
+    <ChartCard title="Intelligence vs. Cost per Task" subtitle={`${INDEX_NAME} · Cost per task (USD, log scale)`}>
+      <div data-tabs>
+        <TabBar
+          tabs={[
+            { id: 'cost', label: 'vs. Cost per Task' },
+            { id: 'speed', label: 'vs. Output Speed' },
+            { id: 'claim', label: 'vs. Self-reported Score' },
+          ]}
+        />
+        <div data-panel="cost">
+          <ScatterChart points={indexVsCost()} xScale="log" better="low" quadrant xLabel="Cost per TMB task (USD, log scale)" yLabel={INDEX_NAME} xFmt={usd} ariaLabel="Index vs cost" />
+        </div>
+        <div data-panel="speed" hidden>
+          <ScatterChart points={indexVsSpeed()} better="high" quadrant xLabel="Output speed (tokens per second)" yLabel={INDEX_NAME} ariaLabel="Index vs speed" />
+        </div>
+        <div data-panel="claim" hidden>
+          <ScatterChart
+            points={indexVsClaim()}
+            better="low"
+            quadrant
+            xLabel="Self-reported headline score (launch post, normalized)"
+            yLabel={INDEX_NAME}
+            ariaLabel="Index vs self-reported score"
+          />
+        </div>
+      </div>
+      <Fragment slot="foot">
+        How to read this chart: each point is a released model. Further left is cheaper; higher is better on the TMB Index. Models that have not been released are excluded,
+        since their cost per task is zero and their intelligence is whatever they said it was.
+      </Fragment>
+    </ChartCard>
+  </section>
+
+  <section class="container section" id="benchmaxx">
+    <div class="section-head">
+      <span class="eyebrow">New · Benchmaxx Gap</span>
+      <h2 class="h1">Self-reported vs. measured</h2>
+      <p>The distance between the number in the launch post and the number we measured. Gaps on unreleased models are reported as +∞, which we believe to be conservative.</p>
+    </div>
+    <ChartCard title="Benchmaxx Gap" subtitle="Launch-post score (hollow) vs. TMB Intelligence Index (solid) · Smaller gap is better" href="/benchmarks/benchmaxx-gap/">
+      <DumbbellChart rows={claimDumbbells()} max={100} measuredLabel="TMB Index (measured)" claimedLabel="Self-reported" ariaLabel="Benchmaxx gap" />
+    </ChartCard>
+  </section>
+
+  <section class="container section" id="ship">
+    <div class="section-head">
+      <span class="eyebrow">Logistics</span>
+      <h2 class="h1">Announce-to-availability latency</h2>
+      <p>Calendar days between the first public claim about a model and the first day a member of the public could send it a prompt. Open intervals keep growing every time this site is rebuilt.</p>
+    </div>
+    <ChartCard title="Days to Ship" subtitle="From first claim to general availability · Lower is better" href="/benchmarks/ship-latency/">
+      <GanttChart rows={shipSpans()} ariaLabel="Announce to availability" />
+      <Fragment slot="foot">
+        Sources for every start date are on the <a class="link" href="/incidents/">incident pages</a>. Reflection 405B was announced as "coming next week" on 5 September 2024.
+      </Fragment>
+    </ChartCard>
+  </section>
+
+  <section class="container section" id="cost">
+    <div class="section-head">
+      <span class="eyebrow">Cost</span>
+      <h2 class="h1">Where the money goes</h2>
+      <p>Cost per TMB Index task, segmented by token type. Hedging and apologies are billed at the output rate.</p>
+    </div>
+    <ChartCard title="Cost per Task, by Token Type" subtitle="USD per TMB Index task · Lower is better">
+      <StackedBarChart stacks={costStacks()} axisFmt={(v) => `$${v}`} ariaLabel="Cost per task by token type" />
+    </ChartCard>
+  </section>
+
+  <section class="container section two">
+    <ChartCard title="Context: Advertised vs. Remembered" subtitle="Thousand tokens · Solid: retrieved reliably in our needle test · Hollow: on the pricing page">
+      <DumbbellChart
+        rows={contextDumbbells().slice(0, 10)}
+        max={2000}
+        measuredLabel="Remembers"
+        claimedLabel="Advertised"
+        gapLabel="Forgotten"
+        gapFmt={(v) => `${Math.round(v)}k`}
+        compact
+        ariaLabel="Context advertised vs remembered"
+      />
+    </ChartCard>
+    <ChartCard title="Frontier Intelligence, Over Time" subtitle={`${INDEX_NAME} by release date · Hatched: first claim date of unreleased models`}>
+      <ScatterChart points={overTime()} xScale="time" better="low" pareto quadrant={false} xLabel="Release date" yLabel={INDEX_NAME} xFmt={yearFmt} yDomain={[30, 100]} height={560} ariaLabel="Intelligence over time" />
+    </ChartCard>
+  </section>
+
+  <section class="container section" id="evaluations">
+    <div class="section-head">
+      <span class="eyebrow">Benchmarks</span>
+      <h2 class="h1">Evaluations, measured independently*</h2>
+      <p>Each evaluation is inspired by a real meme benchmark that went viral on X. Theirs are real. Ours are not. Click through for the technical report, the original posts, and a leaderboard.</p>
+    </div>
+    <div class="evals">
+      {
+        BENCHMARKS.map((b) => {
+          const top = rows(b).slice(0, 3);
+          return (
+            <a class="card ev" href={`/benchmarks/${b.slug}/`}>
+              <div class="ev-head">
+                <span class="badge">{b.category}</span>
+                {b.badge && <span class="badge badge-accent">{b.badge}</span>}
+                {b.indexWeight > 0 && <span class="ev-w">Index weight {b.indexWeight}×</span>}
+              </div>
+              <h3>{b.name}</h3>
+              <p>{b.tagline}</p>
+              <ol>
+                {top.map((r) => (
+                  <li>
+                    <span class="dot" style={`background:${lab(r.model.lab).color}`} />
+                    <span class="ev-m">{r.model.name}</span>
+                    <b class="num">{fmt(r.value, b.format)}</b>
+                  </li>
+                ))}
+              </ol>
+              {b.inspiredBy && <span class="ev-src">Inspired by {b.inspiredBy.author}</span>}
+            </a>
+          );
+        })
+      }
+    </div>
+  </section>
+
+  <section class="container section" id="wild">
+    <div class="section-head">
+      <span class="eyebrow">In the wild</span>
+      <h2 class="h1">The meme-benchmark era, as it happened</h2>
+      <p>Public posts that shaped the field. Verbatim, linked, and the only primary sources on this website.</p>
+    </div>
+    <div class="tweets">
+      {featuredTweets.map((t) => <TweetCard tweet={t} compactView />)}
+    </div>
+    <a class="pill pill-soft more" href="/in-the-wild/">See all {TWEETS.length} posts →</a>
+  </section>
+
+  <section class="container section" id="incidents">
+    <div class="section-head">
+      <span class="eyebrow">Incident database</span>
+      <h2 class="h1">Trust Me Bro incidents</h2>
+      <p>Documented cases of claims that outran their evidence, with timelines and sources. Also: a registry of benchmarks that did it properly.</p>
+    </div>
+    <div class="inc">
+      {
+        featuredIncidents.map((i) => (
+          <a class="card inc-row" href={`/incidents/#${i.id}`}>
+            <span class="mono inc-id">{i.id}</span>
+            <div>
+              <h3>{i.title}</h3>
+              <p>{i.claim}</p>
+            </div>
+            <span class:list={['badge', i.status === 'Resolved' ? 'badge-good' : i.status === 'Open' ? 'badge-bad' : 'badge-warn']}>{i.status}</span>
+          </a>
+        ))
+      }
+    </div>
+    <a class="pill pill-soft more" href="/incidents/">Open the incident database →</a>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 440px;
+    gap: 48px;
+    padding-top: 64px;
+    padding-bottom: 56px;
+  }
+  .ast {
+    color: var(--accent);
+    font-size: 0.55em;
+    vertical-align: super;
+    margin-left: 2px;
+  }
+  .lede {
+    margin-top: 28px;
+  }
+  .hero-foot {
+    margin: 18px 0 0;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .hero-r {
+    display: flex;
+    flex-direction: column;
+  }
+  .ann {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px 0 26px;
+    border-bottom: 1px solid var(--line);
+  }
+  .ann:first-child {
+    padding-top: 6px;
+  }
+  .ann h3 {
+    margin: 6px 0 4px;
+    font-size: 17px;
+    font-weight: 550;
+    line-height: 1.35;
+  }
+  .ann p {
+    margin: 0;
+    font-size: 14.5px;
+    color: var(--muted);
+  }
+  .ann-arrow {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--bg-pill);
+    font-size: 14px;
+  }
+  .ann:hover h3 {
+    color: var(--accent);
+  }
+  .highlights {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .studio {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: linear-gradient(160deg, var(--accent-soft), var(--surface) 55%);
+    transition: border-color 0.15s;
+  }
+  .studio:hover {
+    border-color: var(--accent);
+  }
+  .studio p {
+    margin: 0;
+    color: var(--ink-2);
+    max-width: 520px;
+  }
+  .studio-demo {
+    position: relative;
+    display: flex;
+    gap: 22px;
+    align-items: flex-end;
+    height: 150px;
+    margin: 12px 0 6px;
+    padding: 0 0 0 64px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .sd-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    width: 64px;
+    font-size: 12px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .sd-col i {
+    width: 100%;
+    background: var(--line-strong);
+    border-radius: 4px 4px 0 0;
+    display: block;
+  }
+  .sd-col i.us {
+    background: var(--accent);
+  }
+  .sd-col span {
+    margin-top: 6px;
+    line-height: 1.25;
+    position: absolute;
+    bottom: -38px;
+  }
+  .sd-col {
+    position: relative;
+  }
+  .sd-axis {
+    position: absolute;
+    left: 0;
+    bottom: 4px;
+    font-size: 11px;
+    color: var(--bad);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  .studio .arrow-link {
+    margin-top: 30px;
+    color: var(--accent);
+  }
+  .changelog {
+    padding: 26px 28px;
+  }
+  .changelog ul {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+  }
+  .changelog li a {
+    display: flex;
+    flex-direction: column;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .changelog li:last-child a {
+    border-bottom: 0;
+  }
+  .cl-kind {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .cl-title {
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+  .changelog li a:hover .cl-title {
+    color: var(--accent);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .evals {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .ev {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .ev:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .ev-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .ev-w {
+    margin-left: auto;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .ev h3 {
+    font-family: var(--serif);
+    font-weight: 450;
+    font-size: 21px;
+    letter-spacing: -0.01em;
+    margin: 8px 0 0;
+  }
+  .ev p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--muted);
+    min-height: 40px;
+  }
+  .ev ol {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 10px 0 0;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+  }
+  .ev li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ev-m {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ink-2);
+  }
+  .ev-src {
+    margin-top: auto;
+    padding-top: 10px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .tweets {
+    columns: 3 320px;
+    column-gap: 14px;
+  }
+  .tweets :global(.tw) {
+    margin-bottom: 14px;
+  }
+  .more {
+    margin-top: 10px;
+  }
+  .inc {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .inc-row {
+    display: grid;
+    grid-template-columns: 150px 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 18px 22px;
+    transition: border-color 0.15s;
+  }
+  .inc-row:hover {
+    border-color: var(--line-strong);
+  }
+  .inc-row h3 {
+    margin: 0 0 2px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .inc-row p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .inc-id {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  @media (max-width: 1180px) {
+    .highlights {
+      grid-template-columns: 1fr;
+    }
+    .evals {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 980px) {
+    .hero,
+    .duo,
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 620px) {
+    .evals {
+      grid-template-columns: 1fr;
+    }
+    .inc-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+  }
+</style>

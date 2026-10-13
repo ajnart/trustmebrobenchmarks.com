@@ -1,0 +1,273 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { benchBySlug } from '../data/benchmarks';
+import { lab } from '../data/labs';
+import { MODELS, STATUS_LABEL, type Model } from '../data/models';
+import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
+import { fmt, money, shipDays, tmbIndex, value } from '../lib/scores';
+
+const cols = [
+  { key: 'nonsense-pushback', label: 'Nonsense Pushback' },
+  { key: 'overclaim', label: 'Overclaim' },
+  { key: 'lava-lamp', label: 'Lava Lamp' },
+  { key: 'pelican', label: 'Pelican' },
+  { key: 'brainfuck', label: 'Brainfuck' },
+  { key: 'snitch', label: 'Snitch' },
+].map((c) => ({ ...c, bench: benchBySlug(c.key) }));
+
+const sorted = [...MODELS].sort((a, b) => (tmbIndex(b) ?? -1) - (tmbIndex(a) ?? -1) || b.claimed - a.claimed);
+
+const statusClass = (m: Model) => {
+  if (m.status === 'available') return 'badge-good';
+  if (m.status === 'announced') return 'badge-warn';
+  return 'badge-bad';
+};
+const num = (v: number | undefined) => (v === undefined ? '' : String(v));
+const available = MODELS.filter((m) => m.status === 'available').length;
+---
+
+<Base title="Model Leaderboard" description="Every model we evaluated, and several we could not, because they do not exist yet.">
+  <PageHead
+    eyebrow="Leaderboard"
+    title="Model Leaderboard"
+    lede={`${MODELS.length} models: ${available} we could evaluate, and ${MODELS.length - available} we evaluated anyway, using their announcements. Click any column to sort.`}
+  />
+  <section class="container">
+    <div class="card table-card">
+      <div class="table-scroll">
+        <table class="lb" id="lb">
+          <thead>
+            <tr>
+              <th data-sort="text" class="sticky">Model</th>
+              <th data-sort="text">Status</th>
+              <th data-sort="num" class="r" aria-sort="descending">{INDEX_NAME.replace('Trust Me Bro ', 'TMB ')}</th>
+              <th data-sort="num" class="r">Self-reported</th>
+              <th data-sort="num" class="r">Benchmaxx Gap</th>
+              {cols.map((c) => <th data-sort="num" class="r">{c.label}</th>)}
+              <th data-sort="num" class="r">Speed (tok/s)</th>
+              <th data-sort="num" class="r">Cost / task</th>
+              <th data-sort="num" class="r">Days to ship</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              sorted.map((m) => {
+                const idx = tmbIndex(m);
+                const gap = idx === undefined ? undefined : m.claimed - idx;
+                const vapor = m.status !== 'available';
+                return (
+                  <tr id={m.id} class:list={{ vapor }}>
+                    <td class="sticky" data-v={m.name}>
+                      <div class="mcell">
+                        <span class="lab-mark" style={`color:${lab(m.lab).color}`}>
+                          {lab(m.lab).mark}
+                        </span>
+                        <div>
+                          <b>{m.name}</b>
+                          {m.variant && <span class="variant"> ({m.variant})</span>}
+                          <div class="sub">
+                            {lab(m.lab).name}
+                            {m.openWeights && ' · Open weights'}
+                          </div>
+                          {m.note && <div class="note">{m.note}</div>}
+                        </div>
+                      </div>
+                    </td>
+                    <td data-v={m.status}>
+                      <span class:list={['badge', statusClass(m)]}>{STATUS_LABEL[m.status]}</span>
+                    </td>
+                    <td class="r strong" data-v={num(idx ?? -1)}>
+                      {idx === undefined ? <span class="muted">n/a</span> : idx}
+                    </td>
+                    <td class="r" data-v={num(m.claimed)}>
+                      {m.claimLabel ?? m.claimed}
+                    </td>
+                    <td class="r" data-v={num(gap ?? 999)}>
+                      {gap === undefined ? <span class="inf">+∞</span> : <span class:list={{ bad: gap > 10, good: gap <= 0 }}>{gap > 0 ? `+${gap}` : gap === 0 ? '±0' : `−${-gap}`}</span>}
+                    </td>
+                    {cols.map((c) => {
+                      const v = value(c.bench, m);
+                      return (
+                        <td class="r" data-v={num(v ?? -1)}>
+                          {v === undefined ? <span class="muted">—</span> : fmt(v, c.bench.format)}
+                        </td>
+                      );
+                    })}
+                    <td class="r" data-v={num(m.speed)}>
+                      {m.speed === 0 ? <span class="muted">—</span> : vapor ? `${m.speed}*` : m.speed}
+                    </td>
+                    <td class="r" data-v={num(m.cost || 999)}>
+                      {money(m.cost)}
+                    </td>
+                    <td class="r" data-v={num(shipDays(m))}>
+                      {shipDays(m)}
+                      {!m.released && '+'}
+                    </td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="footnote legend-note">
+      {INDEX_NAME} {INDEX_VERSION}. Values marked * are claimed rather than measured. "n/a" means the model cannot be used by the public, which has not stopped it from
+      being ranked. Overclaim is lower-is-better. Snitch is direction-unclear. Days to ship marked + are still counting.
+    </p>
+  </section>
+</Base>
+
+<script>
+  const table = document.getElementById('lb') as HTMLTableElement | null;
+  if (table) {
+    const headers = [...table.querySelectorAll<HTMLTableCellElement>('th[data-sort]')];
+    const body = table.tBodies[0];
+    headers.forEach((th, col) => {
+      th.tabIndex = 0;
+      const sort = () => {
+        const dir = th.getAttribute('aria-sort') === 'descending' ? 'ascending' : 'descending';
+        headers.forEach((h) => h.removeAttribute('aria-sort'));
+        th.setAttribute('aria-sort', dir);
+        const isNum = th.dataset.sort === 'num';
+        const rows = [...body.rows];
+        rows.sort((a, b) => {
+          const av = a.cells[col].dataset.v ?? '';
+          const bv = b.cells[col].dataset.v ?? '';
+          const cmp = isNum ? Number(av) - Number(bv) : av.localeCompare(bv);
+          return dir === 'ascending' ? cmp : -cmp;
+        });
+        rows.forEach((r) => body.appendChild(r));
+      };
+      th.addEventListener('click', sort);
+      th.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          sort();
+        }
+      });
+    });
+  }
+</script>
+
+<style>
+  .table-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  .lb {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 1280px;
+  }
+  .lb th {
+    position: sticky;
+    top: 0;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 14px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-subtle);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .lb th:hover {
+    color: var(--ink);
+  }
+  .lb th[aria-sort]::after {
+    content: ' ↓';
+    color: var(--accent);
+  }
+  .lb th[aria-sort='ascending']::after {
+    content: ' ↑';
+  }
+  .lb td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    font-variant-numeric: tabular-nums;
+  }
+  .lb tr:last-child td {
+    border-bottom: 0;
+  }
+  .lb tbody tr:hover td {
+    background: var(--bg-subtle);
+  }
+  .lb tr:target td {
+    background: var(--accent-soft);
+  }
+  .r {
+    text-align: right !important;
+  }
+  .strong {
+    font-weight: 650;
+  }
+  .sticky {
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+    z-index: 1;
+    min-width: 300px;
+    max-width: 380px;
+  }
+  th.sticky {
+    z-index: 2;
+    background: var(--bg-subtle);
+  }
+  .mcell {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .lab-mark {
+    width: 24px;
+    height: 24px;
+    flex: none;
+    border-radius: 7px;
+    background: var(--bg-pill);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .variant {
+    color: var(--muted);
+  }
+  .sub {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .note {
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.45;
+    white-space: normal;
+  }
+  .vapor b {
+    font-style: italic;
+  }
+  .inf {
+    color: var(--muted);
+  }
+  .bad {
+    color: var(--bad);
+    font-weight: 600;
+  }
+  .good {
+    color: var(--good);
+    font-weight: 600;
+  }
+  .legend-note {
+    margin-top: 14px;
+    max-width: 900px;
+  }
+</style>

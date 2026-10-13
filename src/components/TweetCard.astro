@@ -1,0 +1,115 @@
+---
+import { tweetUrl, type Tweet } from '../data/tweets';
+import { compact, shortDate } from '../lib/scores';
+
+interface Props {
+  tweet: Tweet;
+  compactView?: boolean;
+}
+const { tweet, compactView = false } = Astro.props;
+const initials = tweet.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || tweet.handle.slice(0, 2).toUpperCase();
+const hue = [...tweet.handle].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+---
+
+<figure class:list={['card', 'tw', { compact: compactView }]}>
+  <header class="tw-head">
+    <span class="av" style={`background:hsl(${hue} 32% 88%);color:hsl(${hue} 40% 30%)`}>{initials}</span>
+    <div class="who">
+      <b>{tweet.name}</b>
+      <span class="muted">@{tweet.handle}</span>
+    </div>
+    <a class="x" href={tweetUrl(tweet)} target="_blank" rel="noopener" aria-label="View on X">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+        ><path
+          d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+        ></path></svg
+      >
+    </a>
+  </header>
+  <blockquote>{tweet.text}</blockquote>
+  <figcaption class="tw-foot">
+    <span>{shortDate(tweet.date)}</span>
+    <span class="num">♥ {compact(tweet.likes)}</span>
+    {tweet.views && <span class="num">{compact(tweet.views)} views</span>}
+    <a href={tweetUrl(tweet)} target="_blank" rel="noopener" class="open">Open on X ↗</a>
+  </figcaption>
+</figure>
+
+<style>
+  .tw {
+    margin: 0;
+    padding: 18px 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    break-inside: avoid;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .tw:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow);
+  }
+  .tw-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .av {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex: none;
+  }
+  .who {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 0;
+    flex: 1;
+    font-size: 14px;
+  }
+  .who b {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .who span {
+    font-size: 13px;
+  }
+  .x {
+    color: var(--muted);
+    padding: 6px;
+    border-radius: 6px;
+  }
+  .x:hover {
+    color: var(--ink);
+    background: var(--bg-pill);
+  }
+  blockquote {
+    margin: 0;
+    white-space: pre-line;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .compact blockquote {
+    font-size: 14px;
+  }
+  .tw-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .open {
+    margin-left: auto;
+    color: var(--accent);
+    font-weight: 550;
+  }
+</style>

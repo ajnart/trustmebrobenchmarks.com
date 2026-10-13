@@ -1,0 +1,359 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import { BENCHMARKS } from '../../data/benchmarks';
+import { lab } from '../../data/labs';
+import { AVAILABLE } from '../../data/models';
+import { fmt, rows, value } from '../../lib/scores';
+
+const correlated = BENCHMARKS.filter((b) => b.generator && !b.generator.includeVapor);
+
+function pearson(a: number[], b: number[]) {
+  const n = a.length;
+  const ma = a.reduce((s, v) => s + v, 0) / n;
+  const mb = b.reduce((s, v) => s + v, 0) / n;
+  let num = 0;
+  let da = 0;
+  let db = 0;
+  for (let i = 0; i < n; i++) {
+    num += (a[i] - ma) * (b[i] - mb);
+    da += (a[i] - ma) ** 2;
+    db += (b[i] - mb) ** 2;
+  }
+  return num / Math.sqrt(da * db);
+}
+
+const series = correlated.map((b) => AVAILABLE.map((m) => value(b, m) ?? 0));
+const matrix = series.map((a) => series.map((b) => pearson(a, b)));
+const cellColor = (r: number) => {
+  const a = Math.min(1, Math.abs(r));
+  if (r >= 0) return `rgba(124, 58, 237, ${a * 0.85})`;
+  return `rgba(234, 88, 12, ${a * 0.85})`;
+};
+const categories = [...new Set(BENCHMARKS.map((b) => b.category))];
+const findings = correlated
+  .flatMap((a, i) => correlated.slice(i + 1).map((b, k) => ({ a, b, r: matrix[i][i + 1 + k] })))
+  .sort((x, y) => Math.abs(y.r) - Math.abs(x.r))
+  .slice(0, 4);
+const reading = (r: number) => {
+  if (r > 0) return 'Probably the same construct. Possibly the same training data.';
+  return 'Getting better at one makes models worse at the other, or we measured one of them backwards.';
+};
+---
+
+<Base title="Benchmarks" description="Fourteen evaluations inspired by meme benchmarks that went viral on X. Theirs are real. Ours are not.">
+  <PageHead
+    eyebrow="Benchmarks"
+    title="Evaluations"
+    lede="Fourteen evaluations, each inspired by a meme benchmark that went viral on X. The originals are linked on every page, and several of them are genuinely good science. Our versions are not."
+  >
+    <div class="cats">{categories.map((c) => <span class="badge">{c}</span>)}</div>
+  </PageHead>
+
+  <section class="container grid">
+    {
+      BENCHMARKS.map((b) => {
+        const top = rows(b).slice(0, 5);
+        return (
+          <a class="card bm" href={`/benchmarks/${b.slug}/`}>
+            <div class="bm-head">
+              <span class="badge">{b.category}</span>
+              {b.badge && <span class="badge badge-accent">{b.badge}</span>}
+              <span class="dir">
+                {b.better === 'higher' && 'Higher is better'}
+                {b.better === 'lower' && 'Lower is better'}
+                {b.better === 'unclear' && 'Direction unclear'}
+              </span>
+            </div>
+            <h2>{b.name}</h2>
+            <p class="tag">{b.tagline}</p>
+            <p class="abs">{b.abstract}</p>
+            <ol>
+              {top.map((r, i) => (
+                <li>
+                  <span class="rank num">{i + 1}</span>
+                  <span class="dot" style={`background:${lab(r.model.lab).color}`} />
+                  <span class="m">{r.model.name}</span>
+                  <b class="num">{fmt(r.value, b.format)}</b>
+                </li>
+              ))}
+            </ol>
+            <span class="foot">
+              {b.inspiredBy ? `Inspired by ${b.inspiredBy.name} · ${b.inspiredBy.author}` : 'Original TMB evaluation'}
+              <span class="go">Read report →</span>
+            </span>
+          </a>
+        );
+      })
+    }
+  </section>
+
+  <section class="container section">
+    <div class="section-head">
+      <span class="eyebrow">Meta-analysis</span>
+      <h2 class="h1">Inter-benchmark correlation</h2>
+      <p>
+        Pearson r between evaluations, across the {AVAILABLE.length} released models. High correlations suggest the benchmarks measure the same thing. In our case, the
+        thing is a random number generator with a lab-specific offset, which is a more honest description of the field than we would like.
+      </p>
+    </div>
+    <div class="card heat-card">
+      <div class="heat-scroll">
+        <table class="heat">
+          <thead>
+            <tr>
+              <th></th>
+              {correlated.map((b) => <th class="col">{b.short}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              correlated.map((b, i) => (
+                <tr>
+                  <th class="rowh">{b.short}</th>
+                  {matrix[i].map((r, j) => (
+                    <td
+                      class:list={{ strong: Math.abs(r) > 0.6 }}
+                      style={`background:${cellColor(r)}`}
+                      data-tip={`<b>${b.short} × ${correlated[j].short}</b><div class="tip-sub">Pearson r = ${r.toFixed(3)}</div>`}
+                    >
+                      {r.toFixed(2)}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+        <p class="footnote">Purple: positive correlation. Orange: negative. Diagonal entries equal 1.00, the only result on this site we can reproduce.</p>
+      </div>
+      <aside class="findings">
+        <span class="eyebrow">Strongest pairs</span>
+        <ol>
+          {
+            findings.map((f) => (
+              <li>
+                <div class="pair">
+                  <span>
+                    {f.a.short} × {f.b.short}
+                  </span>
+                  <b class:list={['num', { neg: f.r < 0 }]}>r = {f.r.toFixed(2)}</b>
+                </div>
+                <p>{reading(f.r)}</p>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="caveat">n = {AVAILABLE.length}. No correction for multiple comparisons was applied, because then nothing would be significant.</p>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .bm {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .bm:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow);
+  }
+  .bm-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dir {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .bm h2 {
+    font-family: var(--serif);
+    font-weight: 450;
+    font-size: 26px;
+    letter-spacing: -0.015em;
+    margin: 8px 0 0;
+    line-height: 1.15;
+  }
+  .tag {
+    margin: 0;
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+  .abs {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .bm ol {
+    list-style: none;
+    padding: 12px 0 0;
+    margin: 6px 0 0;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 13.5px;
+  }
+  .bm li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .rank {
+    width: 16px;
+    color: var(--faint);
+    font-size: 12px;
+  }
+  .m {
+    flex: 1;
+    color: var(--ink-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .foot {
+    margin-top: auto;
+    padding-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .go {
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .heat-card {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(260px, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .heat-scroll {
+    overflow-x: auto;
+  }
+  .findings {
+    border-left: 1px solid var(--line);
+    padding-left: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .findings ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .findings li {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .findings .pair {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14.5px;
+    font-weight: 550;
+  }
+  .findings .pair b {
+    color: #7c3aed;
+    white-space: nowrap;
+  }
+  .findings .pair b.neg {
+    color: #ea580c;
+  }
+  .findings li p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+  .caveat {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--faint);
+  }
+  .heat td {
+    color: var(--ink-2);
+  }
+  .heat td.strong {
+    color: #fff;
+  }
+  @media (max-width: 1240px) {
+    .heat-card {
+      grid-template-columns: 1fr;
+    }
+    .findings {
+      border-left: 0;
+      padding-left: 0;
+    }
+  }
+  .heat {
+    border-collapse: separate;
+    border-spacing: 3px;
+    font-size: 12.5px;
+    margin-bottom: 12px;
+  }
+  .heat th {
+    font-weight: 550;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .heat th.col {
+    height: 120px;
+    vertical-align: bottom;
+    padding-bottom: 8px;
+  }
+  .heat th.col {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-align: left;
+  }
+  .heat th.rowh {
+    text-align: right;
+    padding-right: 10px;
+  }
+  .heat td {
+    width: 64px;
+    height: 44px;
+    text-align: center;
+    border-radius: 6px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  @media (max-width: 1100px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 680px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

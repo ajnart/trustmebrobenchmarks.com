@@ -1,0 +1,150 @@
+---
+import Logo from './Logo.astro';
+import { REPO_URL, NEW_ISSUE_URL } from '../lib/site';
+import { BUILD_ISO } from '../lib/scores';
+
+const cols = [
+  {
+    title: 'Explore',
+    links: [
+      { href: '/models/', label: 'Model Leaderboard' },
+      { href: '/benchmarks/', label: 'Benchmarks' },
+      { href: '/incidents/', label: 'Incident Database' },
+      { href: '/in-the-wild/', label: 'In the Wild' },
+    ],
+  },
+  {
+    title: 'Products',
+    links: [
+      { href: '/chart-crime-studio/', label: 'Chart Crime Studio' },
+      { href: '/benchmarks/random-axis/', label: 'Random Axis, Re-run' },
+      { href: '/benchmarks/benchmaxx-gap/', label: 'Benchmaxx Gap' },
+      { href: '/benchmarks/ship-latency/', label: 'Days to Ship' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { href: '/methodology/', label: 'Methodology' },
+      { href: '/methodology/#disclaimer', label: 'Disclaimer' },
+      { href: REPO_URL, label: 'Contribute on GitHub', external: true },
+      { href: NEW_ISSUE_URL, label: 'Report a claim', external: true },
+    ],
+  },
+];
+---
+
+<footer class="foot">
+  <div class="container foot-grid">
+    <div class="foot-brand">
+      <a href="/" class="brand-row"><Logo size={22} /><span>Trust Me Bro Benchmarks</span></a>
+      <p class="muted">Get notified about new claims</p>
+      <form class="notify" id="notify-form">
+        <input type="email" placeholder="Email address" aria-label="Email address" required />
+        <button class="pill pill-ink" type="submit">Subscribe</button>
+      </form>
+      <p class="notify-msg muted" id="notify-msg" hidden>Subscribed. You will hear from us next week. Probably.</p>
+    </div>
+    {
+      cols.map((c) => (
+        <div class="foot-col">
+          <h4>{c.title}</h4>
+          {c.links.map((l) => (
+            <a href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener' : undefined}>
+              {l.label}
+            </a>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+  <div class="container foot-legal">
+    <span>© 2026 Trust Me Bro Benchmarks</span>
+    <span>Terms of Use: trust us</span>
+    <span>Privacy Policy: this is a static site and collects nothing, which is the only verifiable claim on it</span>
+    <span>Not affiliated with Artificial Analysis, who do this properly</span>
+    <span class="mono">build {BUILD_ISO}</span>
+  </div>
+</footer>
+
+<script>
+  const form = document.getElementById('notify-form') as HTMLFormElement | null;
+  const msg = document.getElementById('notify-msg');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    form.hidden = true;
+    if (msg) msg.hidden = false;
+  });
+</script>
+
+<style>
+  .foot {
+    margin-top: 120px;
+    border-top: 1px solid var(--line);
+    padding-top: 56px;
+    background: var(--bg-subtle);
+  }
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 40px;
+  }
+  .brand-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--serif);
+    font-size: 22px;
+    --logo-check: var(--bg-subtle);
+  }
+  .foot-brand p {
+    margin: 22px 0 10px;
+  }
+  .notify {
+    display: flex;
+    gap: 8px;
+    max-width: 380px;
+  }
+  .notify input {
+    flex: 1;
+    height: 36px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    padding: 0 14px;
+    font: inherit;
+    color: var(--ink);
+  }
+  .foot-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14.5px;
+  }
+  .foot-col h4 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .foot-col a:hover {
+    color: var(--accent);
+  }
+  .foot-legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    padding-top: 48px;
+    padding-bottom: 40px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  @media (max-width: 860px) {
+    .foot-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .foot-brand {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

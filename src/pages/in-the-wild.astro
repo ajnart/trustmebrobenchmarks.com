@@ -1,0 +1,175 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import TweetCard from '../components/TweetCard.astro';
+import { TOPIC_LABEL, TWEETS, type TweetTopic } from '../data/tweets';
+import { compact } from '../lib/scores';
+
+const topics = Object.keys(TOPIC_LABEL) as TweetTopic[];
+const sorted = [...TWEETS].sort((a, b) => b.likes - a.likes);
+const likes = TWEETS.reduce((a, t) => a + t.likes, 0);
+const views = TWEETS.reduce((a, t) => a + (t.views ?? 0), 0);
+const authors = new Set(TWEETS.map((t) => t.handle)).size;
+const counts = Object.fromEntries(topics.map((t) => [t, TWEETS.filter((x) => x.topic === t).length]));
+---
+
+<Base title="In the Wild" description="The meme-benchmark era on X, verbatim and linked: BullshitBench, SnitchBench, lava lamps, pelicans, benchmaxxing, and Le Chaton Fat.">
+  <PageHead
+    eyebrow="Primary sources"
+    title="In the Wild"
+    lede="The meme-benchmark era, as posted. Every post below is quoted verbatim (sometimes truncated, marked …) and links to the original. These are the only numbers on this site we did not make up."
+  >
+    <div class="stats">
+      <div><b class="num">{TWEETS.length}</b><span>Posts</span></div>
+      <div><b class="num">{authors}</b><span>Authors</span></div>
+      <div><b class="num">{compact(likes)}</b><span>Likes</span></div>
+      <div><b class="num">{compact(views)}</b><span>Views</span></div>
+    </div>
+  </PageHead>
+
+  <section class="container">
+    <div class="filters" role="toolbar" aria-label="Filter posts">
+      <button type="button" class="chip on" data-filter="all">All <span>{TWEETS.length}</span></button>
+      {
+        topics.map((t) => (
+          <button type="button" class="chip" data-filter={t}>
+            {TOPIC_LABEL[t]} <span>{counts[t]}</span>
+          </button>
+        ))
+      }
+      <label class="sort">
+        Sort
+        <select id="sort">
+          <option value="likes">Most liked</option>
+          <option value="date">Newest</option>
+          <option value="views">Most viewed</option>
+        </select>
+      </label>
+    </div>
+    <div class="wall" id="wall">
+      {
+        sorted.map((t) => (
+          <div class="cell" data-topic={t.topic} data-likes={t.likes} data-views={t.views ?? 0} data-date={t.date}>
+            <TweetCard tweet={t} />
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Base>
+
+<script>
+  const wall = document.getElementById('wall')!;
+  const cells = [...wall.querySelectorAll<HTMLElement>('.cell')];
+  const chips = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  chips.forEach((c) =>
+    c.addEventListener('click', () => {
+      chips.forEach((x) => x.classList.toggle('on', x === c));
+      const f = c.dataset.filter;
+      cells.forEach((cell) => (cell.hidden = f !== 'all' && cell.dataset.topic !== f));
+    }),
+  );
+  const sort = document.getElementById('sort') as HTMLSelectElement;
+  sort.addEventListener('change', () => {
+    const key = sort.value;
+    const val = (el: HTMLElement) => {
+      if (key === 'date') return Date.parse(el.dataset.date ?? '');
+      return Number(el.dataset[key] ?? 0);
+    };
+    cells.sort((a, b) => val(b) - val(a)).forEach((c) => wall.appendChild(c));
+  });
+</script>
+
+<style>
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .stats div {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+  }
+  .stats b {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 450;
+    line-height: 1.1;
+  }
+  .stats span {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 20px;
+    position: sticky;
+    top: 72px;
+    z-index: 5;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(10px);
+    padding: 10px 0;
+  }
+  .chip {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+  .chip span {
+    color: var(--faint);
+    margin-left: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .chip:hover {
+    border-color: var(--line-strong);
+  }
+  .chip.on {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+  }
+  .chip.on span {
+    color: var(--faint);
+  }
+  .sort {
+    margin-left: auto;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .sort select {
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 0 10px;
+    font: inherit;
+  }
+  .wall {
+    columns: 3 340px;
+    column-gap: 16px;
+  }
+  .cell {
+    break-inside: avoid;
+    margin-bottom: 16px;
+  }
+  .cell[hidden] {
+    display: none;
+  }
+</style>

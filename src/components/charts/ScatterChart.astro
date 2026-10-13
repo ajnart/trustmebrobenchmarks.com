@@ -1,0 +1,309 @@
+---
+import { hatchId, niceTicks, overlaps, type Box } from '../../lib/chart';
+
+export interface Point {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  color: string;
+  mark: string;
+  hatched?: boolean;
+  href?: string;
+  tip: string;
+}
+
+interface Props {
+  points: Point[];
+  xScale?: 'linear' | 'log' | 'time';
+  better?: 'low' | 'high';
+  quadrant?: boolean;
+  pareto?: boolean;
+  xLabel: string;
+  yLabel: string;
+  xFmt?: (v: number) => string;
+  yDomain?: [number, number];
+  height?: number;
+  hideAxes?: boolean;
+  shuffle?: boolean;
+  minWidth?: number;
+  ariaLabel: string;
+}
+
+const {
+  points,
+  xScale = 'linear',
+  better = 'low',
+  quadrant = false,
+  pareto = true,
+  xLabel,
+  yLabel,
+  xFmt = (v: number) => String(Math.round(v)),
+  height = 540,
+  hideAxes = false,
+  shuffle = false,
+  minWidth = 720,
+  ariaLabel,
+} = Astro.props;
+
+const W = 1240;
+const H = height;
+const m = { l: 70, r: 36, t: 24, b: 64 };
+const iw = W - m.l - m.r;
+const ih = H - m.t - m.b;
+const tx = (v: number) => (xScale === 'log' ? Math.log10(v) : v);
+
+const xs = points.map((p) => tx(p.x));
+let lo = Math.min(...xs);
+let hi = Math.max(...xs);
+const pad = (hi - lo) * 0.06 || 1;
+lo -= pad;
+hi += pad * 1.6;
+const ys = points.map((p) => p.y);
+const [ylo, yhi] = Astro.props.yDomain ?? [Math.floor((Math.min(...ys) - 6) / 10) * 10, Math.ceil((Math.max(...ys) + 4) / 10) * 10];
+
+const X = (v: number) => m.l + ((tx(v) - lo) / (hi - lo)) * iw;
+const Y = (v: number) => m.t + ih - ((v - ylo) / (yhi - ylo)) * ih;
+
+let xticks: number[] = [];
+if (xScale === 'log') {
+  for (let e = Math.floor(lo); e <= Math.ceil(hi); e++) {
+    for (const k of [1, 2, 5]) {
+      const v = k * Math.pow(10, e);
+      if (Math.log10(v) >= lo && Math.log10(v) <= hi) xticks.push(v);
+    }
+  }
+} else if (xScale === 'time') {
+  const d = new Date(lo);
+  d.setUTCDate(1);
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCMonth(Math.ceil(d.getUTCMonth() / 3) * 3);
+  for (; d.getTime() <= hi; d.setUTCMonth(d.getUTCMonth() + 3)) if (d.getTime() >= lo) xticks.push(d.getTime());
+} else {
+  xticks = niceTicks(lo, hi, 7);
+}
+const yticks = niceTicks(ylo, yhi, 6);
+
+const solid = points.filter((p) => !p.hatched);
+const order = [...solid].sort((a, b) => (better === 'low' ? a.x - b.x : b.x - a.x));
+const front: Point[] = [];
+let best = -Infinity;
+for (const p of order) {
+  if (p.y > best) {
+    best = p.y;
+    front.push(p);
+  }
+}
+front.sort((a, b) => a.x - b.x);
+let path = '';
+if (pareto && front.length > 1) {
+  if (better === 'low') {
+    path = `M${X(front[0].x)},${Y(front[0].y)}`;
+    for (let i = 1; i < front.length; i++) path += `H${X(front[i].x)}V${Y(front[i].y)}`;
+    path += `H${m.l + iw}`;
+  } else {
+    path = `M${m.l},${Y(front[0].y)}H${X(front[0].x)}`;
+    for (let i = 1; i < front.length; i++) path += `V${Y(front[i].y)}H${X(front[i].x)}`;
+  }
+}
+
+const sortedY = [...solid.map((p) => p.y)].sort((a, b) => a - b);
+const sortedX = [...solid.map((p) => p.x)].sort((a, b) => a - b);
+const medY = sortedY[Math.floor(sortedY.length / 2)] ?? 0;
+const medX = sortedX[Math.floor(sortedX.length / 2)] ?? 0;
+const quad = quadrant
+  ? better === 'low'
+    ? { x: m.l, y: m.t, w: X(medX) - m.l, h: Y(medY) - m.t }
+    : { x: X(medX), y: m.t, w: m.l + iw - X(medX), h: Y(medY) - m.t }
+  : undefined;
+
+const R = 10;
+const placed: Box[] = [];
+const labelled = new Set<string>();
+const priority = [...points].sort(
+  (a, b) => Number(front.includes(b) || !!b.hatched) - Number(front.includes(a) || !!a.hatched) || b.y - a.y,
+);
+for (const p of priority) {
+  const w = p.label.length * 6.4 + 6;
+  const box = { x1: X(p.x) + R + 3, x2: X(p.x) + R + 3 + w, y1: Y(p.y) - 8, y2: Y(p.y) + 8 };
+  const hitDot = points.some(
+    (q) => q !== p && X(q.x) + R > box.x1 && X(q.x) - R < box.x2 && Y(q.y) + R > box.y1 && Y(q.y) - R < box.y2,
+  );
+  if (!hitDot && box.x2 < W - 2 && !placed.some((b) => overlaps(b, box))) {
+    placed.push(box);
+    labelled.add(p.id);
+  }
+}
+const colors = [...new Set(points.filter((p) => p.hatched).map((p) => p.color))];
+---
+
+<div class="chart-scroll" style={`--min-w:${minWidth}px`}>
+  <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={ariaLabel} class="scatter" data-shuffle={shuffle ? '' : undefined}>
+    <defs>
+      {
+        colors.map((c) => (
+          <pattern id={hatchId(c)} width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="5" height="5" fill={c} fill-opacity="0.15" />
+            <line x1="0" y1="0" x2="0" y2="5" stroke={c} stroke-width="2" stroke-opacity="0.8" />
+          </pattern>
+        ))
+      }
+    </defs>
+    {
+      quad && (
+        <g>
+          <rect class="quad" x={quad.x} y={quad.y} width={quad.w} height={quad.h} rx="4" />
+          <text class="quad-label" x={quad.x + 12} y={quad.y + quad.h - 12}>
+            Most attractive quadrant
+          </text>
+        </g>
+      )
+    }
+    {
+      !hideAxes &&
+        yticks.map((t) => (
+          <g>
+            <line class="grid" x1={m.l} x2={m.l + iw} y1={Y(t)} y2={Y(t)} />
+            <text class="tick" x={m.l - 12} y={Y(t) + 4} text-anchor="end">
+              {t}
+            </text>
+          </g>
+        ))
+    }
+    {
+      !hideAxes &&
+        xticks.map((t) => (
+          <g>
+            <line class="grid v" x1={X(t)} x2={X(t)} y1={m.t} y2={m.t + ih} />
+            <text class="tick" x={X(t)} y={m.t + ih + 22} text-anchor="middle">
+              {xFmt(t)}
+            </text>
+          </g>
+        ))
+    }
+    <line class="axis-line" x1={m.l} x2={m.l + iw} y1={m.t + ih} y2={m.t + ih} />
+    <line class="axis-line" x1={m.l} x2={m.l} y1={m.t} y2={m.t + ih} />
+    {path && <path class="pareto" d={path} />}
+    {
+      points.map((p) => (
+        <a
+          href={p.href}
+          class="pt"
+          data-tip={p.tip}
+          style={`--tx:${X(p.x)}px;--ty:${Y(p.y)}px`}
+          data-x={X(p.x)}
+          data-y={Y(p.y)}
+        >
+          <g class="pt-in">
+            <circle
+              r={R}
+              fill={p.hatched ? `url(#${hatchId(p.color)})` : p.color}
+              stroke={p.hatched ? p.color : 'var(--surface)'}
+              stroke-width={p.hatched ? 1.6 : 2}
+              stroke-dasharray={p.hatched ? '3 2' : undefined}
+            />
+            <text class:list={['pm', { dark: p.hatched }]} y="3.8" text-anchor="middle" fill={p.hatched ? p.color : '#fff'}>
+              {p.mark}
+            </text>
+            {labelled.has(p.id) && (
+              <text class:list={['pl', { strong: front.includes(p) || p.hatched }]} x={R + 5} y="4">
+                {p.label}
+              </text>
+            )}
+          </g>
+        </a>
+      ))
+    }
+    {
+      !hideAxes ? (
+        <>
+          <text class="axis-title" x={m.l + iw / 2} y={H - 14} text-anchor="middle">
+            {xLabel}
+          </text>
+          <text class="axis-title" transform={`translate(18 ${m.t + ih / 2}) rotate(-90)`} text-anchor="middle">
+            {yLabel}
+          </text>
+        </>
+      ) : (
+        <>
+          <text class="axis-title" x={m.l + iw / 2} y={H - 22} text-anchor="middle">
+            {xLabel}
+          </text>
+          <text class="axis-title" transform={`translate(30 ${m.t + ih / 2}) rotate(-90)`} text-anchor="middle">
+            {yLabel}
+          </text>
+        </>
+      )
+    }
+  </svg>
+</div>
+
+<style>
+  .scatter {
+    overflow: visible;
+  }
+  .grid {
+    stroke: var(--grid);
+  }
+  .grid.v {
+    stroke-dasharray: 2 4;
+  }
+  .axis-line {
+    stroke: var(--line-strong);
+  }
+  .tick {
+    fill: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .axis-title {
+    fill: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .quad {
+    fill: var(--good);
+    opacity: 0.06;
+  }
+  .quad-label {
+    fill: var(--good);
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.85;
+  }
+  .pareto {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.4;
+    stroke-dasharray: 5 5;
+    opacity: 0.55;
+  }
+  .pt {
+    transform: translate(var(--tx), var(--ty));
+    transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .pt circle {
+    transition: r 0.15s;
+  }
+  .pt:hover circle {
+    r: 12.5;
+  }
+  .pm {
+    font-size: 10px;
+    font-weight: 800;
+    pointer-events: none;
+  }
+  .pl {
+    fill: var(--muted);
+    font-size: 12px;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: var(--surface);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+  .pl.strong {
+    fill: var(--ink);
+    font-weight: 600;
+  }
+</style>

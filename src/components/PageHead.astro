@@ -1,0 +1,28 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  lede?: string;
+}
+const { eyebrow, title, lede } = Astro.props;
+---
+
+<section class="container ph">
+  <span class="eyebrow">{eyebrow}</span>
+  <h1 class="h1">{title}</h1>
+  {lede && <p class="lede">{lede}</p>}
+  <slot />
+</section>
+
+<style>
+  .ph {
+    padding-top: 56px;
+    padding-bottom: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .ph .lede {
+    max-width: 760px;
+  }
+</style>

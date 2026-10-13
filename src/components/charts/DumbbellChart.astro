@@ -1,0 +1,184 @@
+---
+import { niceTicks } from '../../lib/chart';
+
+export interface Dumbbell {
+  id: string;
+  label: string;
+  color: string;
+  measured?: number;
+  claimed: number;
+  claimLabel?: string;
+  href?: string;
+  tip: string;
+}
+
+interface Props {
+  rows: Dumbbell[];
+  max?: number;
+  measuredLabel?: string;
+  claimedLabel?: string;
+  gapLabel?: string;
+  gapFmt?: (v: number) => string;
+  compact?: boolean;
+  ariaLabel: string;
+}
+
+const {
+  rows,
+  measuredLabel = 'Measured',
+  claimedLabel = 'Claimed',
+  gapLabel = 'Gap',
+  gapFmt = (v: number) => {
+    const r = Math.round(v);
+    if (r === 0) return '±0';
+    return r > 0 ? `+${r}` : `−${-r}`;
+  },
+  compact = false,
+  ariaLabel,
+} = Astro.props;
+const max = Astro.props.max ?? 100;
+const W = compact ? 760 : 1240;
+const rowH = compact ? 40 : 34;
+const m = compact ? { l: 200, r: 110, t: 34, b: 24 } : { l: 250, r: 150, t: 34, b: 30 };
+const iw = W - m.l - m.r;
+const H = m.t + rows.length * rowH + m.b;
+const X = (v: number) => m.l + (Math.min(v, max) / max) * iw;
+const ticks = niceTicks(0, max, compact ? 4 : 5);
+---
+
+<div class="chart-scroll" style={`--min-w:${compact ? 560 : 760}px`}>
+  <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={ariaLabel} class:list={['db', { compact }]}>
+    {
+      ticks.map((t) => (
+        <g>
+          <line class="grid" x1={X(t)} x2={X(t)} y1={m.t - 8} y2={H - m.b + 4} />
+          <text class="tick" x={X(t)} y={m.t - 16} text-anchor="middle">
+            {t}
+          </text>
+        </g>
+      ))
+    }
+    {
+      rows.map((r, i) => {
+        const cy = m.t + i * rowH + rowH / 2;
+        const gap = r.measured === undefined ? undefined : r.claimed - r.measured;
+        const over = r.claimed > max;
+        return (
+          <a href={r.href} class="row" data-tip={r.tip}>
+            <rect class="hit" x="0" y={cy - rowH / 2} width={W} height={rowH} />
+            <text class="lbl" x={m.l - 18} y={cy + 4} text-anchor="end">
+              {r.label}
+            </text>
+            <line
+              class:list={['stem', { vapor: r.measured === undefined }]}
+              x1={X(r.measured ?? 0)}
+              x2={X(r.claimed)}
+              y1={cy}
+              y2={cy}
+              stroke={r.color}
+            />
+            {r.measured !== undefined && <circle cx={X(r.measured)} cy={cy} r="7" fill={r.color} />}
+            <circle class="claimed" cx={X(r.claimed)} cy={cy} r="7" stroke={r.color} />
+            {over && (
+              <text class="over" x={X(max) - 10} y={cy - 11} text-anchor="end">
+                {r.claimLabel ?? r.claimed} →
+              </text>
+            )}
+            <text class:list={['gap', { inf: gap === undefined, ok: gap !== undefined && gap <= 0 }]} x={W - m.r + 24} y={cy + 4}>
+              {gap === undefined ? '+∞' : gapFmt(gap)}
+            </text>
+          </a>
+        );
+      })
+    }
+    <text class="head" x={W - m.r + 24} y={m.t - 16}>{gapLabel}</text>
+  </svg>
+</div>
+<div class="legend db-legend">
+  <span><i class="k solid"></i>{measuredLabel}</span>
+  <span><i class="k hollow"></i>{claimedLabel}</span>
+  {!compact && <span><i class="k dashed"></i>Not measurable (no public access)</span>}
+</div>
+
+<style>
+  .grid {
+    stroke: var(--grid);
+    stroke-dasharray: 3 4;
+  }
+  .tick,
+  .head {
+    fill: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .head {
+    font-weight: 600;
+  }
+  .hit {
+    fill: transparent;
+  }
+  .row:hover .hit {
+    fill: var(--bg-subtle);
+  }
+  .lbl {
+    fill: var(--ink-2);
+    font-size: 13px;
+  }
+  .compact .lbl {
+    font-size: 14px;
+  }
+  .row:hover .lbl {
+    fill: var(--ink);
+    font-weight: 600;
+  }
+  .stem {
+    stroke-width: 3;
+    stroke-opacity: 0.45;
+  }
+  .stem.vapor {
+    stroke-dasharray: 3 4;
+    stroke-width: 2;
+  }
+  .claimed {
+    fill: var(--surface);
+    stroke-width: 2.5;
+  }
+  .gap {
+    fill: var(--bad);
+    font-size: 13px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  .gap.inf {
+    fill: var(--muted);
+  }
+  .gap.ok {
+    fill: var(--good);
+  }
+  .over {
+    fill: var(--muted);
+    font-size: 11.5px;
+    font-style: italic;
+  }
+  .db-legend {
+    margin-top: 12px;
+  }
+  .k {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .k.solid {
+    background: var(--ink);
+  }
+  .k.hollow {
+    border: 2.5px solid var(--ink);
+  }
+  .k.dashed {
+    width: 22px;
+    height: 0;
+    border-radius: 0;
+    border-top: 2px dashed var(--muted);
+  }
+</style>

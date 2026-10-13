@@ -1,0 +1,380 @@
+---
+import Base from '../../layouts/Base.astro';
+import ChartCard from '../../components/ChartCard.astro';
+import TweetCard from '../../components/TweetCard.astro';
+import BarChart from '../../components/charts/BarChart.astro';
+import ScatterChart from '../../components/charts/ScatterChart.astro';
+import DumbbellChart from '../../components/charts/DumbbellChart.astro';
+import GanttChart from '../../components/charts/GanttChart.astro';
+import { BENCHMARKS, type Benchmark } from '../../data/benchmarks';
+import { tweetById } from '../../data/tweets';
+import { INDEX_NAME } from '../../lib/site';
+import { BUILD_ISO, fmt, rows } from '../../lib/scores';
+import { benchBars, claimDumbbells, randomPoints, shipSpans } from '../../lib/views';
+
+export function getStaticPaths() {
+  return BENCHMARKS.map((b) => ({ params: { slug: b.slug }, props: { b } }));
+}
+
+interface Props {
+  b: Benchmark;
+}
+
+const { b } = Astro.props;
+const i = BENCHMARKS.findIndex((x) => x.slug === b.slug);
+const prev = BENCHMARKS[(i - 1 + BENCHMARKS.length) % BENCHMARKS.length];
+const next = BENCHMARKS[(i + 1) % BENCHMARKS.length];
+const tweets = (b.inspiredBy?.tweetIds ?? []).map(tweetById);
+const results = rows(b);
+const direction = { higher: 'Higher is better', lower: 'Lower is better', unclear: 'Direction unclear' }[b.better];
+const items = 40 + ((b.slug.length * 37) % 400);
+const key = b.slug.replace(/-/g, '');
+const bibtex = `@misc{tmb2026${key},
+  title        = {${b.name}: ${b.tagline}},
+  author       = {Bro, Trust Me and {et al.}},
+  year         = {2026},
+  howpublished = {\\url{https://trustmebrobenchmarks.com/benchmarks/${b.slug}/}},
+  note         = {Results not reproducible. Please do not cite.}
+}`;
+---
+
+<Base title={b.name} description={`${b.name}: ${b.tagline}. ${b.abstract}`}>
+  <section class="container bh">
+    <nav class="crumbs"><a href="/benchmarks/">Benchmarks</a><span>/</span><span>{b.category}</span></nav>
+    <div class="bh-badges">
+      <span class="badge">{b.category}</span>
+      {b.badge && <span class="badge badge-accent">{b.badge}</span>}
+      {b.indexWeight > 0 && <span class="badge badge-good">In {INDEX_NAME} · weight {b.indexWeight}×</span>}
+    </div>
+    <h1 class="h1">{b.name}</h1>
+    <p class="lede">{b.tagline}</p>
+  </section>
+
+  <section class="container layout">
+    <article class="main">
+      <div class="abstract">
+        <h2>Abstract</h2>
+        <p>{b.abstract}</p>
+      </div>
+
+      <ChartCard title="Results" subtitle={`${b.short} · ${b.unit} · ${direction}${b.slug === 'random-axis' ? ' · re-randomized every deploy' : ''}`}>
+        {b.computed === 'random-axis' && (
+          <Fragment slot="actions">
+            <button class="pill pill-ink" id="rerun" type="button">
+              Re-run benchmark
+            </button>
+          </Fragment>
+        )}
+        {b.computed === 'random-axis' && <ScatterChart points={randomPoints()} pareto={false} hideAxes shuffle yDomain={[0, 100]} xLabel="x (unlabeled)" yLabel="y (unlabeled)" ariaLabel="Random axis" />}
+        {b.computed === 'benchmaxx-gap' && <DumbbellChart rows={claimDumbbells()} max={100} measuredLabel="TMB Index (measured)" claimedLabel="Self-reported" ariaLabel="Benchmaxx gap" />}
+        {b.computed === 'ship-latency' && <GanttChart rows={shipSpans()} ariaLabel="Days to ship" />}
+        {!b.computed && <BarChart bars={benchBars(b)} showAxis minWidth={820} breakAbove={b.slug === 'superlatives' ? 20 : undefined} ariaLabel={`${b.name} results`} />}
+        <Fragment slot="foot">
+          {b.slug === 'random-axis' ? (
+            <span>Seed for this build: {BUILD_ISO}. Click "Re-run benchmark" to re-sample in your browser. Your results will differ from ours, and both will be equally valid.</span>
+          ) : (
+            <span>
+              n = {items} items. Reported values are a single run, on a Tuesday. Confidence intervals: ±∞ at the 95% level.{' '}
+              {b.inspiredBy && 'Scores are fabricated and are not the results of the original benchmark.'}
+            </span>
+          )}
+        </Fragment>
+      </ChartCard>
+
+      <div class="prose">
+        <h2>Methodology</h2>
+        <ol>{b.methodology.map((m) => <li>{m}</li>)}</ol>
+        <h2>Limitations</h2>
+        <ul>{b.limitations.map((l) => <li>{l}</li>)}</ul>
+        {
+          b.computed !== 'random-axis' && results.length > 0 && (
+            <>
+              <h2>Results table</h2>
+              <table class="rt">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Model</th>
+                    <th class="r">{b.short}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((r, k) => (
+                    <tr>
+                      <td class="muted">{k + 1}</td>
+                      <td>
+                        <a href={`/models/#${r.model.id}`}>{r.model.name}</a>
+                        {r.vapor && <span class="badge badge-warn">claimed</span>}
+                      </td>
+                      <td class="r num">{fmt(r.value, b.format)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )
+        }
+        <h2>Citation</h2>
+        <div class="bib">
+          <button class="copy" type="button" data-copy={bibtex}>Copy</button>
+          <pre><code>{bibtex}</code></pre>
+        </div>
+      </div>
+    </article>
+
+    <aside class="side">
+      <div class="card spec">
+        <h3>Specification</h3>
+        <dl>
+          <dt>Unit</dt>
+          <dd>{b.unit}</dd>
+          <dt>Direction</dt>
+          <dd>{direction}</dd>
+          <dt>Items</dt>
+          <dd class="num">{items}</dd>
+          <dt>Index weight</dt>
+          <dd>{b.indexWeight > 0 ? `${b.indexWeight}×` : 'Not in index'}</dd>
+          <dt>Last run</dt>
+          <dd>Trust us</dd>
+          <dt>Harness</dt>
+          <dd>Proprietary</dd>
+          <dt>Data</dt>
+          <dd>Available on request*</dd>
+        </dl>
+        <p class="footnote">* Requests are reviewed by the same intern who ran the evaluation.</p>
+      </div>
+      {
+        b.inspiredBy && (
+          <div class="inspired">
+            <h3>Inspired by</h3>
+            <p class="ins-name">
+              <b>{b.inspiredBy.name}</b> · {b.inspiredBy.author}
+            </p>
+            <p class="ins-note">{b.inspiredBy.note}</p>
+            <div class="tw-stack">
+              {tweets.map((t) => (
+                <TweetCard tweet={t} compactView />
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </aside>
+  </section>
+
+  <nav class="container pn">
+    <a class="card" href={`/benchmarks/${prev.slug}/`}><span class="muted">← Previous</span><b>{prev.name}</b></a>
+    <a class="card nx" href={`/benchmarks/${next.slug}/`}><span class="muted">Next →</span><b>{next.name}</b></a>
+  </nav>
+</Base>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) =>
+    btn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(btn.dataset.copy ?? '');
+      btn.textContent = 'Copied. Please do not use it.';
+      setTimeout(() => (btn.textContent = 'Copy'), 2400);
+    }),
+  );
+
+  const rerun = document.getElementById('rerun');
+  rerun?.addEventListener('click', () => {
+    const svg = document.querySelector<SVGSVGElement>('svg[data-shuffle]');
+    if (!svg) return;
+    const pts = svg.querySelectorAll<SVGAElement>('.pt');
+    const vb = svg.viewBox.baseVal;
+    pts.forEach((p) => {
+      const x = 70 + Math.random() * (vb.width - 106);
+      const y = 24 + Math.random() * (vb.height - 88);
+      p.style.setProperty('--tx', `${x}px`);
+      p.style.setProperty('--ty', `${y}px`);
+    });
+  });
+</script>
+
+<style>
+  .bh {
+    padding-top: 40px;
+    padding-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .crumbs {
+    display: flex;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .crumbs a:hover {
+    color: var(--accent);
+  }
+  .bh-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 40px;
+    align-items: start;
+  }
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    min-width: 0;
+  }
+  .abstract {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 22px;
+  }
+  .abstract h2 {
+    margin: 0 0 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .abstract p {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .prose h2:first-child {
+    margin-top: 0.4em;
+  }
+  .rt {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sans);
+    font-size: 14px;
+  }
+  .rt th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line-strong);
+    padding: 8px 10px;
+  }
+  .rt td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .rt td a:hover {
+    color: var(--accent);
+  }
+  .rt .badge {
+    margin-left: 8px;
+  }
+  .r {
+    text-align: right !important;
+  }
+  .bib {
+    position: relative;
+  }
+  .bib pre {
+    margin: 0;
+    background: var(--bg-subtle);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .bib code {
+    background: none;
+    padding: 0;
+    font-size: 13px;
+  }
+  .copy {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-family: var(--sans);
+    font-size: 12px;
+  }
+  .side {
+    position: sticky;
+    top: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .spec {
+    padding: 20px;
+  }
+  .spec h3,
+  .inspired h3 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .spec dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 16px;
+    margin: 0 0 12px;
+    font-size: 14px;
+  }
+  .spec dt {
+    color: var(--muted);
+  }
+  .spec dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 550;
+  }
+  .ins-name {
+    margin: 0 0 4px;
+  }
+  .ins-note {
+    margin: 0 0 14px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .tw-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pn {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 56px;
+  }
+  .pn a {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 15px;
+  }
+  .pn a:hover {
+    border-color: var(--line-strong);
+  }
+  .pn .nx {
+    text-align: right;
+  }
+  @media (max-width: 1080px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .side {
+      position: static;
+    }
+  }
+</style>

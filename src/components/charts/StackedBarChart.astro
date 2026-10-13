@@ -1,0 +1,152 @@
+---
+import { niceMax, niceTicks, topRounded, wrapLabel } from '../../lib/chart';
+
+export interface Stack {
+  id: string;
+  label: string;
+  color: string;
+  mark: string;
+  total: string;
+  segments: { key: string; label: string; color: string; value: number }[];
+  href?: string;
+  tip: string;
+}
+
+interface Props {
+  stacks: Stack[];
+  slotWidth?: number;
+  plotHeight?: number;
+  axisFmt?: (v: number) => string;
+  ariaLabel: string;
+}
+
+const { stacks, slotWidth: slot = 56, plotHeight = 280, axisFmt = (v: number) => String(v), ariaLabel } = Astro.props;
+const totals = stacks.map((s) => s.segments.reduce((a, b) => a + b.value, 0));
+const max = niceMax(Math.max(...totals));
+const COS = Math.cos((52 * Math.PI) / 180);
+const SIN = Math.sin((52 * Math.PI) / 180);
+const wrapped = stacks.map((s) => wrapLabel(s.label, 15, 3));
+const lineLen = (ls: string[]) => Math.max(...ls.map((l) => l.length));
+const leftExtent = (ls: string[]) => (ls.length - 1) * 5 + Math.max(...ls.map((l, j) => l.length * 6.5 * COS - j * 12.5 * SIN)) - 4;
+const overhang = Math.max(0, ...wrapped.map((ls, i) => leftExtent(ls) - (52 + i * slot + slot / 2) + 4));
+const padL = 52 + overhang;
+const padT = 30;
+const labelArea = Math.max(...wrapped.map((ls) => Math.round(lineLen(ls) * 6.2 * SIN + 52)));
+const width = padL + stacks.length * slot + 6;
+const height = padT + plotHeight + labelArea;
+const baseY = padT + plotHeight;
+const barW = Math.round(slot * 0.7);
+const ticks = niceTicks(0, max, 4);
+const legend = stacks[0]?.segments ?? [];
+
+const geo = stacks.map((s, i) => {
+  const x = padL + i * slot + (slot - barW) / 2;
+  let acc = 0;
+  const segs = s.segments.map((seg) => {
+    const h = (seg.value / max) * plotHeight;
+    const y = baseY - acc - h;
+    acc += h;
+    return { ...seg, y, h };
+  });
+  return { ...s, x, segs, top: baseY - acc, cx: x + barW / 2, lines: wrapped[i] };
+});
+---
+
+<div class="chart-scroll" style="--min-w:820px">
+  <svg viewBox={`0 0 ${width} ${height}`} width="100%" role="img" aria-label={ariaLabel} class="stk">
+    {
+      ticks.map((t) => (
+        <g>
+          <line class="grid" x1={padL} x2={width - 4} y1={baseY - (t / max) * plotHeight} y2={baseY - (t / max) * plotHeight} />
+          <text class="axis" x={padL - 10} y={baseY - (t / max) * plotHeight + 4} text-anchor="end">
+            {axisFmt(t)}
+          </text>
+        </g>
+      ))
+    }
+    <line class="base" x1={padL} x2={width - 4} y1={baseY} y2={baseY} />
+    {
+      geo.map((s) => (
+        <a href={s.href} class="col" data-tip={s.tip}>
+          <rect x={s.x - 4} y={padT - 20} width={barW + 8} height={plotHeight + labelArea + 10} fill="transparent" />
+          {s.segs.map((seg, j) =>
+            j === s.segs.length - 1 ? (
+              <path d={topRounded(s.x, seg.y, barW, seg.h, 3)} fill={seg.color} />
+            ) : (
+              <rect x={s.x} y={seg.y} width={barW} height={Math.max(0, seg.h - 0.6)} fill={seg.color} />
+            ),
+          )}
+          <text class="val" x={s.cx} y={s.top - 7} text-anchor="middle">
+            {s.total}
+          </text>
+          <circle class="mark-bg" cx={s.cx} cy={baseY + 16} r="9.5" />
+          <text class="mark" x={s.cx} y={baseY + 19.6} text-anchor="middle" fill={s.color}>
+            {s.mark}
+          </text>
+          <text class="lbl" transform={`translate(${s.cx + 4 - (s.lines.length - 1) * 5} ${baseY + 34}) rotate(-52)`} text-anchor="end">
+            {s.lines.map((l, j) => (
+              <tspan x="0" dy={j === 0 ? 0 : 12.5}>
+                {l}
+              </tspan>
+            ))}
+          </text>
+        </a>
+      ))
+    }
+  </svg>
+</div>
+<div class="legend stk-legend">
+  {
+    legend.map((l) => (
+      <span>
+        <i class="sw" style={`background:${l.color}`} />
+        {l.label}
+      </span>
+    ))
+  }
+</div>
+
+<style>
+  .grid {
+    stroke: var(--grid);
+    stroke-dasharray: 3 4;
+  }
+  .base {
+    stroke: var(--line-strong);
+  }
+  .axis {
+    fill: var(--muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .val {
+    fill: var(--ink);
+    font-size: 11.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .col:hover rect,
+  .col:hover path {
+    opacity: 0.85;
+  }
+  .mark-bg {
+    fill: var(--bg-pill);
+  }
+  .mark {
+    font-size: 10.5px;
+    font-weight: 800;
+  }
+  .lbl {
+    fill: var(--ink-2);
+    font-size: 11.5px;
+  }
+  .stk-legend {
+    margin-top: 8px;
+  }
+  .sw {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+</style>

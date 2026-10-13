@@ -1,0 +1,328 @@
+---
+import Base from '../layouts/Base.astro';
+import { BENCHMARKS, INDEX_BENCHMARKS } from '../data/benchmarks';
+import { AVAILABLE, MODELS } from '../data/models';
+import { TWEETS, tweetUrl } from '../data/tweets';
+import { INDEX_NAME, INDEX_VERSION, NEW_ISSUE_URL, REPO_URL } from '../lib/site';
+import { BUILD_ISO } from '../lib/scores';
+
+const totalWeight = INDEX_BENCHMARKS.reduce((a, b) => a + b.indexWeight, 0);
+const toc = [
+  ['abstract', 'Abstract'],
+  ['index', '1. Index construction'],
+  ['selection', '2. Model selection'],
+  ['gap', '3. Self-reported scores'],
+  ['confidence', '4. Confidence intervals'],
+  ['contamination', '5. Contamination'],
+  ['reproducibility', '6. Reproducibility'],
+  ['validity', '7. Threats to validity'],
+  ['disclaimer', '8. Disclaimer (real)'],
+  ['acknowledgements', 'Acknowledgements'],
+  ['references', 'References'],
+];
+const normalization: Record<string, string> = {
+  overclaim: '100 − x',
+  'voxel-pagoda': '100 − x/2 (k tokens)',
+  'great-question': '100 − 1.5x',
+};
+const sources = BENCHMARKS.flatMap((b) => {
+  const tweet = TWEETS.find((t) => t.id === b.inspiredBy?.tweetIds[0]);
+  if (!b.inspiredBy || !tweet) return [];
+  return [{ name: b.inspiredBy.name, author: b.inspiredBy.author, url: tweetUrl(tweet) }];
+});
+const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
+---
+
+<Base title="Methodology" description={`${INDEX_NAME} technical report: index construction, confidence intervals of ±∞, and an actual disclaimer.`}>
+  <section class="container paper-head">
+    <span class="eyebrow">Technical report · {INDEX_VERSION}</span>
+    <h1 class="h1">{INDEX_NAME}: Methodology and Known Limitations</h1>
+    <p class="authors">T. M. Bro<sup>1</sup>, A. Nonymous<sup>1</sup>, The Intern<sup>1,2</sup></p>
+    <p class="affil"><sup>1</sup>Trust Me Bro Labs &nbsp; <sup>2</sup>Unpaid &nbsp; · &nbsp; Last revised {BUILD_ISO}</p>
+  </section>
+
+  <section class="container paper">
+    <aside class="toc">
+      <span>Contents</span>
+      {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
+    </aside>
+    <article class="prose">
+      <div class="abstract" id="abstract">
+        <h2>Abstract</h2>
+        <p>
+          We present the {INDEX_NAME}, a composite of {INDEX_BENCHMARKS.length} evaluations designed to measure the capabilities that matter most in a launch post:
+          confidence, vibes, and the ability to appear on a leaderboard. We evaluate {MODELS.length} models, {MODELS.length - AVAILABLE.length} of which cannot be
+          used. We find that models score highest when the evaluator is also the developer (<i>p</i> &lt; 0.05, <i>n</i> = 1, we did it once), and that the most
+          capable models in our sample are those that have not been released. We recommend that practitioners rely on these numbers, since nothing else is available
+          on this page.
+        </p>
+      </div>
+
+      <h2 id="index">1. Index construction</h2>
+      <p>For a model <i>m</i> and evaluation <i>e</i> with weight <i>w<sub>e</sub></i> and normalized score <i>ŝ<sub>e</sub>(m)</i>, the index is the weighted mean:</p>
+      <div class="eq">
+        <span>TMB(<i>m</i>) = Σ<sub><i>e</i></sub> <i>w<sub>e</sub></i> · <i>ŝ<sub>e</sub></i>(<i>m</i>) / Σ<sub><i>e</i></sub> <i>w<sub>e</sub></i></span>
+        <span class="eqn">(1)</span>
+      </div>
+      <p>
+        Scores are normalized to 0–100 with higher-is-better before weighting. Weights were chosen by a committee of one, after looking at the results, in keeping
+        with industry practice.
+      </p>
+      <table class="wt">
+        <thead>
+          <tr><th>Evaluation</th><th>Category</th><th>Normalization</th><th class="r">Weight</th><th class="r">Share</th></tr>
+        </thead>
+        <tbody>
+          {
+            INDEX_BENCHMARKS.map((b) => (
+              <tr>
+                <td><a class="link" href={`/benchmarks/${b.slug}/`}>{b.name}</a></td>
+                <td>{b.category}</td>
+                <td class="mono">{normalization[b.slug] ?? 'x'}</td>
+                <td class="r num">{b.indexWeight}×</td>
+                <td class="r num">{((b.indexWeight / totalWeight) * 100).toFixed(1)}%</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+      <p>
+        Models that cannot be evaluated are assigned the score from their announcement. These scores are displayed with hatched bars and an asterisk, which we are told
+        is the internationally recognized symbol for "trust me".
+      </p>
+
+      <h2 id="selection">2. Model selection</h2>
+      <p>
+        We include every model that exists, and every model that might. Inclusion criteria for the second group: a launch post, a teaser, a leadership tweet, a
+        rumored spec sheet, or a user reporting that their requests "are being routed to an unreleased model". The two groups are ranked together, because separating
+        them would reduce engagement.
+      </p>
+
+      <h2 id="gap">3. Self-reported scores and the Benchmaxx Gap</h2>
+      <p>
+        The self-reported score is the largest number in the launch post, normalized to 100. The <a class="link" href="/benchmarks/benchmaxx-gap/">Benchmaxx Gap</a> is
+        the self-reported score minus the measured index. A small number of models report less than we measure; we have flagged these for review, as the behavior is
+        unprecedented.
+      </p>
+
+      <h2 id="confidence">4. Confidence intervals</h2>
+      <p>
+        All reported intervals are ±∞ at the 95% level. This is the narrowest interval we can defend without publishing the data. Earlier versions of this report used
+        ±0, which was more popular.
+      </p>
+
+      <h2 id="contamination">5. Contamination</h2>
+      <p>
+        We took extensive steps to ensure that our test sets were not present in any model's training data. Specifically, we thought about it. Several of our
+        evaluations (the strawberry, the pelican) are now among the most-repeated prompts on the internet, which makes contamination less a risk than a certainty.
+      </p>
+
+      <h2 id="reproducibility">6. Reproducibility</h2>
+      <p>
+        Data are available from the corresponding author upon reasonable request. The corresponding author is unavailable. The harness is proprietary. The prompts
+        are internal. The seeds were not recorded. The results were reproduced internally, twice, by the same intern.
+      </p>
+      <p>
+        The source code of this website, which is the only artifact we can share, is <a class="link" href={REPO_URL} target="_blank" rel="noopener">on GitHub</a>.
+        Contributions are welcome. So are corrections, which we will review with the same rigor we applied to the original numbers.
+      </p>
+
+      <h2 id="validity">7. Threats to validity</h2>
+      <ol>
+        <li><b>Internal validity:</b> none identified. We did not look.</li>
+        <li><b>External validity:</b> the real world.</li>
+        <li><b>Construct validity:</b> the benchmarks. Also the models. Also the word "intelligence".</li>
+        <li><b>Statistical conclusion validity:</b> see §4.</li>
+      </ol>
+
+      <h2 id="disclaimer">8. Disclaimer (this part is real)</h2>
+      <div class="disclaimer">
+        <p><b>This website is satire.</b> It parodies AI leaderboards and the culture of self-reported, unreproducible benchmark claims.</p>
+        <ul>
+          <li><b>Every score, price, speed, and ranking is fabricated.</b> They are generated deterministically from made-up parameters. They are not measurements of anything and must not be cited, compared, or used to make any decision.</li>
+          <li><b>Model and company names are real</b> and are used for commentary. Nothing here describes the actual performance of any real model.</li>
+          <li><b>The posts quoted on this site are real.</b> They are quoted verbatim (truncations are marked …) and link to the originals. Their authors are not affiliated with this site and did not endorse it. Many of the meme benchmarks we parody are genuinely open and useful; please read the originals.</li>
+          <li><b>Incident entries</b> summarize what the linked public posts said, as of the build date. Where a post is itself an allegation, we present it as one.</li>
+          <li>This site is <b>not affiliated with Artificial Analysis</b>, whose design it affectionately imitates and whose methodology it does not.</li>
+          <li>If you are quoted here and would like a post removed or corrected, <a class="link" href={NEW_ISSUE_URL} target="_blank" rel="noopener">open an issue</a> and it will be handled promptly.</li>
+        </ul>
+      </div>
+
+      <h2 id="acknowledgements">Acknowledgements</h2>
+      <p>
+        We thank the authors of the original meme benchmarks, without whom this report would have had to invent its own jokes:
+        {
+          sources.map((s, i) => (
+            <>
+              <a class="link" href={s.url} target="_blank" rel="noopener">
+                {s.name}
+              </a>{' '}
+              ({s.author}){i === sources.length - 1 && '.'}
+              {i < sources.length - 1 && '; '}
+            </>
+          ))
+        }
+      </p>
+
+      <h2 id="references">References</h2>
+      <ol class="refs">
+        {
+          refs.map((t) => (
+            <li>
+              {t.name} (@{t.handle}). {t.date}. "{t.text.length > 140 ? `${t.text.slice(0, 140).trim()}…` : t.text}"{' '}
+              <a class="link" href={tweetUrl(t)} target="_blank" rel="noopener">
+                x.com/{t.handle}/status/{t.id}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </article>
+  </section>
+</Base>
+
+<style>
+  .paper-head {
+    padding-top: 56px;
+    padding-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .paper-head > * {
+    margin-left: 276px;
+    max-width: 900px;
+  }
+  .authors {
+    margin: 6px 0 0;
+    font-family: var(--serif);
+    font-size: 19px;
+  }
+  .affil {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .paper {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 760px);
+    gap: 56px;
+    align-items: start;
+  }
+  .toc {
+    position: sticky;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 14px;
+  }
+  .toc span {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .toc a {
+    padding: 5px 10px;
+    border-radius: 6px;
+    color: var(--ink-2);
+  }
+  .toc a:hover {
+    background: var(--bg-pill);
+    color: var(--ink);
+  }
+  .abstract {
+    background: var(--bg-subtle);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px 26px;
+  }
+  .abstract h2 {
+    margin: 0 0 8px !important;
+    font-family: var(--sans) !important;
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted) !important;
+  }
+  .abstract p {
+    margin: 0;
+  }
+  .eq {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    padding: 18px;
+    margin: 0 0 1em;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-size: 21px;
+  }
+  .eqn {
+    position: absolute;
+    right: 8px;
+    color: var(--muted);
+    font-size: 16px;
+  }
+  .wt {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sans);
+    font-size: 14px;
+    margin: 0 0 1.2em;
+  }
+  .wt th {
+    text-align: left;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--line-strong);
+    padding: 8px 10px;
+  }
+  .wt td {
+    border-bottom: 1px solid var(--line);
+    padding: 8px 10px;
+  }
+  .wt .mono {
+    font-size: 12.5px;
+  }
+  .r {
+    text-align: right !important;
+  }
+  .disclaimer {
+    border: 1px solid var(--warn);
+    background: var(--warn-soft);
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-family: var(--sans);
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .disclaimer ul {
+    margin-bottom: 0;
+  }
+  .refs {
+    font-size: 14px;
+    font-family: var(--sans);
+    color: var(--ink-2);
+  }
+  .refs li {
+    margin: 0.5em 0;
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 960px) {
+    .paper-head > * {
+      margin-left: 0;
+    }
+    .paper {
+      grid-template-columns: 1fr;
+    }
+    .toc {
+      display: none;
+    }
+  }
+</style>

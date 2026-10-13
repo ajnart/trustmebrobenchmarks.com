@@ -1,0 +1,81 @@
+---
+interface Props {
+  title: string;
+  subtitle?: string;
+  marker?: string;
+  size?: 'sm' | 'lg';
+  id?: string;
+  href?: string;
+}
+const { title, subtitle, marker, size = 'lg', id, href } = Astro.props;
+---
+
+<section class:list={['card', 'cc', size]} id={id}>
+  <header class="cc-head">
+    <div>
+      <h3 class="cc-title">
+        {marker && <span class="marker" style={`background:${marker}`} />}
+        {href ? <a href={href}>{title}</a> : title}
+      </h3>
+      {subtitle && <p class="cc-sub">{subtitle}</p>}
+    </div>
+    <slot name="actions" />
+  </header>
+  <div class="cc-body">
+    <slot />
+  </div>
+  {
+    Astro.slots.has('foot') && (
+      <footer class="cc-foot">
+        <slot name="foot" />
+      </footer>
+    )
+  }
+</section>
+
+<style>
+  .cc {
+    padding: 26px 26px 20px;
+    min-width: 0;
+  }
+  .cc.sm {
+    padding: 22px 20px 14px;
+  }
+  .cc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .cc-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 30px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0;
+    display: flex;
+    align-items: center;
+  }
+  .cc.sm .cc-title {
+    font-size: 26px;
+  }
+  .cc-title a:hover {
+    color: var(--accent);
+  }
+  .cc-sub {
+    margin: 8px 0 0;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .cc-foot {
+    border-top: 1px solid var(--line);
+    margin-top: 16px;
+    padding-top: 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+</style>

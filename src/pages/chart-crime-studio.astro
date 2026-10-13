@@ -1,0 +1,656 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import TweetCard from '../components/TweetCard.astro';
+import { TWEETS } from '../data/tweets';
+
+const exhibits = TWEETS.filter((t) => t.topic === 'chart-crime').sort((a, b) => b.likes - a.likes);
+const toggles = [
+  ['axis', 'Hide y-axis labels', 'Nobody reads them anyway.'],
+  ['star', 'Add an asterisk', 'Moves the methodology to a footnote at 9px.'],
+  ['sota', 'Add "SOTA" badge', 'Required by most launch posts.'],
+  ['nerf', 'Compare against their smallest model', 'Their mini variant. Same family name, so it counts.'],
+  ['brk', 'Show axis break', 'Technically discloses the truncation. Changes nothing else.'],
+] as const;
+const presets = [
+  ['honest', 'Honest'],
+  ['launch', 'Launch day'],
+  ['deck', 'Investor deck'],
+] as const;
+---
+
+<Base title="Chart Crime Studio" description="Turn a 2.7-point lead into a generational leap. Truncate the y-axis and watch Tufte's Lie Factor climb in real time.">
+  <PageHead
+    eyebrow="Tools · Beta"
+    title="Chart Crime Studio"
+    lede="Turn a 2.7-point lead into a generational leap. Drag the y-axis baseline until the difference looks like a launch post. Tufte's Lie Factor is computed live, so you know exactly how much you are lying."
+  />
+
+  <section class="container studio">
+    <div class="card stage">
+      <div class="stage-head">
+        <div>
+          <span class="eyebrow">Figure 1</span>
+          <h2 class="h3">TrustMeBench Pro (Verified)</h2>
+          <p class="sub">Accuracy, %, higher is better</p>
+        </div>
+        <div class="presets" role="group" aria-label="Presets">
+          {
+            presets.map(([id, label]) => (
+              <button type="button" class="preset" data-preset={id} aria-pressed={id === 'honest' ? 'true' : 'false'}>
+                {label}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+      <div class="plot">
+        <svg id="crime" viewBox="0 0 760 360" role="img" aria-label="Bar chart comparing two models"></svg>
+      </div>
+      <p class="fn" id="fn" hidden>
+        *Our model: pass@64, majority vote, internal harness, temperature tuned per question, excluding the 31 questions it got wrong. Competitor: as reported by a user on
+        Reddit.
+      </p>
+      <dl class="readouts">
+        <div>
+          <dt>Actual difference</dt>
+          <dd id="r-actual" class="num">+2.7 pts</dd>
+          <small id="r-actual-sub">+5.4% relative</small>
+        </div>
+        <div>
+          <dt>Visual difference</dt>
+          <dd id="r-visual" class="num">1.05×</dd>
+          <small>our bar vs. theirs</small>
+        </div>
+        <div>
+          <dt>Lie Factor <a class="link" href="#lie-factor">(Tufte)</a></dt>
+          <dd id="r-lie" class="num">1.0</dd>
+          <small>1.0 is honest</small>
+        </div>
+        <div>
+          <dt>Verdict</dt>
+          <dd id="r-verdict">Honest</dd>
+          <small id="r-verdict-sub">Nobody will share this.</small>
+        </div>
+      </dl>
+      <div class="meter" aria-hidden="true"><span id="meter"></span></div>
+    </div>
+
+    <form class="card controls" id="controls" onsubmit="return false">
+      <fieldset>
+        <legend>Your model</legend>
+        <div class="pair">
+          <input id="ours-name" type="text" value="Our Model" aria-label="Your model name" maxlength="22" />
+          <input id="ours" type="number" value="52.8" step="0.1" min="0" max="100" aria-label="Your model score" />
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>The competition</legend>
+        <div class="pair">
+          <input id="theirs-name" type="text" value="Competitor" aria-label="Competitor model name" maxlength="22" />
+          <input id="theirs" type="number" value="50.1" step="0.1" min="0" max="100" aria-label="Competitor score" />
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Y-axis starts at <output id="base-out" class="num">0</output></legend>
+        <input id="base" type="range" min="0" max="49.9" step="0.1" value="0" />
+        <div class="range-legend"><span>Honest</span><span>Launch post</span></div>
+      </fieldset>
+      <fieldset class="toggles">
+        <legend>Enhancements</legend>
+        {
+          toggles.map(([id, label, hint]) => (
+            <label class="toggle">
+              <input type="checkbox" id={id} />
+              <span>
+                <b>{label}</b>
+                <small>{hint}</small>
+              </span>
+            </label>
+          ))
+        }
+      </fieldset>
+      <div class="actions">
+        <button type="button" id="copy-post" class="pill pill-ink">Copy launch post</button>
+        <span id="copied" class="copied" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="container section" id="lie-factor">
+    <div class="explainer">
+      <div class="section-head">
+        <span class="eyebrow">Theory</span>
+        <h2 class="h1">The Lie Factor</h2>
+        <p>
+          Edward Tufte defined the Lie Factor as the size of an effect shown in a graphic divided by the size of the effect in the data. A value of 1 is honest. Values
+          above 1.05 are, in his words, substantial distortion. Values above 10 are a product launch.
+        </p>
+      </div>
+      <div class="card formula">
+        <div class="eq">Lie Factor = <span class="frac"><span>effect shown in graphic</span><span>effect in data</span></span></div>
+        <p>where effect = (ours − theirs) / theirs, measured on bar height for the graphic and on the score for the data.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section">
+    <div class="section-head">
+      <span class="eyebrow">Exhibits</span>
+      <h2 class="h1">Found in the wild</h2>
+      <p>Real posts about real charts. The studio above was built so you can reproduce these results at home.</p>
+    </div>
+    <div class="exhibits">
+      {exhibits.map((t) => <TweetCard tweet={t} />)}
+    </div>
+  </section>
+</Base>
+
+<script>
+  const W = 760;
+  const H = 360;
+  const PAD = { top: 56, right: 24, bottom: 44, left: 56 };
+  const NERF = 7.4;
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const svg = document.getElementById('crime');
+  const inputs = {
+    oursName: $<HTMLInputElement>('ours-name'),
+    ours: $<HTMLInputElement>('ours'),
+    theirsName: $<HTMLInputElement>('theirs-name'),
+    theirs: $<HTMLInputElement>('theirs'),
+    base: $<HTMLInputElement>('base'),
+    axis: $<HTMLInputElement>('axis'),
+    star: $<HTMLInputElement>('star'),
+    sota: $<HTMLInputElement>('sota'),
+    nerf: $<HTMLInputElement>('nerf'),
+    brk: $<HTMLInputElement>('brk'),
+  };
+
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+  const num = (el: HTMLInputElement, fallback: number) => {
+    const v = Number.parseFloat(el.value);
+    if (Number.isFinite(v)) return Math.min(100, Math.max(0, v));
+    return fallback;
+  };
+
+  const VERDICTS: [number, string, string][] = [
+    [1.1, 'Honest', 'Nobody will share this.'],
+    [2, 'Spin', 'Acceptable in a blog post.'],
+    [5, 'Marketing', 'Ready for the keynote.'],
+    [15, 'Launch post', 'Expect 2M views and a quote-tweet from Gary Marcus.'],
+    [Infinity, 'Chart crime', 'Felony. Your chart will appear on this site.'],
+  ];
+
+  function state() {
+    const ours = num(inputs.ours, 52.8);
+    const real = num(inputs.theirs, 50.1);
+    const theirs = Math.max(0, real - (inputs.nerf.checked ? NERF : 0));
+    const lo = Math.min(ours, theirs);
+    inputs.base.max = String(Math.max(0, Math.floor((lo - 0.1) * 10) / 10));
+    const base = Math.min(Number.parseFloat(inputs.base.value) || 0, Number.parseFloat(inputs.base.max));
+    const brk = inputs.brk.checked && base > 0;
+    return { ours, theirs, base, brk };
+  }
+
+  function ticks(base: number, top: number) {
+    const span = top - base;
+    const raw = span / 5;
+    const mag = 10 ** Math.floor(Math.log10(raw));
+    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
+    const out: number[] = [];
+    for (let v = Math.ceil(base / step) * step; v <= top + 1e-9; v += step) out.push(Number(v.toFixed(4)));
+    return out;
+  }
+
+  function render() {
+    if (!svg) return;
+    const s = state();
+    const hi = Math.max(s.ours, s.theirs);
+    const top = s.base === 0 ? Math.ceil((hi * 1.12) / 10) * 10 : hi + (hi - s.base) * 0.12;
+    const plotH = H - PAD.top - PAD.bottom;
+    const plotW = W - PAD.left - PAD.right;
+    const floor = s.brk ? 0 : s.base;
+    const breakH = 26;
+    const y = (v: number) => {
+      if (!s.brk) return PAD.top + plotH * (1 - (v - s.base) / (top - s.base));
+      if (v <= s.base) return PAD.top + plotH - breakH * (v / s.base);
+      return PAD.top + (plotH - breakH) * (1 - (v - s.base) / (top - s.base));
+    };
+    const bw = 140;
+    const xs = [PAD.left + plotW * 0.3 - bw / 2, PAD.left + plotW * 0.7 - bw / 2];
+    const bars = [
+      { name: inputs.oursName.value || 'Our Model', v: s.ours, cls: 'ours' },
+      { name: inputs.theirsName.value || 'Competitor', v: s.theirs, cls: 'theirs' },
+    ];
+    if (inputs.nerf.checked) bars[1].name = `${bars[1].name} mini`;
+
+    const tickVals = ticks(s.base, top);
+    if (s.brk) tickVals.unshift(0);
+    const grid = tickVals
+      .map((t) => {
+        const label = inputs.axis.checked ? '' : `<text x="${PAD.left - 10}" y="${y(t) + 4}" text-anchor="end" class="tick">${t}</text>`;
+        return `<line x1="${PAD.left}" x2="${W - PAD.right}" y1="${y(t)}" y2="${y(t)}" class="gl"/>${label}`;
+      })
+      .join('');
+
+    const rects = bars
+      .map((b, i) => {
+        const yt = y(b.v);
+        const yb = y(floor);
+        const h = Math.max(1, yb - yt);
+        const star = inputs.star.checked && i === 0 ? '*' : '';
+        const sota =
+          inputs.sota.checked && i === 0
+            ? `<g transform="translate(${xs[i] + bw / 2}, ${yt - 36})"><rect x="-26" y="-11" width="52" height="20" rx="10" class="sota"/><text y="4" text-anchor="middle" class="sota-t">SOTA</text></g>`
+            : '';
+        return `<rect x="${xs[i]}" y="${yt}" width="${bw}" height="${h}" rx="4" class="bar ${b.cls}"/>
+          <text x="${xs[i] + bw / 2}" y="${yt - 10}" text-anchor="middle" class="val">${b.v.toFixed(1)}${star}</text>${sota}
+          <text x="${xs[i] + bw / 2}" y="${H - PAD.bottom + 24}" text-anchor="middle" class="name">${esc(b.name)}</text>`;
+      })
+      .join('');
+
+    const zig = s.brk
+      ? (() => {
+          const yb = PAD.top + plotH - breakH / 2;
+          const pts = Array.from({ length: 6 }, (_, k) => `${PAD.left - 6 + k * 3},${yb + (k % 2 === 0 ? -4 : 4)}`).join(' ');
+          return `<rect x="${PAD.left - 8}" y="${yb - 6}" width="${plotW + 16}" height="12" class="brk-bg"/><polyline points="${pts}" class="brk"/><line x1="${PAD.left}" x2="${W - PAD.right}" y1="${yb - 6}" y2="${yb - 6}" class="brk-l"/><line x1="${PAD.left}" x2="${W - PAD.right}" y1="${yb + 6}" y2="${yb + 6}" class="brk-l"/>`;
+        })()
+      : '';
+
+    svg.innerHTML = `${grid}<line x1="${PAD.left}" x2="${W - PAD.right}" y1="${y(floor)}" y2="${y(floor)}" class="base"/>${rects}${zig}`;
+
+    const hOurs = y(floor) - y(s.ours);
+    const hTheirs = Math.max(0.5, y(floor) - y(s.theirs));
+    const dataEffect = (s.ours - s.theirs) / Math.max(0.01, s.theirs);
+    const shownEffect = (hOurs - hTheirs) / hTheirs;
+    const lie = Math.abs(dataEffect) < 1e-6 ? 1 : shownEffect / dataEffect;
+    const diff = s.ours - s.theirs;
+    const sign = diff >= 0 ? '+' : '−';
+
+    $('base-out').textContent = s.base.toFixed(1);
+    $('r-actual').textContent = `${sign}${Math.abs(diff).toFixed(1)} pts`;
+    $('r-actual-sub').textContent = `${sign}${Math.abs(dataEffect * 100).toFixed(1)}% relative`;
+    $('r-visual').textContent = `${(hOurs / hTheirs).toFixed(2)}×`;
+    $('r-lie').textContent = lie >= 100 ? lie.toFixed(0) : lie.toFixed(1);
+    const [, verdict, sub] = VERDICTS.find(([max]) => lie < max) ?? VERDICTS[VERDICTS.length - 1];
+    $('r-verdict').textContent = verdict;
+    $('r-verdict-sub').textContent = sub;
+    $('meter').style.width = `${Math.min(100, (Math.log10(Math.max(1, lie)) / 2) * 100)}%`;
+    $('fn').hidden = !inputs.star.checked;
+    document.querySelector('.stage')?.setAttribute('data-level', verdict.toLowerCase().replace(/\s+/g, '-'));
+  }
+
+  const PRESETS: Record<string, Partial<Record<keyof typeof inputs, string | boolean>>> = {
+    honest: { base: '0', axis: false, star: false, sota: false, nerf: false, brk: false },
+    launch: { base: '49.5', axis: true, star: true, sota: true, nerf: false, brk: false },
+    deck: { base: '42.6', axis: true, star: true, sota: true, nerf: true, brk: false },
+  };
+
+  const presetButtons = document.querySelectorAll<HTMLButtonElement>('[data-preset]');
+  const press = (active?: HTMLButtonElement) => presetButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === active)));
+
+  presetButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const p = PRESETS[btn.dataset.preset ?? ''];
+      if (!p) return;
+      press(btn);
+      for (const [k, v] of Object.entries(p)) {
+        const el = inputs[k as keyof typeof inputs];
+        if (typeof v === 'boolean') el.checked = v;
+        else el.value = v;
+      }
+      render();
+      if (typeof p.base === 'string') inputs.base.value = p.base;
+      render();
+    });
+  });
+
+  $('controls').addEventListener('input', () => {
+    press();
+    render();
+  });
+
+  $('copy-post').addEventListener('click', async () => {
+    const s = state();
+    const ours = inputs.oursName.value || 'Our Model';
+    const lie = $('r-lie').textContent ?? '1';
+    const text = `Introducing ${ours}. 🚀\n\nState of the art on TrustMeBench Pro (Verified)${inputs.star.checked ? '*' : ''}: ${s.ours.toFixed(1)}%, a massive leap over the competition.\n\nThe chart speaks for itself. (Lie Factor: ${lie})\n\nvia trustmebrobenchmarks.com/chart-crime-studio`;
+    const out = $('copied');
+    try {
+      await navigator.clipboard.writeText(text);
+      out.textContent = 'Copied. Post responsibly.';
+    } catch {
+      out.textContent = 'Clipboard blocked. Which is probably for the best.';
+    }
+  });
+
+  render();
+</script>
+
+<style>
+  .studio {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 20px;
+    align-items: start;
+  }
+  .stage {
+    padding: 24px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .stage-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .sub {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .presets {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--bg-pill);
+  }
+  .preset {
+    border: 0;
+    background: transparent;
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+  .preset:hover,
+  .preset[aria-pressed='true'] {
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .preset[aria-pressed='true'] {
+    box-shadow: 0 1px 2px rgba(15, 15, 15, 0.08);
+  }
+  .plot svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+  .plot :global(.gl) {
+    stroke: var(--grid);
+  }
+  .plot :global(.base) {
+    stroke: var(--line-strong);
+  }
+  .plot :global(.tick) {
+    fill: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .plot :global(.bar) {
+    transition:
+      y 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      height 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .plot :global(.ours) {
+    fill: var(--accent);
+  }
+  .plot :global(.theirs) {
+    fill: var(--faint);
+  }
+  .plot :global(.val) {
+    fill: var(--ink);
+    font-size: 17px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  .plot :global(.name) {
+    fill: var(--ink-2);
+    font-size: 14px;
+    font-weight: 550;
+  }
+  .plot :global(.sota) {
+    fill: var(--ink);
+  }
+  .plot :global(.sota-t) {
+    fill: var(--bg);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .plot :global(.brk-bg) {
+    fill: var(--surface);
+  }
+  .plot :global(.brk),
+  .plot :global(.brk-l) {
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 1.2;
+  }
+  .plot :global(.brk-l) {
+    stroke-dasharray: 3 3;
+    stroke: var(--line-strong);
+  }
+  .fn {
+    margin: 0;
+    font-size: 9px;
+    color: var(--faint);
+    line-height: 1.35;
+  }
+  .readouts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin: 6px 0 0;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .readouts div {
+    background: var(--surface);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .readouts dt {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 550;
+  }
+  .readouts dd {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .readouts small {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .meter {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--good) 0%, var(--warn) 50%, var(--bad) 100%);
+    position: relative;
+    opacity: 0.9;
+  }
+  .meter span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-right: 3px solid var(--ink);
+    background: transparent;
+    transition: width 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .stage[data-level='chart-crime'] #r-verdict,
+  .stage[data-level='launch-post'] #r-verdict {
+    color: var(--bad);
+  }
+  .stage[data-level='honest'] #r-verdict {
+    color: var(--good);
+  }
+  .controls {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: 92px;
+  }
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  legend {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  legend output {
+    color: var(--accent);
+  }
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 84px;
+    gap: 8px;
+  }
+  input[type='text'],
+  input[type='number'] {
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    color: var(--ink);
+    padding: 0 12px;
+    font: inherit;
+    font-size: 14.5px;
+    min-width: 0;
+  }
+  input[type='number'] {
+    font-variant-numeric: tabular-nums;
+  }
+  input[type='range'] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+  .range-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .toggles {
+    gap: 2px;
+  }
+  .toggle {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 10px;
+    margin: 0 -10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .toggle:hover {
+    background: var(--bg-subtle);
+  }
+  .toggle input {
+    margin-top: 3px;
+    accent-color: var(--accent);
+  }
+  .toggle span {
+    display: flex;
+    flex-direction: column;
+  }
+  .toggle b {
+    font-size: 14px;
+    font-weight: 550;
+  }
+  .toggle small {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .copied {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .explainer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 40px;
+    align-items: center;
+  }
+  .formula {
+    padding: 28px;
+  }
+  .formula p {
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .eq {
+    font-family: var(--serif);
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    text-align: center;
+    font-style: italic;
+  }
+  .frac span:first-child {
+    border-bottom: 1px solid var(--ink);
+    padding: 0 6px 4px;
+  }
+  .frac span:last-child {
+    padding: 4px 6px 0;
+  }
+  .exhibits {
+    columns: 3 320px;
+    column-gap: 16px;
+  }
+  .exhibits :global(.tw) {
+    break-inside: avoid;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 1040px) {
+    .studio,
+    .explainer {
+      grid-template-columns: 1fr;
+    }
+    .controls {
+      position: static;
+    }
+  }
+  @media (max-width: 640px) {
+    .readouts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

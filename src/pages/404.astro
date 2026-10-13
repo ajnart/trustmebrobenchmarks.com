@@ -1,0 +1,75 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="404: Model not found" description="This page has been announced but not released.">
+  <section class="container nf">
+    <span class="eyebrow">Error 404 · Status: Coming soon</span>
+    <h1 class="display">This page is <i>coming in the next few weeks.</i></h1>
+    <p class="lede">
+      It was announced, benchmarked internally, and scored 97 on our own evaluation. It has not been released. Our team is confident it exists and it will ship when it
+      is ready, which is soon, which is relative.
+    </p>
+    <dl class="card spec">
+      <div><dt>Status</dt><dd><span class="badge badge-warn">Promised</span></dd></div>
+      <div><dt>Self-reported quality</dt><dd class="num">97 / 100</dd></div>
+      <div><dt>Measured quality</dt><dd class="num">404</dd></div>
+      <div><dt>ETA</dt><dd>Two weeks (rolling)</dd></div>
+    </dl>
+    <div class="cta">
+      <a class="pill pill-ink" href="/">Back to the leaderboard</a>
+      <a class="pill pill-soft" href="/incidents/">File an incident</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    padding-top: 96px;
+    padding-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 980px;
+  }
+  .display i {
+    color: var(--accent);
+  }
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 8px 0 0;
+    overflow: hidden;
+  }
+  .spec div {
+    padding: 16px 18px;
+    border-right: 1px solid var(--line);
+  }
+  .spec div:last-child {
+    border-right: 0;
+  }
+  dt {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 550;
+    margin-bottom: 6px;
+  }
+  dd {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .cta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 720px) {
+    .spec {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .spec div:nth-child(2) {
+      border-right: 0;
+    }
+  }
+</style>
