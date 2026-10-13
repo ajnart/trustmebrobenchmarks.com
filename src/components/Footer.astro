@@ -38,12 +38,11 @@ const cols = [
   <div class="container foot-grid">
     <div class="foot-brand">
       <a href="/" class="brand-row"><Logo size={22} /><span>Trust Me Bro Benchmarks</span></a>
-      <p class="muted">Get notified about new claims</p>
-      <form class="notify" id="notify-form">
-        <input type="email" placeholder="Email address" aria-label="Email address" required />
-        <button class="pill pill-ink" type="submit">Subscribe</button>
-      </form>
-      <p class="notify-msg muted" id="notify-msg" hidden>Subscribed. You will hear from us next week. Probably.</p>
+      <p class="tagline">The leaderboard for TMBBs: trust-me-bro benchmarks, as <a class="link" href="https://x.com/fireship_dev" target="_blank" rel="noopener">Fireship</a> calls them.</p>
+      <p class="credit">
+        Made with <a class="link" href="https://claude.ai" target="_blank" rel="noopener">Claude</a>, prompted by
+        <a class="link" href="https://github.com/ajnart" target="_blank" rel="noopener">ajnart</a>.
+      </p>
     </div>
     {
       cols.map((c) => (
@@ -60,22 +59,12 @@ const cols = [
   </div>
   <div class="container foot-legal">
     <span>© 2026 Trust Me Bro Benchmarks</span>
-    <span>Terms of Use: trust us</span>
-    <span>Privacy Policy: this is a static site and collects nothing, which is the only verifiable claim on it</span>
+    <span>Terms of Use: Don't worry bro</span>
+    <span>Privacy Policy: Pinky promise</span>
     <span>Not affiliated with Artificial Analysis, who do this properly</span>
     <span class="mono">build {BUILD_ISO}</span>
   </div>
 </footer>
-
-<script>
-  const form = document.getElementById('notify-form') as HTMLFormElement | null;
-  const msg = document.getElementById('notify-msg');
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    form.hidden = true;
-    if (msg) msg.hidden = false;
-  });
-</script>
 
 <style>
   .foot {
@@ -98,22 +87,17 @@ const cols = [
     --logo-check: var(--bg-subtle);
   }
   .foot-brand p {
-    margin: 22px 0 10px;
-  }
-  .notify {
-    display: flex;
-    gap: 8px;
+    margin: 0;
     max-width: 380px;
+    color: var(--ink-2);
+    font-size: 14.5px;
   }
-  .notify input {
-    flex: 1;
-    height: 36px;
-    border-radius: 999px;
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    padding: 0 14px;
-    font: inherit;
-    color: var(--ink);
+  .tagline {
+    margin-top: 18px !important;
+    margin-bottom: 10px !important;
+  }
+  .credit {
+    color: var(--muted) !important;
   }
   .foot-col {
     display: flex;

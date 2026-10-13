@@ -5,6 +5,7 @@ import { BENCHMARKS } from '../../data/benchmarks';
 import { lab } from '../../data/labs';
 import { AVAILABLE } from '../../data/models';
 import { fmt, rows, value } from '../../lib/scores';
+import { itemList } from '../../lib/seo';
 
 const correlated = BENCHMARKS.filter((b) => b.generator && !b.generator.includeVapor);
 
@@ -41,7 +42,13 @@ const reading = (r: number) => {
 };
 ---
 
-<Base title="Benchmarks" description="Fourteen evaluations inspired by meme benchmarks that went viral on X. Theirs are real. Ours are not.">
+<Base
+  title="AI Benchmarks: 14 Meme Evaluations"
+  description="Fourteen AI evaluations inspired by viral meme benchmarks: BullshitBench, the pelican, Brainfuck tic-tac-toe, lava lamps. Theirs are real. Ours are not."
+  pageType="CollectionPage"
+  breadcrumbs={[{ name: 'Benchmarks', path: '/benchmarks/' }]}
+  schema={[itemList('Trust Me Bro benchmarks', BENCHMARKS.map((b) => ({ name: b.name, path: `/benchmarks/${b.slug}/` })))]}
+>
   <PageHead
     eyebrow="Benchmarks"
     title="Evaluations"

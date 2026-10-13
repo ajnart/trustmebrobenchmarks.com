@@ -5,6 +5,7 @@ import { benchBySlug } from '../data/benchmarks';
 import { lab } from '../data/labs';
 import { MODELS, STATUS_LABEL, type Model } from '../data/models';
 import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
+import { itemList } from '../lib/seo';
 import { fmt, money, shipDays, tmbIndex, value } from '../lib/scores';
 
 const cols = [
@@ -27,7 +28,13 @@ const num = (v: number | undefined) => (v === undefined ? '' : String(v));
 const available = MODELS.filter((m) => m.status === 'available').length;
 ---
 
-<Base title="Model Leaderboard" description="Every model we evaluated, and several we could not, because they do not exist yet.">
+<Base
+  title="AI Model Leaderboard: Intelligence & Price"
+  description={`${MODELS.length} AI models ranked on the ${INDEX_NAME}: GPT-6, Claude, Gemini, Grok, Mistral and more, including several that do not exist yet. Satirical scores.`}
+  pageType="CollectionPage"
+  breadcrumbs={[{ name: 'Models', path: '/models/' }]}
+  schema={[itemList('AI model leaderboard', sorted.map((m) => ({ name: m.variant ? `${m.name} (${m.variant})` : m.name, path: `/models/${m.id}/` })))]}
+>
   <PageHead
     eyebrow="Leaderboard"
     title="Model Leaderboard"
@@ -64,7 +71,7 @@ const available = MODELS.filter((m) => m.status === 'available').length;
                           {lab(m.lab).mark}
                         </span>
                         <div>
-                          <b>{m.name}</b>
+                          <a class="mlink" href={`/models/${m.id}/`}>{m.name}</a>
                           {m.variant && <span class="variant"> ({m.variant})</span>}
                           <div class="sub">
                             {lab(m.lab).name}
@@ -252,7 +259,13 @@ const available = MODELS.filter((m) => m.status === 'available').length;
     line-height: 1.45;
     white-space: normal;
   }
-  .vapor b {
+  .mlink {
+    font-weight: 650;
+  }
+  .mlink:hover {
+    color: var(--accent);
+  }
+  .vapor .mlink {
     font-style: italic;
   }
   .inf {

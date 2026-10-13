@@ -21,7 +21,7 @@ export interface Lab {
 
 export const LABS: Record<LabId, Lab> = {
   anthropic: { id: 'anthropic', name: 'Anthropic', color: '#c4785a', mark: 'A\\' },
-  openai: { id: 'openai', name: 'OpenAI', color: '#1d1d1f', mark: 'O' },
+  openai: { id: 'openai', name: 'OpenAI', color: '#74747e', mark: 'O' },
   google: { id: 'google', name: 'Google', color: '#4f9d63', mark: 'G' },
   meta: { id: 'meta', name: 'Meta', color: '#3b82f6', mark: '∞' },
   xai: { id: 'xai', name: 'xAI', color: '#7c6fd0', mark: 'x' },

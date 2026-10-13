@@ -1,35 +1,34 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
-import { COMMENDATIONS, INCIDENTS, type IncidentStatus } from '../data/incidents';
+import IncidentCard from '../components/IncidentCard.astro';
+import Ticker from '../components/Ticker.astro';
+import { COMMENDATIONS, INCIDENTS, incidentHref } from '../data/incidents';
+import { itemList } from '../lib/seo';
 import { tweetById, tweetUrl } from '../data/tweets';
-import { compact, shortDate } from '../lib/scores';
 
-const STATUS_CLASS: Record<IncidentStatus, string> = {
-  Open: 'badge-bad',
-  Resolved: 'badge-good',
-  Disputed: 'badge-warn',
-  Unconfirmed: 'badge',
-  'Partially delivered': 'badge-accent',
-  Unfalsifiable: 'badge',
-};
 const sorted = [...INCIDENTS].sort((a, b) => b.date.localeCompare(a.date));
 const counts = INCIDENTS.reduce<Record<string, number>>((acc, i) => ({ ...acc, [i.status]: (acc[i.status] ?? 0) + 1 }), {});
-const handshake = (n: number) => '🤝'.repeat(n);
 ---
 
-<Base title="Incident Database" description="Documented cases of AI claims that outran their evidence, with timelines and primary sources.">
+<Base
+  title="AI Incident Database: Claims vs. Evidence"
+  description="Documented cases of AI launch claims that outran their evidence: Reflection 70B, Grok 5, Le Chaton Fat and more, with timelines and primary sources."
+  pageType="CollectionPage"
+  breadcrumbs={[{ name: 'Incidents', path: '/incidents/' }]}
+  schema={[itemList('Trust Me Bro Incident Database', sorted.map((i) => ({ name: i.title, path: incidentHref(i) })))]}
+>
   <PageHead
     eyebrow="Incident database"
     title="Trust Me Bro Incident Database"
     lede="Documented cases of claims that outran their evidence. Every entry links to the public posts it is based on. Severity is measured in handshakes."
   >
     <div class="stats">
-      <div><b class="num">{INCIDENTS.length}</b><span>Incidents</span></div>
+      <div><Ticker class="num" value={INCIDENTS.length} /><span>Incidents</span></div>
       {
         Object.entries(counts).map(([k, v]) => (
           <div>
-            <b class="num">{v}</b>
+            <Ticker class="num" value={v} />
             <span>{k}</span>
           </div>
         ))
@@ -39,56 +38,7 @@ const handshake = (n: number) => '🤝'.repeat(n);
 
   <section class="container list">
     {
-      sorted.map((inc) => (
-        <article class="card inc" id={inc.id}>
-          <header class="inc-head">
-            <div class="inc-meta">
-              <span class="mono">{inc.id}</span>
-              <span>·</span>
-              <span>{shortDate(inc.date)}</span>
-              <span>·</span>
-              <span>{inc.category}</span>
-            </div>
-            <div class="inc-badges">
-              <span class="sev" title={`Severity ${inc.severity} of 5`}>
-                {handshake(inc.severity)}
-              </span>
-              <span class:list={['badge', STATUS_CLASS[inc.status]]}>{inc.status}</span>
-            </div>
-          </header>
-          <h2>{inc.title}</h2>
-          <p class="subject">Subject: {inc.subject}</p>
-          <div class="cf">
-            <div>
-              <h3>Claim</h3>
-              <p>{inc.claim}</p>
-            </div>
-            <div>
-              <h3>Finding</h3>
-              <p>{inc.finding}</p>
-            </div>
-          </div>
-          <h3 class="tl-h">Timeline</h3>
-          <ol class="tl">
-            {inc.timeline.map((e) => {
-              const t = e.tweetId ? tweetById(e.tweetId) : undefined;
-              return (
-                <li class:list={{ ongoing: e.date === 'ongoing' }}>
-                  <span class="tl-date">{e.date === 'ongoing' ? 'Ongoing' : shortDate(e.date)}</span>
-                  <div class="tl-body">
-                    <span>{e.text}</span>
-                    {t && (
-                      <a class="src" href={tweetUrl(t)} target="_blank" rel="noopener">
-                        @{t.handle} · ♥ {compact(t.likes)} ↗
-                      </a>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        </article>
-      ))
+      sorted.map((inc) => <IncidentCard inc={inc} />)
     }
   </section>
 
@@ -132,13 +82,13 @@ const handshake = (n: number) => '🤝'.repeat(n);
     flex-direction: column;
     min-width: 120px;
   }
-  .stats b {
+  .stats :global(.num) {
     font-family: var(--serif);
     font-size: 30px;
     font-weight: 450;
     line-height: 1.1;
   }
-  .stats span {
+  .stats > div > span:last-child {
     font-size: 13px;
     color: var(--muted);
   }
@@ -146,131 +96,6 @@ const handshake = (n: number) => '🤝'.repeat(n);
     display: flex;
     flex-direction: column;
     gap: 16px;
-  }
-  .inc {
-    padding: 28px 30px;
-    scroll-margin-top: 110px;
-  }
-  .inc:target {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-soft);
-  }
-  .inc-head {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .inc-meta {
-    display: flex;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--muted);
-    flex-wrap: wrap;
-  }
-  .inc-badges {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .sev {
-    font-size: 14px;
-    letter-spacing: -2px;
-  }
-  .inc h2 {
-    font-family: var(--serif);
-    font-weight: 450;
-    font-size: 30px;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-    margin: 14px 0 4px;
-  }
-  .subject {
-    margin: 0 0 18px;
-    color: var(--muted);
-    font-size: 14px;
-  }
-  .cf {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-    gap: 16px;
-  }
-  .cf > div {
-    background: var(--bg-subtle);
-    border-radius: 10px;
-    padding: 16px 18px;
-  }
-  .cf h3,
-  .tl-h {
-    margin: 0 0 6px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    font-weight: 600;
-  }
-  .cf p {
-    margin: 0;
-    font-family: var(--serif);
-    font-size: 17px;
-    line-height: 1.55;
-  }
-  .tl-h {
-    margin-top: 22px;
-  }
-  .tl {
-    list-style: none;
-    margin: 8px 0 0;
-    padding: 0 0 0 4px;
-    border-left: 2px solid var(--line);
-  }
-  .tl li {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 14px;
-    padding: 7px 0 7px 18px;
-    position: relative;
-    font-size: 14.5px;
-  }
-  .tl li::before {
-    content: '';
-    position: absolute;
-    left: -8px;
-    top: 13px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 2px solid var(--line-strong);
-  }
-  .tl li.ongoing::before {
-    border-color: var(--bad);
-    background: var(--bad);
-    animation: pulse 1.8s infinite;
-  }
-  @keyframes pulse {
-    50% {
-      opacity: 0.35;
-    }
-  }
-  .tl-date {
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .ongoing .tl-date {
-    color: var(--bad);
-    font-weight: 600;
-  }
-  .tl-body {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 12px;
-    align-items: baseline;
-  }
-  .src {
-    font-size: 12.5px;
-    color: var(--accent);
-    font-weight: 550;
   }
   .comm {
     display: grid;
@@ -306,17 +131,8 @@ const handshake = (n: number) => '🤝'.repeat(n);
   .cm .src {
     margin-top: auto;
     padding-top: 8px;
-  }
-  @media (max-width: 760px) {
-    .cf {
-      grid-template-columns: 1fr;
-    }
-    .tl li {
-      grid-template-columns: 1fr;
-      gap: 2px;
-    }
-    .inc {
-      padding: 22px 20px;
-    }
+    font-size: 12.5px;
+    color: var(--accent);
+    font-weight: 550;
   }
 </style>

@@ -25,7 +25,7 @@ A **Trust Me Bro Benchmark** is any AI evaluation where:
 3. Independent reproduction is... _not possible_
 4. The response to scrutiny is essentially: **"Trust me bro"**
 
-This phenomenon was named after the repeated pattern of AI labs claiming state-of-the-art results on benchmarks like SWE-Bench, TerminalBench, and WebArena — only for researchers to discover the scores were achieved through exploitation, cherry-picking, or outright gaming.
+[Fireship](https://x.com/fireship_dev) calls them **TMBBs**. This phenomenon was named after the repeated pattern of AI labs claiming state-of-the-art results on benchmarks like SWE-Bench, TerminalBench, and WebArena — only for researchers to discover the scores were achieved through exploitation, cherry-picking, or outright gaming.
 
 Contribute to this website [here](https://github.com/ajnart/trustmebrobenchmarks.com)
 
@@ -41,13 +41,18 @@ Every score is fabricated. The quoted posts are real and link to their originals
 
 ## Development
 
-Static [Astro](https://astro.build) site, deployed to GitHub Pages on every push to `main`.
+Static [Astro](https://astro.build) site built with [bun](https://bun.sh), deployed to GitHub Pages on every push to `main`.
 
 ```sh
-pnpm install
-pnpm dev      # http://localhost:4321
-pnpm build    # outputs to dist/
-pnpm check    # typecheck
+bun install
+bun dev          # http://localhost:4321
+bun run build    # outputs to dist/
+bun run check    # typecheck
 ```
+
+- Tweets are fetched at build time and rendered with the [Magic UI tweet card](https://magicui.design/docs/components/tweet-card) (cached in `node_modules/.astro/tweets`)
+- Every page gets its own share image, rendered with satori at build time (`src/lib/og.tsx`, `src/pages/og/`)
+- Favicons, app icons and the web manifest are generated from one SVG (`src/lib/icons.ts`)
+- Navigation uses Speculation Rules prerendering and cross-document view transitions
 
 Data lives in `src/data/` (models, benchmarks, tweets, incidents). Add a meme benchmark or a tweet there and open a PR.

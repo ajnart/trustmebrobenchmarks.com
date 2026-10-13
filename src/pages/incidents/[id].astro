@@ -1,0 +1,205 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import IncidentCard from '../../components/IncidentCard.astro';
+import PrevNext from '../../components/PrevNext.astro';
+import TweetCard from '../../components/TweetCard.astro';
+import { INCIDENTS, incidentHref, incidentSlug, type Incident } from '../../data/incidents';
+import { lab } from '../../data/labs';
+import { modelById } from '../../data/models';
+import { tweetById } from '../../data/tweets';
+import { tmbIndex } from '../../lib/scores';
+import { clip } from '../../lib/seo';
+
+export function getStaticPaths() {
+  return INCIDENTS.map((inc) => ({ params: { id: incidentSlug(inc) }, props: { inc } }));
+}
+
+interface Props {
+  inc: Incident;
+}
+
+const { inc } = Astro.props;
+const sorted = [...INCIDENTS].sort((a, b) => a.date.localeCompare(b.date));
+const pos = sorted.findIndex((i) => i.id === inc.id);
+const prev = sorted[(pos - 1 + sorted.length) % sorted.length];
+const next = sorted[(pos + 1) % sorted.length];
+const tweets = [...new Set(inc.timeline.flatMap((e) => (e.tweetId ? [e.tweetId] : [])))].map(tweetById);
+const models = (inc.models ?? []).map(modelById);
+const crumbs = [
+  { name: 'Incidents', path: '/incidents/' },
+  { name: inc.id, path: incidentHref(inc) },
+];
+---
+
+<Base
+  title={inc.title}
+  description={clip(`${inc.status}: ${inc.claim} ${inc.finding}`)}
+  imageAlt={`Incident ${inc.id}: ${inc.title}. Status: ${inc.status}, severity ${inc.severity} of 5.`}
+  article={{ published: inc.date, type: 'Article' }}
+  breadcrumbs={crumbs}
+>
+  <section class="container ih">
+    <Breadcrumbs items={crumbs} />
+  </section>
+
+  <section class="container layout">
+    <div class="main">
+      <IncidentCard inc={inc} standalone />
+      {
+        tweets.length > 0 && (
+          <div class="sources">
+            <h2 class="h2">Primary sources</h2>
+            <p class="muted">The posts this entry is based on, embedded as published.</p>
+            <div class="tweets">
+              {tweets.map((t) => (
+                <TweetCard tweet={t} />
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </div>
+    <aside class="side">
+      <div class="card box">
+        <h3>Case file</h3>
+        <dl>
+          <dt>Filed</dt>
+          <dd>{inc.date}</dd>
+          <dt>Status</dt>
+          <dd>{inc.status}</dd>
+          <dt>Severity</dt>
+          <dd>{inc.severity} / 5 handshakes</dd>
+          <dt>Category</dt>
+          <dd>{inc.category}</dd>
+          <dt>Sources</dt>
+          <dd>{tweets.length} public posts</dd>
+        </dl>
+      </div>
+      {
+        models.length > 0 && (
+          <div class="card box">
+            <h3>Models involved</h3>
+            {models.map((m) => (
+              <a class="model" href={`/models/${m.id}/`}>
+                <span class="mark" style={`color:${lab(m.lab).color}`}>
+                  {lab(m.lab).mark}
+                </span>
+                <span class="m-name">{m.name}</span>
+                <b class="num">{tmbIndex(m) ?? `${m.claimed}*`}</b>
+              </a>
+            ))}
+          </div>
+        )
+      }
+      <a class="card box report" href="/incidents/">
+        <span class="muted">Incident database</span>
+        <b>All {INCIDENTS.length} incidents →</b>
+      </a>
+    </aside>
+  </section>
+
+  <PrevNext prev={{ href: incidentHref(prev), label: prev.title }} next={{ href: incidentHref(next), label: next.title }} />
+</Base>
+
+<style>
+  .ih {
+    padding-top: 40px;
+    padding-bottom: 20px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 32px;
+    align-items: start;
+  }
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    min-width: 0;
+  }
+  .sources p {
+    margin: 6px 0 20px;
+  }
+  .tweets {
+    columns: 2 340px;
+    column-gap: 14px;
+  }
+  .tweets > :global(*) {
+    margin-bottom: 14px;
+  }
+  .side {
+    position: sticky;
+    top: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .box {
+    padding: 18px 20px;
+  }
+  .box h3 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 16px;
+    margin: 0;
+    font-size: 14px;
+  }
+  dt {
+    color: var(--muted);
+  }
+  dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 550;
+  }
+  .model {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+  }
+  .model:hover .m-name {
+    color: var(--accent);
+  }
+  .mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--bg-pill);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .m-name {
+    flex: 1;
+    font-weight: 550;
+  }
+  .report {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .report:hover {
+    border-color: var(--line-strong);
+  }
+  @media (max-width: 1040px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .side {
+      position: static;
+    }
+  }
+</style>

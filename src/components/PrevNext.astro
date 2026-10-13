@@ -1,0 +1,38 @@
+---
+interface Link {
+  href: string;
+  label: string;
+}
+interface Props {
+  prev: Link;
+  next: Link;
+}
+const { prev, next } = Astro.props;
+---
+
+<nav class="container pn" aria-label="More">
+  <a class="card" href={prev.href} rel="prev"><span class="muted">← Previous</span><b>{prev.label}</b></a>
+  <a class="card nx" href={next.href} rel="next"><span class="muted">Next →</span><b>{next.label}</b></a>
+</nav>
+
+<style>
+  .pn {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 56px;
+  }
+  a {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 15px;
+  }
+  a:hover {
+    border-color: var(--line-strong);
+  }
+  .nx {
+    text-align: right;
+  }
+</style>

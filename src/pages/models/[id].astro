@@ -1,0 +1,410 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import PrevNext from '../../components/PrevNext.astro';
+import TweetCard from '../../components/TweetCard.astro';
+import Ticker from '../../components/Ticker.astro';
+import { BENCHMARKS } from '../../data/benchmarks';
+import { INCIDENTS, incidentHref } from '../../data/incidents';
+import { lab } from '../../data/labs';
+import { AVAILABLE, MODELS, STATUS_LABEL, type Model } from '../../data/models';
+import { TWEETS, tweetById } from '../../data/tweets';
+import { gapText, indexRank } from '../../lib/og-pages';
+import { fmt, indexRows, money, rows, shipDays, shortDate, tmbIndex, value } from '../../lib/scores';
+import { clip } from '../../lib/seo';
+import { INDEX_NAME } from '../../lib/site';
+
+export function getStaticPaths() {
+  return MODELS.map((m) => ({ params: { id: m.id }, props: { m } }));
+}
+
+interface Props {
+  m: Model;
+}
+
+const { m } = Astro.props;
+const DIRECTION = { higher: 'higher is better', lower: 'lower is better', unclear: 'direction unclear' };
+const L = lab(m.lab);
+const idx = tmbIndex(m);
+const rank = indexRank(m);
+const vapor = m.status !== 'available';
+const fullName = m.variant ? `${m.name} (${m.variant})` : m.name;
+const order = indexRows(true).map((r) => r.model);
+const pos = order.findIndex((x) => x.id === m.id);
+const prev = order[(pos - 1 + order.length) % order.length];
+const next = order[(pos + 1) % order.length];
+
+const results = BENCHMARKS.flatMap((b) => {
+  const v = value(b, m);
+  if (v === undefined || b.computed === 'random-axis') return [];
+  const all = rows(b);
+  const place = all.findIndex((r) => r.model.id === m.id) + 1;
+  const vals = all.map((r) => r.value);
+  const lo = Math.min(...vals, 0);
+  const hi = Math.max(...vals, 1);
+  return [{ b, v, place, n: all.length, share: (v - lo) / (hi - lo || 1) }];
+});
+
+const incidents = INCIDENTS.filter((i) => i.models?.includes(m.id));
+const incidentTweetIds = incidents.flatMap((i) => i.timeline.flatMap((e) => (e.tweetId ? [e.tweetId] : [])));
+const mentioned = TWEETS.filter((t) => t.text.toLowerCase().includes(m.name.toLowerCase())).map((t) => t.id);
+const tweets = [...new Set([...incidentTweetIds, ...mentioned])].slice(0, 4).map(tweetById);
+
+const peers = order
+  .filter((x) => x.id !== m.id)
+  .map((x) => ({ x, d: Math.abs((tmbIndex(x) ?? x.claimed) - (idx ?? m.claimed)) }))
+  .sort((a, b) => a.d - b.d)
+  .slice(0, 4)
+  .map((p) => p.x);
+
+const kpis = [
+  { label: INDEX_NAME, value: idx === undefined ? 'n/a' : String(idx), sub: rank === undefined ? 'Cannot be used, so cannot be measured' : `#${rank} of ${AVAILABLE.length} released models` },
+  { label: 'Self-reported', value: m.claimLabel ?? String(m.claimed), sub: 'The number in the launch post' },
+  { label: 'Benchmaxx Gap', value: gapText(m), sub: 'Self-reported minus measured' },
+  { label: 'Output speed', value: m.speed ? `${m.speed}${vapor ? '*' : ''}` : '—', sub: 'Tokens per second' },
+  { label: 'Cost per task', value: money(m.cost), sub: 'USD, TMB Index task average' },
+  { label: 'Context window', value: `${m.contextClaimed}k`, sub: `Remembers ${m.contextRemembered}k of it` },
+  { label: 'Days to ship', value: `${shipDays(m)}${m.released ? '' : '+'}`, sub: m.released ? 'Announcement to availability' : 'Still counting' },
+];
+
+const crumbs = [
+  { name: 'Models', path: '/models/' },
+  { name: fullName, path: `/models/${m.id}/` },
+];
+
+const description = clip(
+  vapor
+    ? `${fullName} by ${L.name} is ${STATUS_LABEL[m.status].toLowerCase()}. It self-reports ${m.claimLabel ?? m.claimed}, which we ranked anyway. Benchmaxx Gap: +∞. Satirical, made-up scores.`
+    : `${fullName} by ${L.name}: ${idx} on the ${INDEX_NAME} (#${rank} of ${AVAILABLE.length}), self-reports ${m.claimed}. ${m.speed} tok/s, ${money(m.cost)} per task. Satirical, made-up scores.`,
+);
+---
+
+<Base
+  title={`${fullName}: Intelligence & Price`}
+  description={description}
+  imageAlt={`${fullName} scorecard: ${idx === undefined ? `self-reported ${m.claimLabel ?? m.claimed}` : `TMB Index ${idx}`}. Satirical, fabricated scores.`}
+  breadcrumbs={crumbs}
+>
+  <section class="container mh">
+    <Breadcrumbs items={crumbs} />
+    <div class="mh-row">
+      <span class="mark" style={`color:${L.color}`}>{L.mark}</span>
+      <div>
+        <h1 class="h1">
+          {m.name}
+          {m.variant && <span class="variant"> ({m.variant})</span>}
+        </h1>
+        <div class="badges">
+          <span class:list={['badge', { 'badge-good': !vapor, 'badge-warn': m.status === 'announced', 'badge-bad': vapor && m.status !== 'announced' }]}>{STATUS_LABEL[m.status]}</span>
+          <span class="badge">{L.name}</span>
+          {m.openWeights && <span class="badge badge-accent">Open weights</span>}
+          {m.reasoning && <span class="badge">Reasoning</span>}
+        </div>
+      </div>
+    </div>
+    <p class="lede">
+      Announced {shortDate(m.announced)}{m.released && `, released ${shortDate(m.released)}`}{!m.released && ', not released'}.
+      {m.note && ` ${m.note}`}
+    </p>
+  </section>
+
+  <section class="container kpis">
+    {
+      kpis.map((k, i) => (
+        <div class:list={['card', 'kpi', { lead: i === 0 }]}>
+          <span class="k-label">{k.label}</span>
+          <b class="k-value num" style={i === 0 ? `color:${L.color}` : undefined}>
+            {i === 0 && idx !== undefined && <Ticker value={idx} />}
+            {(i > 0 || idx === undefined) && k.value}
+          </b>
+          <span class="k-sub">{k.sub}</span>
+        </div>
+      ))
+    }
+  </section>
+
+  <section class="container section">
+    <div class="section-head">
+      <span class="eyebrow">Evaluations</span>
+      <h2 class="h2">How {m.name} scores on every benchmark</h2>
+      <p>
+        {vapor && 'This model cannot be used, so values below are derived from public claims rather than measurement. '}
+        Bars show where the score sits between the worst and best model on each benchmark. Rank 1 is best, whatever "best" means for that benchmark.
+      </p>
+    </div>
+    <div class="card results">
+      {
+        results.map((r) => (
+          <a class="res" href={`/benchmarks/${r.b.slug}/`}>
+            <span class="res-name">
+              <b>{r.b.name}</b>
+              <small>
+                {r.b.category} · {DIRECTION[r.b.better]}
+              </small>
+            </span>
+            <span class="res-bar" aria-hidden="true">
+              <i style={`width:${Math.max(3, r.share * 100)}%;background:${L.color}`} class:list={{ hatched: vapor }} />
+            </span>
+            <span class="res-val num">{fmt(r.v, r.b.format)}</span>
+            <span class="res-rank num">
+              #{r.place}
+              <small>/{r.n}</small>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    incidents.length > 0 && (
+      <section class="container section">
+        <div class="section-head">
+          <span class="eyebrow">Incident database</span>
+          <h2 class="h2">Filed incidents</h2>
+        </div>
+        <div class="incs">
+          {incidents.map((i) => (
+            <a class="card inc" href={incidentHref(i)}>
+              <span class="mono muted">{i.id}</span>
+              <b>{i.title}</b>
+              <span class="badge">{i.status}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    tweets.length > 0 && (
+      <section class="container section">
+        <div class="section-head">
+          <span class="eyebrow">In the wild</span>
+          <h2 class="h2">What people posted</h2>
+          <p>Real posts, quoted verbatim. The scores on this page are not real; these are.</p>
+        </div>
+        <div class="tweets">
+          {tweets.map((t) => (
+            <TweetCard tweet={t} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="container section">
+    <div class="section-head">
+      <span class="eyebrow">Compare</span>
+      <h2 class="h2">Models with a similar score</h2>
+    </div>
+    <div class="peers">
+      {
+        peers.map((p) => (
+          <a class="card peer" href={`/models/${p.id}/`}>
+            <span class="mark sm" style={`color:${lab(p.lab).color}`}>
+              {lab(p.lab).mark}
+            </span>
+            <span>
+              <b>{p.name}</b>
+              <small>{lab(p.lab).name}</small>
+            </span>
+            <b class="num peer-v">{tmbIndex(p) ?? `${p.claimed}*`}</b>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <PrevNext prev={{ href: `/models/${prev.id}/`, label: prev.name }} next={{ href: `/models/${next.id}/`, label: next.name }} />
+</Base>
+
+<style>
+  .mh {
+    padding-top: 40px;
+    padding-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .mh-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .mark {
+    width: 72px;
+    height: 72px;
+    flex: none;
+    border-radius: 18px;
+    background: var(--bg-pill);
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+    font-weight: 800;
+  }
+  .mark.sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  .variant {
+    color: var(--muted);
+  }
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .lede {
+    max-width: 820px;
+  }
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .kpi {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .kpi.lead {
+    grid-row: span 2;
+    justify-content: center;
+  }
+  .k-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .k-value {
+    font-family: var(--serif);
+    font-weight: 450;
+    font-size: 36px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .lead .k-value {
+    font-size: 96px;
+    letter-spacing: -0.04em;
+  }
+  .k-sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .results {
+    padding: 6px 0;
+  }
+  .res {
+    display: grid;
+    grid-template-columns: minmax(200px, 300px) minmax(0, 1fr) 70px 64px;
+    gap: 20px;
+    align-items: center;
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .res:last-child {
+    border-bottom: 0;
+  }
+  .res:hover {
+    background: var(--bg-subtle);
+  }
+  .res-name {
+    display: flex;
+    flex-direction: column;
+  }
+  .res-name b {
+    font-weight: 550;
+  }
+  .res-name small,
+  .res-rank small,
+  .peer small {
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+  .res-bar {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--bg-pill);
+    overflow: hidden;
+  }
+  .res-bar i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+  }
+  .res-bar i.hatched {
+    opacity: 0.45;
+  }
+  .res-val {
+    text-align: right;
+    font-weight: 650;
+  }
+  .res-rank {
+    text-align: right;
+    color: var(--ink-2);
+  }
+  .incs,
+  .peers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .inc {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  .inc b {
+    font-family: var(--serif);
+    font-weight: 450;
+    font-size: 20px;
+    line-height: 1.25;
+  }
+  .inc:hover,
+  .peer:hover {
+    border-color: var(--line-strong);
+  }
+  .tweets {
+    columns: 2 380px;
+    column-gap: 14px;
+  }
+  .tweets > :global(*) {
+    margin-bottom: 14px;
+  }
+  .peer {
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .peer span:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .peer-v {
+    font-size: 18px;
+  }
+  @media (max-width: 960px) {
+    .kpis {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .kpi.lead {
+      grid-column: span 2;
+      grid-row: auto;
+    }
+    .res {
+      grid-template-columns: minmax(0, 1fr) 60px 52px;
+    }
+    .res-bar {
+      display: none;
+    }
+  }
+</style>

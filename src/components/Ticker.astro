@@ -1,0 +1,23 @@
+---
+import { NumberTicker } from '@/components/ui/number-ticker';
+
+interface Props {
+  value: number;
+  compact?: boolean;
+  class?: string;
+}
+
+const { value, compact = false, class: className } = Astro.props;
+const scale = [
+  { min: 1e6, div: 1e6, suffix: 'M' },
+  { min: 1e3, div: 1e3, suffix: 'K' },
+].find((s) => compact && value >= s.min);
+const shown = scale ? Math.round((value / scale.div) * 10) / 10 : value;
+const decimals = Number.isInteger(shown) ? 0 : 1;
+const text = `${shown.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${scale?.suffix ?? ''}`;
+---
+
+<span class={className}>
+  <span class="sr-only">{text}</span>
+  <span aria-hidden="true"><NumberTicker client:visible value={shown} decimalPlaces={decimals} />{scale?.suffix}</span>
+</span>

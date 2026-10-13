@@ -10,7 +10,7 @@ import { modelTip } from './chart';
 import { INDEX_NAME } from './site';
 import { costBreakdown, fmt, indexRows, money, randomAxis, rows, shipDays, tmbIndex } from './scores';
 
-const href = (m: Model) => `/models/#${m.id}`;
+const href = (m: Model) => `/models/${m.id}/`;
 
 export const chartLabel = (m: Model) => (m.variant ? `${m.name} (${m.variant})` : m.name);
 

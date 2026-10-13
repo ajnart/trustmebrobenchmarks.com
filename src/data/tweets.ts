@@ -30,6 +30,33 @@ export const tweetUrl = (t: Tweet) => `https://x.com/${t.handle}/status/${t.id}`
 
 export const TWEETS: Tweet[] = [
   {
+    id: '2107920450114191395',
+    handle: 'heysamir_',
+    name: 'Samir',
+    date: '2026-10-07',
+    text: 'Am I the only one who now completely ignores the “trust me bro benchmarks” (tmbbs per @fireship_dev) until @ArtificialAnlys does an independent analysis?\n\nWho is this for really? Just the marketing teams trying to hit an impressions OKR to get more headcount?\n\nNo specific shade',
+    likes: 1,
+    topic: 'trust-me-bro',
+  },
+  {
+    id: '2091055030921265224',
+    handle: 'akshatnerella',
+    name: 'Akshat',
+    date: '2026-08-22',
+    text: 'my day doesn\'t end without watching a Fireship video where he talks about yet another new AI model in the market, how it performs on the "trust me bro" benchmarks, and how well it can design "horse tinder"🫡',
+    likes: 3,
+    topic: 'trust-me-bro',
+  },
+  {
+    id: '2094855769665712133',
+    handle: 'JV2077',
+    name: 'JayJr',
+    date: '2026-09-01',
+    text: "I'll wait for the fireship video??\n\nalso\n\ntrust me bro benchmarks when?",
+    likes: 3,
+    topic: 'trust-me-bro',
+  },
+  {
     id: '2026396163637731794',
     handle: 'petergostev',
     name: 'Peter Gostev',

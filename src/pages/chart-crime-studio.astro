@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
 import TweetCard from '../components/TweetCard.astro';
 import { TWEETS } from '../data/tweets';
+import { absolute } from '../lib/seo';
 
 const exhibits = TWEETS.filter((t) => t.topic === 'chart-crime').sort((a, b) => b.likes - a.likes);
 const toggles = [
@@ -19,7 +20,24 @@ const presets = [
 ] as const;
 ---
 
-<Base title="Chart Crime Studio" description="Turn a 2.7-point lead into a generational leap. Truncate the y-axis and watch Tufte's Lie Factor climb in real time.">
+<Base
+  title="Chart Crime Studio: Truncated Y-Axis Maker"
+  description="Turn a 2.7-point lead into a generational leap. Truncate the y-axis, hide the labels, add an asterisk, and watch Tufte's Lie Factor climb in real time."
+  imageAlt="Chart Crime Studio: a 52.8 vs 50.1 bar chart with a truncated y-axis and a Lie Factor of 83.5."
+  breadcrumbs={[{ name: 'Chart Crime Studio', path: '/chart-crime-studio/' }]}
+  schema={[
+    {
+      '@type': 'WebApplication',
+      name: 'Chart Crime Studio',
+      url: absolute('/chart-crime-studio/'),
+      applicationCategory: 'DesignApplication',
+      operatingSystem: 'Any',
+      browserRequirements: 'Requires JavaScript',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      description: "Interactive satire: truncate a bar chart's y-axis and measure the distortion with Tufte's Lie Factor.",
+    },
+  ]}
+>
   <PageHead
     eyebrow="Tools · Beta"
     title="Chart Crime Studio"
@@ -635,7 +653,7 @@ const presets = [
     columns: 3 320px;
     column-gap: 16px;
   }
-  .exhibits :global(.tw) {
+  .exhibits > :global(*) {
     break-inside: avoid;
     margin-bottom: 16px;
   }

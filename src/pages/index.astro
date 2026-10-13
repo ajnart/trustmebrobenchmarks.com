@@ -3,6 +3,9 @@ import Base from '../layouts/Base.astro';
 import ChartCard from '../components/ChartCard.astro';
 import TabBar from '../components/TabBar.astro';
 import TweetCard from '../components/TweetCard.astro';
+import { Marquee } from '@/components/ui/marquee';
+import { BorderBeam } from '@/components/ui/border-beam';
+import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
 import BarChart from '../components/charts/BarChart.astro';
 import ScatterChart from '../components/charts/ScatterChart.astro';
 import DumbbellChart from '../components/charts/DumbbellChart.astro';
@@ -13,9 +16,10 @@ import { BENCHMARKS, INDEX_BENCHMARKS } from '../data/benchmarks';
 import { INCIDENTS } from '../data/incidents';
 import { lab } from '../data/labs';
 import { MODELS } from '../data/models';
-import { TWEETS, tweetById } from '../data/tweets';
+import { TWEETS } from '../data/tweets';
 import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
-import { fmt, rows } from '../lib/scores';
+import { fmt, indexRows, rows } from '../lib/scores';
+import { itemList } from '../lib/seo';
 import {
   claimDumbbells,
   contextDumbbells,
@@ -30,23 +34,21 @@ import {
   speedBars,
 } from '../lib/views';
 
-const featuredTweets = [
-  '2107486601563500581',
-  '2109733498114417013',
-  '2026396163637731794',
-  '1831767014341538166',
-  '2066456715650793956',
-  '2105397170266636594',
-].map(tweetById);
+const marquee = [...TWEETS].filter((t) => t.text.length <= 240).sort((a, b) => b.likes - a.likes).slice(0, 20);
+const rowA = marquee.filter((_, i) => i % 2 === 0);
+const rowB = marquee.filter((_, i) => i % 2 === 1);
 const featuredIncidents = INCIDENTS.filter((i) => ['TMB-2024-0001', 'TMB-2026-0006', 'TMB-2026-0010'].includes(i.id));
 const yearFmt = (t: number) => new Date(t).toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' }).replace(' ', " '");
 const usd = (v: number) => `$${v}`;
 const evalCount = INDEX_BENCHMARKS.length;
 ---
 
-<Base>
+<Base schema={[itemList(`${INDEX_NAME}: released models`, indexRows(false).slice(0, 10).map((r) => ({ name: `${r.model.name}: ${r.value}`, path: `/models/${r.model.id}/` })))]}>
   <section class="container hero">
     <div class="hero-l">
+      <a class="tmbb" href="/methodology/#tmbb">
+        <AnimatedShinyText className="mx-0 max-w-none text-[13.5px] font-medium">Now tracking TMBBs, as Fireship calls them →</AnimatedShinyText>
+      </a>
       <h1 class="display">Independent<span class="ast">*</span><br />analysis of AI</h1>
       <p class="lede">Understand the AI landscape to choose the best model and provider for your use case. Or for your launch post.</p>
       <p class="hero-foot">* Independent of evidence. {MODELS.length} models, {BENCHMARKS.length} evaluations, 0 reproducible results.</p>
@@ -83,6 +85,7 @@ const evalCount = INDEX_BENCHMARKS.length;
 
   <section class="container duo">
     <a class="card studio" href="/chart-crime-studio/">
+      <BorderBeam client:visible size={120} duration={9} colorFrom="#7b2a85" colorTo="#e57399" borderWidth={1.5} />
       <span class="eyebrow">New · by Trust Me Bro</span>
       <h3 class="h2">Chart Crime Studio</h3>
       <p>Turn a 2.7-point lead into a towering victory. Drag the y-axis baseline, remove the labels, and export a launch-day chart your competitors will quote-tweet for a week.</p>
@@ -156,7 +159,7 @@ const evalCount = INDEX_BENCHMARKS.length;
                 display: m.claimLabel === 'AGI' ? 'AGI' : String(m.claimed),
                 color: lab(m.lab).color,
                 mark: lab(m.lab).mark,
-                href: `/models/#${m.id}`,
+                href: `/models/${m.id}/`,
                 tip: `<b>${m.name}</b><div class="tip-sub">${lab(m.lab).name}</div><div style="margin-top:6px">Self-reported: ${m.claimLabel ?? m.claimed}</div>`,
               }))}
             max={100}
@@ -309,9 +312,16 @@ const evalCount = INDEX_BENCHMARKS.length;
       <h2 class="h1">The meme-benchmark era, as it happened</h2>
       <p>Public posts that shaped the field. Verbatim, linked, and the only primary sources on this website.</p>
     </div>
-    <div class="tweets">
-      {featuredTweets.map((t) => <TweetCard tweet={t} compactView />)}
-    </div>
+  </section>
+  <div class="marquee">
+    <Marquee pauseOnHover className="[--duration:110s] [--gap:14px] py-1">
+      {rowA.map((t) => <TweetCard tweet={t} media={false} class="w-[380px] shrink-0" />)}
+    </Marquee>
+    <Marquee reverse pauseOnHover className="[--duration:110s] [--gap:14px] py-1">
+      {rowB.map((t) => <TweetCard tweet={t} media={false} class="w-[380px] shrink-0" />)}
+    </Marquee>
+  </div>
+  <section class="container">
     <a class="pill pill-soft more" href="/in-the-wild/">See all {TWEETS.length} posts →</a>
   </section>
 
@@ -324,7 +334,7 @@ const evalCount = INDEX_BENCHMARKS.length;
     <div class="inc">
       {
         featuredIncidents.map((i) => (
-          <a class="card inc-row" href={`/incidents/#${i.id}`}>
+          <a class="card inc-row" href={`/incidents/${i.id.toLowerCase()}/`}>
             <span class="mono inc-id">{i.id}</span>
             <div>
               <h3>{i.title}</h3>
@@ -355,6 +365,25 @@ const evalCount = INDEX_BENCHMARKS.length;
   }
   .lede {
     margin-top: 28px;
+  }
+  .hero-l {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .tmbb {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--bg-subtle);
+    transition: border-color 0.15s;
+  }
+  .tmbb:hover {
+    border-color: var(--line-strong);
   }
   .hero-foot {
     margin: 18px 0 0;
@@ -411,6 +440,8 @@ const evalCount = INDEX_BENCHMARKS.length;
     margin-top: 16px;
   }
   .studio {
+    position: relative;
+    overflow: hidden;
     padding: 28px;
     display: flex;
     flex-direction: column;
@@ -580,12 +611,16 @@ const evalCount = INDEX_BENCHMARKS.length;
     font-size: 12px;
     color: var(--accent);
   }
-  .tweets {
-    columns: 3 320px;
-    column-gap: 14px;
+  .marquee {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   }
-  .tweets :global(.tw) {
-    margin-bottom: 14px;
+  .marquee :global(.tweet) {
+    align-self: flex-start;
   }
   .more {
     margin-top: 10px;

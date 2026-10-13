@@ -17,6 +17,7 @@ export interface Incident {
   date: string;
   title: string;
   subject: string;
+  models?: string[];
   category: string;
   status: IncidentStatus;
   severity: 1 | 2 | 3 | 4 | 5;
@@ -31,6 +32,7 @@ export const INCIDENTS: Incident[] = [
     date: '2024-09-05',
     title: 'Reflection 70B, and the 405B that is coming next week',
     subject: 'Reflection 70B / 405B',
+    models: ['reflection-405b'],
     category: 'Unreplicated claim',
     status: 'Open',
     severity: 5,
@@ -48,6 +50,7 @@ export const INCIDENTS: Incident[] = [
     date: '2025-08-21',
     title: 'Grok 5 has a shot at being true AGI',
     subject: 'Grok 5',
+    models: ['grok-5'],
     category: 'Promised capability',
     status: 'Open',
     severity: 4,
@@ -110,6 +113,7 @@ export const INCIDENTS: Incident[] = [
     date: '2026-06-15',
     title: 'Le Chaton Fat',
     subject: 'Mistral Large 4',
+    models: ['mistral-large-4', 'le-chaton-fat'],
     category: 'Rumor → partial delivery',
     status: 'Partially delivered',
     severity: 2,
@@ -161,6 +165,7 @@ export const INCIDENTS: Incident[] = [
     date: '2026-09-29',
     title: '"Near-Astra intelligence for a fifth of the price"',
     subject: 'GPT-6.1 Sol',
+    models: ['gpt-6-1-sol'],
     category: 'Marketing claim',
     status: 'Disputed',
     severity: 2,
@@ -174,6 +179,7 @@ export const INCIDENTS: Incident[] = [
     date: '2026-10-01',
     title: 'Announced with a benchmark table, available with a waitlist',
     subject: 'Gemini 4 Argon',
+    models: ['gemini-4-argon'],
     category: 'Announced, not available',
     status: 'Open',
     severity: 3,
@@ -191,6 +197,7 @@ export const INCIDENTS: Incident[] = [
     date: '2026-10-12',
     title: 'Muse Wonder and the red cylinder',
     subject: 'Muse Wonder',
+    models: ['muse-wonder', 'muse-wonder-full'],
     category: 'Alleged benchmaxxing',
     status: 'Disputed',
     severity: 3,
@@ -208,6 +215,7 @@ export const INCIDENTS: Incident[] = [
     date: '2026-10-12',
     title: 'Claude Next, allegedly in your Claude Code right now',
     subject: '"Claude Next"',
+    models: ['claude-next'],
     category: 'Rumor',
     status: 'Unconfirmed',
     severity: 1,
@@ -256,3 +264,6 @@ export const COMMENDATIONS: Commendation[] = [
     tweetId: '1832457791010959539',
   },
 ];
+
+export const incidentSlug = (i: Incident) => i.id.toLowerCase();
+export const incidentHref = (i: Incident) => `/incidents/${incidentSlug(i)}/`;

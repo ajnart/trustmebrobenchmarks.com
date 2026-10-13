@@ -1,5 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import PrevNext from '../../components/PrevNext.astro';
 import ChartCard from '../../components/ChartCard.astro';
 import TweetCard from '../../components/TweetCard.astro';
 import BarChart from '../../components/charts/BarChart.astro';
@@ -11,6 +13,7 @@ import { tweetById } from '../../data/tweets';
 import { INDEX_NAME } from '../../lib/site';
 import { BUILD_ISO, fmt, rows } from '../../lib/scores';
 import { benchBars, claimDumbbells, randomPoints, shipSpans } from '../../lib/views';
+import { clip, itemList } from '../../lib/seo';
 
 export function getStaticPaths() {
   return BENCHMARKS.map((b) => ({ params: { slug: b.slug }, props: { b } }));
@@ -36,11 +39,27 @@ const bibtex = `@misc{tmb2026${key},
   howpublished = {\\url{https://trustmebrobenchmarks.com/benchmarks/${b.slug}/}},
   note         = {Results not reproducible. Please do not cite.}
 }`;
+const crumbs = [
+  { name: 'Benchmarks', path: '/benchmarks/' },
+  { name: b.name, path: `/benchmarks/${b.slug}/` },
+];
+const published = tweets.map((t) => t.date).sort()[0] ?? '2026-10-01';
+const top = results.slice(0, 3).map((r) => `${r.model.name} ${fmt(r.value, b.format)}`).join(', ');
+const description = clip(`${b.tagline} ${b.abstract}`);
+const schema = b.computed === 'random-axis' ? [] : [itemList(`${b.name} results`, results.slice(0, 10).map((r) => ({ name: `${r.model.name}: ${fmt(r.value, b.format)}`, path: `/models/${r.model.id}/` })))];
 ---
 
-<Base title={b.name} description={`${b.name}: ${b.tagline}. ${b.abstract}`}>
+<Base
+  title={`${b.name}: AI Benchmark`}
+  description={description}
+  imageAlt={`${b.name} leaderboard${top ? `. Top results: ${top}` : ''}. Satirical, fabricated scores.`}
+  pageType="WebPage"
+  article={{ published, type: 'TechArticle' }}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
   <section class="container bh">
-    <nav class="crumbs"><a href="/benchmarks/">Benchmarks</a><span>/</span><span>{b.category}</span></nav>
+    <Breadcrumbs items={crumbs} />
     <div class="bh-badges">
       <span class="badge">{b.category}</span>
       {b.badge && <span class="badge badge-accent">{b.badge}</span>}
@@ -103,7 +122,7 @@ const bibtex = `@misc{tmb2026${key},
                     <tr>
                       <td class="muted">{k + 1}</td>
                       <td>
-                        <a href={`/models/#${r.model.id}`}>{r.model.name}</a>
+                        <a href={`/models/${r.model.id}/`}>{r.model.name}</a>
                         {r.vapor && <span class="badge badge-warn">claimed</span>}
                       </td>
                       <td class="r num">{fmt(r.value, b.format)}</td>
@@ -153,7 +172,7 @@ const bibtex = `@misc{tmb2026${key},
             <p class="ins-note">{b.inspiredBy.note}</p>
             <div class="tw-stack">
               {tweets.map((t) => (
-                <TweetCard tweet={t} compactView />
+                <TweetCard tweet={t} />
               ))}
             </div>
           </div>
@@ -162,10 +181,7 @@ const bibtex = `@misc{tmb2026${key},
     </aside>
   </section>
 
-  <nav class="container pn">
-    <a class="card" href={`/benchmarks/${prev.slug}/`}><span class="muted">← Previous</span><b>{prev.name}</b></a>
-    <a class="card nx" href={`/benchmarks/${next.slug}/`}><span class="muted">Next →</span><b>{next.name}</b></a>
-  </nav>
+  <PrevNext prev={{ href: `/benchmarks/${prev.slug}/`, label: prev.name }} next={{ href: `/benchmarks/${next.slug}/`, label: next.name }} />
 </Base>
 
 <script>
@@ -199,15 +215,6 @@ const bibtex = `@misc{tmb2026${key},
     display: flex;
     flex-direction: column;
     gap: 12px;
-  }
-  .crumbs {
-    display: flex;
-    gap: 8px;
-    font-size: 13.5px;
-    color: var(--muted);
-  }
-  .crumbs a:hover {
-    color: var(--accent);
   }
   .bh-badges {
     display: flex;
@@ -349,25 +356,6 @@ const bibtex = `@misc{tmb2026${key},
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
-  .pn {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 56px;
-  }
-  .pn a {
-    padding: 18px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 15px;
-  }
-  .pn a:hover {
-    border-color: var(--line-strong);
-  }
-  .pn .nx {
-    text-align: right;
   }
   @media (max-width: 1080px) {
     .layout {

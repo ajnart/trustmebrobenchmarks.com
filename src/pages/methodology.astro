@@ -9,6 +9,7 @@ import { BUILD_ISO } from '../lib/scores';
 const totalWeight = INDEX_BENCHMARKS.reduce((a, b) => a + b.indexWeight, 0);
 const toc = [
   ['abstract', 'Abstract'],
+  ['tmbb', '0. Definition: TMBB'],
   ['index', '1. Index construction'],
   ['selection', '2. Model selection'],
   ['gap', '3. Self-reported scores'],
@@ -33,7 +34,12 @@ const sources = BENCHMARKS.flatMap((b) => {
 const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
 ---
 
-<Base title="Methodology" description={`${INDEX_NAME} technical report: index construction, confidence intervals of ±∞, and an actual disclaimer.`}>
+<Base
+  title="Methodology and Known Limitations"
+  description={`The ${INDEX_NAME} technical report: index construction, model selection, contamination, confidence intervals of ±∞, and an actual disclaimer.`}
+  article={{ published: '2026-10-01', type: 'TechArticle' }}
+  breadcrumbs={[{ name: 'Methodology', path: '/methodology/' }]}
+>
   <section class="container paper-head">
     <span class="eyebrow">Technical report · {INDEX_VERSION}</span>
     <h1 class="h1">{INDEX_NAME}: Methodology and Known Limitations</h1>
@@ -57,6 +63,19 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
           on this page.
         </p>
       </div>
+
+      <h2 id="tmbb">0. Definition: TMBB</h2>
+      <p>
+        A <b>trust-me-bro benchmark</b> (TMBB, plural TMBBs, a term popularized by
+        <a class="link" href="https://x.com/fireship_dev" target="_blank" rel="noopener">Fireship</a>) is any evaluation whose result is published before its method. Typical
+        markers include an internal harness, an unreleased model, a bar chart without a y-axis, and the phrase "on the benchmarks that matter". A TMBB is falsified by
+        independent replication, which is why it is rarely attempted.
+      </p>
+      <p>
+        This report measures TMBBs with TMBBs. We consider this the only methodologically consistent approach.
+        <a class="link" href="https://x.com/heysamir_/status/2107920450114191395" target="_blank" rel="noopener">Some readers</a> ignore TMBBs entirely until an
+        independent analysis appears. This is that analysis, in the sense that nobody depends on it.
+      </p>
 
       <h2 id="index">1. Index construction</h2>
       <p>For a model <i>m</i> and evaluation <i>e</i> with weight <i>w<sub>e</sub></i> and normalized score <i>ŝ<sub>e</sub>(m)</i>, the index is the weighted mean:</p>

@@ -1,49 +1,117 @@
 ---
+import '../styles/tailwind.css';
 import '../styles/global.css';
+import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_NAME } from '../lib/site';
+import { BUILD_DATE } from '../lib/scores';
+import {
+  DEFAULT_DESCRIPTION,
+  OG_SIZE,
+  SITE_TAGLINE,
+  absolute,
+  article,
+  breadcrumbList,
+  graph,
+  ogImagePath,
+  organization,
+  webPage,
+  website,
+  type Crumb,
+  type JsonLd,
+} from '../lib/seo';
 
 interface Props {
   title?: string;
   description?: string;
+  imageAlt?: string;
+  pageType?: string;
+  article?: { published: string; type?: string };
+  breadcrumbs?: Crumb[];
+  schema?: JsonLd[];
+  noindex?: boolean;
 }
 
-const {
-  title,
-  description = 'Independent* analysis of AI models and the benchmarks that ask you to just trust them. *Independent of evidence.',
-} = Astro.props;
-const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} | Independent* analysis of AI`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const { title, description = DEFAULT_DESCRIPTION, imageAlt, pageType = 'WebPage', article: articleMeta, breadcrumbs = [], schema = [], noindex = false } = Astro.props;
+
+const fullTitle = title ? [`${title} | ${SITE_NAME}`, `${title} | Trust Me Bro`, title].find((t) => t.length <= 62) ?? title : `${SITE_NAME} | ${SITE_TAGLINE}`;
+const shareTitle = title ?? `${SITE_NAME}: ${SITE_TAGLINE}`;
+const url = absolute(Astro.url.pathname);
+const image = absolute(ogImagePath(Astro.url.pathname));
+const alt = imageAlt ?? `${shareTitle}. A satirical AI benchmark chart from ${SITE_NAME}.`;
+const modified = BUILD_DATE.toISOString();
+const isHome = Astro.url.pathname === '/';
+
+const nodes: JsonLd[] = [
+  organization(),
+  website(),
+  webPage({ url, type: isHome ? 'WebPage' : pageType, name: shareTitle, description, image, hasBreadcrumb: !isHome, modified }),
+  ...(isHome ? [] : [breadcrumbList(url, breadcrumbs)]),
+  ...(articleMeta ? [article({ url, headline: shareTitle, description, image, published: articleMeta.published, modified, type: articleMeta.type })] : []),
+  ...schema,
+];
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={fullTitle} />
+    <link rel="canonical" href={url} />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
+    <meta name="author" content={SITE_NAME} />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="application-name" content={SITE_NAME} />
+    <meta name="apple-mobile-web-app-title" content="Trust Me Bro" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <Font cssVariable="--ff-sans" preload={[{ subset: 'latin' }]} />
+    <Font cssVariable="--ff-serif" preload={[{ subset: 'latin', style: 'normal' }]} />
+    <Font cssVariable="--ff-mono" />
+
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content={articleMeta ? 'article' : 'website'} />
+    <meta property="og:title" content={shareTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content={fullTitle} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:secure_url" content={image} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content={String(OG_SIZE.width)} />
+    <meta property="og:image:height" content={String(OG_SIZE.height)} />
+    <meta property="og:image:alt" content={alt} />
+    {articleMeta && <meta property="article:published_time" content={articleMeta.published} />}
+    {articleMeta && <meta property="article:modified_time" content={modified} />}
+    {articleMeta && <meta property="article:section" content="Satire" />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={shareTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="twitter:image" content={image} />
+    <meta name="twitter:image:alt" content={alt} />
+
+    <script type="application/ld+json" set:html={graph(nodes)} />
     <script is:inline>
       try {
-        const t = localStorage.getItem('tmb-theme');
-        if (t) document.documentElement.dataset.theme = t;
+        const t = localStorage.getItem('tmb-theme') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset.theme = t;
       } catch {}
     </script>
   </head>
   <body>
+    <a class="skip" href="#main">Skip to content</a>
     <Header />
-    <main>
+    <main id="main">
       <slot />
     </main>
     <Footer />
@@ -83,13 +151,32 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         { passive: true },
       );
 
-      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      document.getElementById('theme-toggle')?.addEventListener('click', (e) => {
         const root = document.documentElement;
         const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-        root.dataset.theme = next;
-        try {
-          localStorage.setItem('tmb-theme', next);
-        } catch {}
+        const apply = () => {
+          root.dataset.theme = next;
+          try {
+            localStorage.setItem('tmb-theme', next);
+          } catch {}
+        };
+        if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          apply();
+          return;
+        }
+        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const x = r.left + r.width / 2;
+        const y = r.top + r.height / 2;
+        const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        root.dataset.vt = 'theme';
+        const t = document.startViewTransition(apply);
+        t.ready.then(() =>
+          root.animate(
+            { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+            { duration: 520, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', pseudoElement: '::view-transition-new(root)' },
+          ),
+        );
+        t.finished.finally(() => delete root.dataset.vt);
       });
 
       document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((group) => {
