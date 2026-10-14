@@ -1,0 +1,23 @@
+.claude/skills/tmb-scout/SKILL.md
+  s_5597d627b39887::t_18d2644e32ea64 1-94
+.claude/skills/tmb-scout/scripts/tweet-entry.ts
+  s_5597d627b39887::t_b2395da165d76c 1-58
+README.md
+  s_5597d627b39887::t_4679eac912ff2a 57-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "18c08eade00816fcf6ed38072ed25162dc41795c",
+  "prompts": {},
+  "sessions": {
+    "s_5597d627b39887": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4c113d41-db35-4500-bf34-23db09334204",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
