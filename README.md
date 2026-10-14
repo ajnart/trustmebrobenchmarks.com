@@ -54,5 +54,7 @@ bun run check    # typecheck
 - Every page gets its own share image, rendered with satori at build time (`src/lib/og.tsx`, `src/pages/og/`)
 - Favicons, app icons and the web manifest are generated from one SVG (`src/lib/icons.ts`)
 - Navigation uses Speculation Rules prerendering and cross-document view transitions
+- Production builds load Cloudflare Web Analytics (cookieless, no consent banner needed)
+- New posts and news are found and verified with the `tmb-scout` agent skill (`.claude/skills/tmb-scout`)
 
 Data lives in `src/data/` (models, benchmarks, tweets, incidents). Add a meme benchmark or a tweet there and open a PR.
