@@ -148,7 +148,7 @@ const studioPanels = [
       <h3 class="h3">Changelog</h3>
       <ul>
         {
-          CHANGELOG.map((c) => (
+          CHANGELOG.slice(0, 10).map((c) => (
             <li>
               <a href={c.href}>
                 <span class="cl-kind">

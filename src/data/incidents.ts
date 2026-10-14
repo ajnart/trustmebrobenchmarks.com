@@ -189,7 +189,10 @@ export const INCIDENTS: Incident[] = [
     timeline: [
       { date: '2026-09-30', text: 'Pre-launch reporting on real-world translation.', tweetId: '2105400431274840238' },
       { date: '2026-10-01', text: 'Announced.' },
+      { date: '2026-10-05', text: '"All that hype for a product which no one can use."', tweetId: '2106918700003754058' },
+      { date: '2026-10-12', text: 'Projected ahead of the ASI 2027 countdown, per internal "trust me bro" testing, and hope.', tweetId: '2109626265271689382' },
       { date: '2026-10-12', text: '"Announced 11 days ago and still isn\'t out to the public."', tweetId: '2109720113578737999' },
+      { date: '2026-10-13', text: 'Most popular benchmark identified: "trust me, bro".', tweetId: '2110128754248876298' },
     ],
   },
   {

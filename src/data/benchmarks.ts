@@ -61,7 +61,7 @@ export const BENCHMARKS: Benchmark[] = [
       name: 'BullshitBench',
       author: '@petergostev',
       note: 'BullshitBench is open: questions, scripts, responses and judgements are all public. Our numbers are not BullshitBench numbers. Please do not cite them as such, or at all.',
-      tweetIds: ['2026396163637731794', '2028492834693677377', '2029230388028358726', '2047773402090426548'],
+      tweetIds: ['2026396163637731794', '2028492834693677377', '2029230388028358726', '2047773402090426548', '2109366242977149324'],
     },
     generator: {
       base: 42,
