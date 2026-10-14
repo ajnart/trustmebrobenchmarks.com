@@ -1,0 +1,21 @@
+src/components/ui/tweet-card.tsx
+  s_5597d627b39887::t_d968538bf22981 182-194,197
+src/layouts/Base.astro
+  s_5597d627b39887::t_c430ca8d8a052e 101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dd307318c0dd00ffc9aeaf6e27fb57be0ef9c8c3",
+  "prompts": {},
+  "sessions": {
+    "s_5597d627b39887": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4c113d41-db35-4500-bf34-23db09334204",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
