@@ -179,9 +179,22 @@ export const TweetBody = ({ tweet }: { tweet: EnrichedTweet }) => (
   </div>
 )
 
+const MAX_VIDEO_EDGE = 1280
+
+const videoEdge = (src: string) => {
+  const size = src.match(/\/(\d+)x(\d+)\//)
+  if (!size) return 0
+  return Math.max(Number(size[1]), Number(size[2]))
+}
+
+const pickMp4 = (variants: { type: string; src: string }[] = []) => {
+  const mp4s = variants.filter((v) => v.type === "video/mp4").sort((a, b) => videoEdge(b.src) - videoEdge(a.src))
+  return mp4s.find((v) => videoEdge(v.src) <= MAX_VIDEO_EDGE) ?? mp4s.at(-1)
+}
+
 export const TweetMedia = ({ tweet }: { tweet: EnrichedTweet }) => {
   if (!tweet.video && !tweet.photos) return null
-  const mp4 = tweet.video?.variants.find((v) => v.type === "video/mp4")
+  const mp4 = pickMp4(tweet.video?.variants)
   const single = tweet.photos?.length === 1
   return (
     <div className="flex flex-1 items-center justify-center">
@@ -189,7 +202,6 @@ export const TweetMedia = ({ tweet }: { tweet: EnrichedTweet }) => {
         <video
           poster={tweet.video.poster}
           controls
-          muted
           playsInline
           preload="none"
           className="w-full rounded-xl border"
