@@ -6,8 +6,9 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
-  { date: '14 Oct', kind: 'Incident update', title: 'Gemini 4 Argon now ahead of the ASI 2027 countdown, per internal testing and hope', href: '/incidents/tmb-2026-0010/' },
-  { date: '14 Oct', kind: 'Corpus update', title: 'Six posts added to In the Wild, four concerning Gemini 4', href: '/in-the-wild/' },
+  { date: '14 Oct', kind: 'New model evaluation', title: 'Gemini 4 Argon (available; evaluated on the model this time)', href: '/models/gemini-4-argon/' },
+  { date: '14 Oct', kind: 'Incident update', title: 'Gemini 4 Argon ships, twelve days after its benchmark table', href: '/incidents/tmb-2026-0010/' },
+  { date: '14 Oct', kind: 'Corpus update', title: 'Eight posts added to In the Wild, six concerning Gemini 4', href: '/in-the-wild/' },
   { date: '13 Oct', kind: 'External benchmark update', title: 'BullshitBench V2 adds Gemini 4 Argon, Muse Wonder, Haiku 5.5 and Mistral Large 4', href: '/benchmarks/nonsense-pushback/' },
   { date: '13 Oct', kind: 'New model evaluation', title: 'Our Model™ (internal checkpoint, self-reported)', href: '/models/our-model/' },
   { date: '12 Oct', kind: 'New incident filed', title: 'Muse Wonder and the red cylinder', href: '/incidents/tmb-2026-0011/' },

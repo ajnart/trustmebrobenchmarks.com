@@ -124,7 +124,7 @@ const SPAN_SUB: Record<string, string> = {
   'grok-5': '"A shot at being true AGI"',
   'le-chaton-fat': 'Rumored 30T spec',
   'mistral-large-4': 'Le Chaton Fat → Le Chonk',
-  'gemini-4-argon': 'Announced with benchmark table',
+  'gemini-4-argon': 'Benchmark table first, model later',
   'claude-next': 'Routing rumor',
   'muse-wonder': 'Announced and shipped same day',
   'our-model': 'Internal checkpoint',

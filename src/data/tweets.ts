@@ -776,6 +776,26 @@ export const TWEETS: Tweet[] = [
     views: 46,
     topic: 'trust-me-bro',
   },
+  {
+    id: '2110038898009407584',
+    handle: 'sundarpichai',
+    name: 'Sundar Pichai',
+    date: '2026-10-13',
+    text: 'Gemini 4 Argon is here.\n\nIt’s available globally today for developers and enterprises in the paid tier of the Gemini API and the Gemini platform, for Ultra subscribers in Google Antigravity, and Ultra and Pro subscribers in the Gemini app and Search.\n\nHope you all enjoy it!',
+    likes: 25750,
+    views: 4812087,
+    topic: 'counterpoint',
+  },
+  {
+    id: '2110040125048832302',
+    handle: 'OfficialLoganK',
+    name: 'Logan Kilpatrick',
+    date: '2026-10-13',
+    text: 'Argon is as "big model smell" as it comes, so limited on our ability to serve it widely, but working on versions of Gemini 4 which will be available to billions of people : )',
+    likes: 580,
+    views: 121890,
+    topic: 'vaporware',
+  },
 ];
 
 export const tweetById = (id: string) => {
