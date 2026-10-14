@@ -4,7 +4,7 @@ import '../styles/global.css';
 import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { SITE_NAME } from '../lib/site';
+import { CF_BEACON_TOKEN, SITE_NAME } from '../lib/site';
 import { BUILD_DATE } from '../lib/scores';
 import {
   DEFAULT_DESCRIPTION,
@@ -285,5 +285,15 @@ const nodes: JsonLd[] = [
         );
       });
     </script>
+    {
+      import.meta.env.PROD && (
+        <script
+          is:inline
+          type="module"
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: CF_BEACON_TOKEN })}
+        />
+      )
+    }
   </body>
 </html>
