@@ -1,0 +1,29 @@
+.claude/skills/tmb-scout/SKILL.md
+  s_5597d627b39887::t_7d7f252f9c65ee 3,10,35,37,40,43,60,73
+.claude/skills/tmb-scout/evals/weekly-update-without-shipping/case.yaml
+  s_5597d627b39887::t_489b5123f14fad 5-8
+.claude/skills/tmb-scout/evals/weekly-update-without-shipping/prompt.md
+  s_5597d627b39887::t_88c60f806ff7a5 8
+.claude/skills/tmb-scout/scripts/sweep.ts
+  s_5597d627b39887::t_06d780f99fcd51 141,143,145,148-149,155-156
+src/components/charts/StackedBarChart.astro
+  s_5597d627b39887::t_d6a3a09242ffd3 23,25
+src/data/changelog.ts
+  s_5597d627b39887::t_599a54966f2cfa 38-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "028cddb51154a2805bed295c7b59505230b16412",
+  "prompts": {},
+  "sessions": {
+    "s_5597d627b39887": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4c113d41-db35-4500-bf34-23db09334204",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
