@@ -6,6 +6,7 @@ import type { Stack } from '../components/charts/StackedBarChart.astro';
 import type { Benchmark } from '../data/benchmarks';
 import { lab } from '../data/labs';
 import { AVAILABLE, MODELS, displayName, modelById, STATUS_LABEL, type Model } from '../data/models';
+import { LATEST_VIBES, VIBE_SEGMENTS, type Vibe, type VibeRow } from '../data/vibes';
 import { modelTip } from './chart';
 import { INDEX_NAME } from './site';
 import { costBreakdown, fmt, indexRows, money, randomAxis, rows, shipDays, tmbIndex } from './scores';
@@ -94,6 +95,30 @@ export function costStacks(): Stack[] {
     });
 }
 
+export const vibeShare = (r: VibeRow, key: Vibe) => Math.round((r.counts[key] / r.posts) * 100);
+
+export function vibeStacks(): Stack[] {
+  return [...LATEST_VIBES.rows]
+    .sort((a, b) => vibeShare(b, 'hype') - vibeShare(a, 'hype') || a.model.localeCompare(b.model))
+    .map((r) => {
+      const m = modelById(r.model);
+      return {
+        id: m.id,
+        label: m.name,
+        color: lab(m.lab).color,
+        mark: lab(m.lab).mark,
+        total: `n=${r.posts}`,
+        segments: VIBE_SEGMENTS.map((s) => ({ ...s, value: (r.counts[s.key] / r.posts) * 100 })),
+        href: href(m),
+        tip: modelTip(
+          m,
+          VIBE_SEGMENTS.map((s) => [s.label, `${vibeShare(r, s.key)}% (${r.counts[s.key]})`]),
+          `${r.posts} posts on X, labelled by a language model.`,
+        ),
+      };
+    });
+}
+
 export function claimDumbbells(): Dumbbell[] {
   return MODELS.map((m) => {
     const measured = tmbIndex(m);
@@ -127,6 +152,8 @@ const SPAN_SUB: Record<string, string> = {
   'gemini-4-argon': 'Benchmark table first, model later',
   'claude-next': 'Routing rumor',
   'muse-wonder': 'Announced and shipped same day',
+  'mercury-3': '"Lands next week" (it did)',
+  'kimi-k3-1': '24-second teaser',
   'our-model': 'Internal checkpoint',
 };
 

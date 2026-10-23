@@ -17,12 +17,13 @@ interface Props {
   slotWidth?: number;
   plotHeight?: number;
   axisFmt?: (v: number) => string;
+  max?: number;
   ariaLabel: string;
 }
 
-const { stacks, slotWidth: slot = 56, plotHeight = 280, axisFmt = (v: number) => String(v), ariaLabel } = Astro.props;
+const { stacks, slotWidth: slot = 56, plotHeight = 280, axisFmt = (v: number) => String(v), max: maxProp, ariaLabel } = Astro.props;
 const totals = stacks.map((s) => s.segments.reduce((a, b) => a + b.value, 0));
-const max = niceMax(Math.max(...totals));
+const max = maxProp ?? niceMax(Math.max(...totals));
 const COS = Math.cos((52 * Math.PI) / 180);
 const SIN = Math.sin((52 * Math.PI) / 180);
 const wrapped = stacks.map((s) => wrapLabel(s.label, 15, 3));

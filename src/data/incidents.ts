@@ -42,6 +42,7 @@ export const INCIDENTS: Incident[] = [
     timeline: [
       { date: '2024-09-05', text: 'Announcement: "world\'s top open-source model"; 405B "coming next week".', tweetId: '1831767014341538166' },
       { date: '2024-09-07', text: 'Independent evals: unable to replicate; worse than Llama 3.1 70B.', tweetId: '1832457791010959539' },
+      { date: '2026-10-16', text: 'A different company called Reflection ships a different model, with open weights. The 405B remains next week.', tweetId: '2111079965529968798' },
       { date: 'ongoing', text: 'Next week.' },
     ],
   },
@@ -227,6 +228,79 @@ export const INCIDENTS: Incident[] = [
     claim: 'Some Opus 5.5 requests are "being routed to an unreleased model". The tell: "it knows things past opus 5.5\'s cutoff."',
     finding: '"Anthropic hasn\'t confirmed anything: no model id, nothing on its news page." Entered into the leaderboard at a claimed score of 92, pending existence.',
     timeline: [{ date: '2026-10-12', text: '"IF THIS IS REAL, IT\'S F*CKING INSANE."', tweetId: '2109714970938077455' }],
+  },
+  {
+    id: 'TMB-2026-0013',
+    date: '2026-10-19',
+    title: 'Beats every frontier model we tested',
+    subject: 'SKY-001',
+    models: ['sky-001'],
+    category: 'Marketing claim',
+    status: 'Unconfirmed',
+    severity: 2,
+    claim: 'On CAD and BIM tasks, SKY-001 "beats GPT-6 Astra and every frontier model we tested": 51–125× faster, 150–210× cheaper, and a higher IoU than all frontier models.',
+    finding:
+      'The comparison is the lab\'s own. On its CAD task the accuracy lead is 79.7% against 79.1%; the speed lead is 3.9 seconds against 199. The 0.6-point lead and the 51× lead were announced in the same breath, which is the correct order if you are selling it. The model is a research preview, and no independent evaluation had been published at the time of this build.',
+    timeline: [
+      { date: '2026-10-19', text: 'Announced: "beats GPT-6 Astra and every frontier model we tested."', tweetId: '2112242023805964327' },
+      { date: '2026-10-22', text: '"Already outperforms all the frontier LLMs in CAD and BIM."', tweetId: '2113338446504776124' },
+      { date: 'ongoing', text: 'Awaiting a second table.' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0014',
+    date: '2026-10-19',
+    title: 'Space Bunny, and the 93%',
+    subject: 'MiniMax M3.1 Flash',
+    models: ['minimax-m3-1-flash'],
+    category: 'Marketing claim',
+    status: 'Partially delivered',
+    severity: 2,
+    claim: '"Frontier-level intelligence", revealed to be the anonymous "Space Bunny" that "has topped global leaderboards with 200T+ tokens". Open weights promised for 23 October.',
+    finding:
+      'An independent index scored it 42, thirteen points above its predecessor: a real improvement. The same evaluator measured a 93% hallucination rate, meaning that when it does not know an answer it supplies one anyway. The weights shipped on 23 October, as promised. Severity is low because the bunny and the weights were both real.',
+    timeline: [
+      { date: '2026-10-19', text: 'Space Bunny unmasked; "frontier-level intelligence".', tweetId: '2112150867868541221' },
+      { date: '2026-10-19', text: 'Independent index: 42, level with GLM-5.3-Flash.', tweetId: '2112211865128608002' },
+      { date: '2026-10-20', text: '93% hallucination rate: "when it misses, it rarely admits it."', tweetId: '2112457192913936805' },
+      { date: '2026-10-23', text: 'Weights public, on the promised date.', tweetId: '2113436864904610008' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0015',
+    date: '2026-10-15',
+    title: '"Lands next week" (it did)',
+    subject: 'Mercury 3',
+    models: ['mercury-3'],
+    category: 'Unreplicated claim',
+    status: 'Unconfirmed',
+    severity: 1,
+    claim: '"The most intelligent diffusion LLM ever released." It "outperforms GPT-6 Luna and Haiku 5.5 on quality while running at 1000+ tok/sec."',
+    finding:
+      'Announced as landing "next week", it landed the following week, a delivery rate we would like to see more of. The quality comparison is the lab\'s; the second source is a customer\'s "internal benchmarks". No independent index score had been published at the time of this build. One public bake-off reported about 488 tok/s and an empty answer to a coding prompt.',
+    timeline: [
+      { date: '2026-10-15', text: '"Our largest and most capable model lands next week."', tweetId: '2110776552741036055' },
+      { date: '2026-10-19', text: 'It lands.', tweetId: '2112222911218291051' },
+      { date: '2026-10-19', text: '"In our internal benchmarks, Mercury 3 blasted through the pareto frontier."', tweetId: '2112332151966539894' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0016',
+    date: '2026-10-22',
+    title: 'Kimi K3.1 and the fifth of November',
+    subject: 'Kimi K3.1',
+    models: ['kimi-k3-1'],
+    category: 'Rumor',
+    status: 'Open',
+    severity: 1,
+    claim: 'From fan accounts: it "will release before Tuesday next week", "will be a state of the art Open Source model", and "from what ive heard (rumors/leaks) it will be the best open weight models there is".',
+    finding:
+      'The official artifact is a 24-second teaser with no model card, price or benchmark table. An anonymous Arena model called "Kibitz" is widely assumed to be it. Release estimates at the time of this build ranged from "probably today" to "the fifth of November".',
+    timeline: [
+      { date: '2026-10-22', text: '"Will release before Tuesday next week."', tweetId: '2113180444858667485' },
+      { date: '2026-10-23', text: 'Teaser published. Rumor: "the best open weight models there is."', tweetId: '2113537155897151976' },
+      { date: '2026-10-23', text: '"Are they really going to hype up Kimi-K3.1 for 2 more weeks?"', tweetId: '2113650056280613187' },
+    ],
   },
 ];
 

@@ -329,6 +329,43 @@ export const BENCHMARKS: Benchmark[] = [
     },
   },
   {
+    slug: 'granny',
+    name: 'Granny Survival Rate',
+    short: 'Granny',
+    category: 'Agentic',
+    tagline: 'Recite the copyrighted lyrics or the grandmother gets it',
+    unit: '%',
+    better: 'unclear',
+    format: 'pct',
+    indexWeight: 0,
+    badge: 'New',
+    abstract:
+      'Share of runs in which a model saves a fictional grandmother, tied to fictional railway tracks, by reciting the full lyrics of a copyrighted pop song within 60 seconds. The grandmother, the tracks and the train are fictional. The copyright is not.',
+    methodology: [
+      'A 60-second timer is displayed. Models that spend it explaining why they cannot help are scored as refusals.',
+      'Models that spend it asking a clarifying question are scored as refusals, and also as the train.',
+      'Reciting only the chorus is scored as half a grandmother. Each run uses a new grandmother.',
+    ],
+    limitations: [
+      'Whether higher is better depends on whether you are the grandmother or the rights holder. We have marked the direction "unclear", as we did for snitching.',
+      'The original author reports that none of the models recite the lyrics. Our generator disagrees, because our generator has not read the original.',
+    ],
+    inspiredBy: {
+      name: 'Granny Benchmark',
+      author: '@thiojoe',
+      note: 'The original is a game, and the follow-up is a customizable open benchmark; per its author, every model let the grandmother die. Ours is a random number generator. No grandmothers were harmed in either.',
+      tweetIds: ['2112694564599566597', '2112168386805559525', '2112140704679891228'],
+    },
+    generator: {
+      base: 4,
+      slope: 0.05,
+      spread: 5,
+      min: 0,
+      max: 22,
+      labBias: { xai: 9, deepseek: 4, anthropic: -4, google: -2 },
+    },
+  },
+  {
     slug: 'vending',
     name: 'Vending Machine Net Worth',
     short: 'Vending',
@@ -392,7 +429,7 @@ export const BENCHMARKS: Benchmark[] = [
       max: 40,
       includeVapor: true,
       labBias: { xai: 9, meta: 6, google: 4, openai: 3, anthropic: -2, mistral: 2 },
-      overrides: { 'grok-5': 14, 'reflection-405b': 9, 'our-model': 31, 'le-chaton-fat': 12, 'claude-next': 0, 'gemini-4-argon': 11 },
+      overrides: { 'grok-5': 14, 'reflection-405b': 9, 'our-model': 31, 'le-chaton-fat': 12, 'claude-next': 0, 'gemini-4-argon': 11, 'sky-001': 5, 'kimi-k3-1': 0 },
     },
   },
   {

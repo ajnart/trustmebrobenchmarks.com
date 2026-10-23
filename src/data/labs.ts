@@ -10,6 +10,10 @@ export type LabId =
   | 'zai'
   | 'alibaba'
   | 'reflection'
+  | 'reflectionai'
+  | 'minimax'
+  | 'inception'
+  | 'skyfall'
   | 'tmb';
 
 export interface Lab {
@@ -31,6 +35,10 @@ export const LABS: Record<LabId, Lab> = {
   zai: { id: 'zai', name: 'Z.ai', color: '#5b6b86', mark: 'Z' },
   alibaba: { id: 'alibaba', name: 'Alibaba', color: '#a855f7', mark: 'Q' },
   reflection: { id: 'reflection', name: 'Reflection', color: '#db2777', mark: 'R' },
+  reflectionai: { id: 'reflectionai', name: 'Reflection AI', color: '#e879f9', mark: 'R²' },
+  minimax: { id: 'minimax', name: 'MiniMax', color: '#ef4444', mark: 'Mx' },
+  inception: { id: 'inception', name: 'Inception', color: '#84cc16', mark: 'I' },
+  skyfall: { id: 'skyfall', name: 'Skyfall AI', color: '#38bdf8', mark: 'S' },
   tmb: { id: 'tmb', name: 'Trust Me Bro Labs', color: '#d4a20b', mark: '*' },
 };
 
