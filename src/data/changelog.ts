@@ -6,7 +6,6 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
-  { date: '23 Oct', kind: 'New chart', title: 'Vibe Check: sentiment on X, by model, labelled by a model', href: '/#vibes' },
   { date: '23 Oct', kind: 'New incident filed', title: 'Kimi K3.1 and the fifth of November', href: '/incidents/tmb-2026-0016/' },
   { date: '23 Oct', kind: 'Incident update', title: 'MiniMax M3.1 Flash weights ship on the promised date', href: '/incidents/tmb-2026-0014/' },
   { date: '23 Oct', kind: 'Corpus update', title: 'Thirty-five posts added to In the Wild, including one grandmother', href: '/in-the-wild/' },
@@ -36,9 +35,9 @@ export const CHANGELOG: ChangelogEntry[] = [
 
 export const ANNOUNCEMENTS = [
   {
-    title: 'Introducing the Vibe Check',
-    body: 'Sentiment on X for every new model, labelled by a language model, which is the problem',
-    href: '/#vibes',
+    title: 'Six new models, one of them a teaser',
+    body: 'Muse Spark Open, Beam, MiniMax M3.1 Flash, Mercury 3, SKY-001 and Kimi K3.1, scored as usual',
+    href: '/models/',
   },
   {
     title: 'Announcing the TMB Benchmaxx Gap',

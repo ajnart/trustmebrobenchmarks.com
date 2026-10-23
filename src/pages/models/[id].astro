@@ -9,8 +9,6 @@ import { INCIDENTS, incidentHref } from '../../data/incidents';
 import { lab } from '../../data/labs';
 import { AVAILABLE, MODELS, STATUS_LABEL, type Model } from '../../data/models';
 import { TWEETS, tweetById } from '../../data/tweets';
-import { LATEST_VIBES, VIBE_SEGMENTS, postUrl, vibeFor } from '../../data/vibes';
-import { vibeShare } from '../../lib/views';
 import { gapText, indexRank } from '../../lib/og-pages';
 import { fmt, indexRows, money, rows, shipDays, shortDate, tmbIndex, value } from '../../lib/scores';
 import { clip } from '../../lib/seo';
@@ -47,7 +45,6 @@ const results = BENCHMARKS.flatMap((b) => {
   return [{ b, v, place, n: all.length, share: (v - lo) / (hi - lo || 1) }];
 });
 
-const vibe = vibeFor(m.id);
 const incidents = INCIDENTS.filter((i) => i.models?.includes(m.id));
 const incidentTweetIds = incidents.flatMap((i) => i.timeline.flatMap((e) => (e.tweetId ? [e.tweetId] : [])));
 const mentioned = TWEETS.filter((t) => t.text.toLowerCase().includes(m.name.toLowerCase())).map((t) => t.id);
@@ -125,45 +122,6 @@ const description = clip(
       ))
     }
   </section>
-
-  {
-    vibe && (
-      <section class="container section">
-        <div class="section-head">
-          <span class="eyebrow">Vibe Check · Week of {shortDate(LATEST_VIBES.week)}</span>
-          <h2 class="h2">What X thinks of {m.name}</h2>
-          <p>{vibe.posts} of the most-liked posts, labelled by a language model. <a class="link" href="/#vibes">Method</a>.</p>
-        </div>
-        <div class="card vibe">
-          <div class="vibe-bar" role="img" aria-label={VIBE_SEGMENTS.map((s) => `${s.label} ${vibeShare(vibe, s.key)}%`).join(', ')}>
-            {VIBE_SEGMENTS.filter((s) => vibe.counts[s.key] > 0).map((s) => (
-              <i style={`flex:${vibe.counts[s.key]};background:${s.color}`} title={`${s.label}: ${vibeShare(vibe, s.key)}%`} />
-            ))}
-          </div>
-          <div class="vibe-legend">
-            {VIBE_SEGMENTS.map((s) => (
-              <span>
-                <i style={`background:${s.color}`} />
-                {s.label} <b class="num">{vibeShare(vibe, s.key)}%</b>
-              </span>
-            ))}
-          </div>
-          <div class="vibe-links">
-            {vibe.loudestHype && (
-              <a class="link" href={postUrl(vibe.loudestHype)} rel="noopener" target="_blank">
-                Loudest hype ↗
-              </a>
-            )}
-            {vibe.loudestDoubt && (
-              <a class="link" href={postUrl(vibe.loudestDoubt)} rel="noopener" target="_blank">
-                Loudest doubt ↗
-              </a>
-            )}
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   <section class="container section">
     <div class="section-head">
@@ -389,37 +347,6 @@ const description = clip(
   .res-rank {
     text-align: right;
     color: var(--ink-2);
-  }
-  .vibe {
-    padding: 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .vibe-bar {
-    display: flex;
-    gap: 2px;
-    height: 14px;
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .vibe-legend,
-  .vibe-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 18px;
-    font-size: 13.5px;
-    color: var(--ink-2);
-  }
-  .vibe-legend span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .vibe-legend i {
-    width: 10px;
-    height: 10px;
-    border-radius: 3px;
   }
   .incs,
   .peers {

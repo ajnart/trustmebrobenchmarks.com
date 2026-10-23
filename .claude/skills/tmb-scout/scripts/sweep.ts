@@ -138,21 +138,21 @@ for (const kind of ['discourse', 'account'] as const) {
   }
 }
 
-const vibes: Record<string, Post[]> = {};
+const samples: Record<string, Post[]> = {};
 for (const r of results.filter((x) => x.kind === 'model')) {
-  const pool = new Map((vibes[r.model ?? ''] ?? []).map((p) => [p.id, p]));
+  const pool = new Map((samples[r.model ?? ''] ?? []).map((p) => [p.id, p]));
   for (const p of r.posts) pool.set(p.id, p);
-  vibes[r.model ?? ''] = [...pool.values()];
+  samples[r.model ?? ''] = [...pool.values()];
 }
 if (models.length > 0) {
-  md.push('## Model samples (classify each post for the vibe check)', '');
-  for (const [model, posts] of Object.entries(vibes)) {
+  md.push('## Model samples', '');
+  for (const [model, posts] of Object.entries(samples)) {
     md.push(`### ${model} (${posts.length} posts)`, '', ...ranked(posts).map((p, i) => `${i + 1}. ${line(p).slice(2)}`), '');
   }
 }
 
 await mkdir(out, { recursive: true });
-const ordered = Object.fromEntries(Object.entries(vibes).map(([m, posts]) => [m, ranked(posts)]));
-await writeFile(join(out, 'sweep.json'), JSON.stringify({ since, charged_micro: charged, results, vibes: ordered }, null, 1));
+const ordered = Object.fromEntries(Object.entries(samples).map(([m, posts]) => [m, ranked(posts)]));
+await writeFile(join(out, 'sweep.json'), JSON.stringify({ since, charged_micro: charged, results, samples: ordered }, null, 1));
 await writeFile(join(out, 'sweep.md'), md.join('\n'));
 console.log(`since ${since} · ${results.length} searches · ${failed.length} failed · $${(charged / 1e6).toFixed(4)}\n${join(out, 'sweep.md')}`);

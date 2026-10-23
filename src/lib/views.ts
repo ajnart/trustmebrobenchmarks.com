@@ -6,7 +6,6 @@ import type { Stack } from '../components/charts/StackedBarChart.astro';
 import type { Benchmark } from '../data/benchmarks';
 import { lab } from '../data/labs';
 import { AVAILABLE, MODELS, displayName, modelById, STATUS_LABEL, type Model } from '../data/models';
-import { LATEST_VIBES, VIBE_SEGMENTS, type Vibe, type VibeRow } from '../data/vibes';
 import { modelTip } from './chart';
 import { INDEX_NAME } from './site';
 import { costBreakdown, fmt, indexRows, money, randomAxis, rows, shipDays, tmbIndex } from './scores';
@@ -90,30 +89,6 @@ export function costStacks(): Stack[] {
         tip: modelTip(
           m,
           segments.map((s) => [s.label, money(s.value)]),
-        ),
-      };
-    });
-}
-
-export const vibeShare = (r: VibeRow, key: Vibe) => Math.round((r.counts[key] / r.posts) * 100);
-
-export function vibeStacks(): Stack[] {
-  return [...LATEST_VIBES.rows]
-    .sort((a, b) => vibeShare(b, 'hype') - vibeShare(a, 'hype') || a.model.localeCompare(b.model))
-    .map((r) => {
-      const m = modelById(r.model);
-      return {
-        id: m.id,
-        label: m.name,
-        color: lab(m.lab).color,
-        mark: lab(m.lab).mark,
-        total: `n=${r.posts}`,
-        segments: VIBE_SEGMENTS.map((s) => ({ ...s, value: (r.counts[s.key] / r.posts) * 100 })),
-        href: href(m),
-        tip: modelTip(
-          m,
-          VIBE_SEGMENTS.map((s) => [s.label, `${vibeShare(r, s.key)}% (${r.counts[s.key]})`]),
-          `${r.posts} posts on X, labelled by a language model.`,
         ),
       };
     });

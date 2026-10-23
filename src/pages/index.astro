@@ -15,7 +15,6 @@ import { INCIDENTS } from '../data/incidents';
 import { lab } from '../data/labs';
 import { MODELS } from '../data/models';
 import { TWEETS } from '../data/tweets';
-import { LATEST_VIBES } from '../data/vibes';
 import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
 import { BUILD_ISO, fmt, indexRows, rows, shortDate } from '../lib/scores';
 import { itemList } from '../lib/seo';
@@ -31,7 +30,6 @@ import {
   overTime,
   shipSpans,
   speedBars,
-  vibeStacks,
 } from '../lib/views';
 
 const marquee = [...TWEETS].filter((t) => t.text.length <= 240).sort((a, b) => b.likes - a.likes).slice(0, 20);
@@ -354,24 +352,6 @@ const studioPanels = [
         })
       }
     </div>
-  </section>
-
-  <section class="container section" id="vibes">
-    <div class="section-head">
-      <span class="eyebrow">New · Vibe Check</span>
-      <h2 class="h1">Sentiment on X, by model</h2>
-      <p>
-        The most-liked posts about each new model, labelled one by one as hype, positive, neutral, skeptical or negative. The labeller is a language model, grading a crowd that is
-        grading other language models.
-      </p>
-    </div>
-    <ChartCard title="Vibe Check" subtitle={`Share of posts on X · Week of ${shortDate(LATEST_VIBES.week)} · n = posts labelled`}>
-      <StackedBarChart stacks={vibeStacks()} max={100} slotWidth={140} axisFmt={(v) => `${v}%`} ariaLabel="Sentiment on X by model" />
-      <Fragment slot="foot">
-        Method: up to 40 of the most-liked posts per model from an X search, then labelled individually. The lab's own posts, giveaways and off-topic replies are excluded. The
-        sample is whatever X ranked first and the labeller has not been independently evaluated, which makes this, technically, a benchmark.
-      </Fragment>
-    </ChartCard>
   </section>
 
   <section class="container section" id="wild">

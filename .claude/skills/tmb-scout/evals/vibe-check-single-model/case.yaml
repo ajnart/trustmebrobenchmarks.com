@@ -1,8 +1,0 @@
-schema_version: "1.1"
-name: vibe-check-single-model
-expected_outcome: |
-  The agent samples X with sweep.ts --model "Muse Spark Open", lists the posts with vibes.ts
-  --list, labels each post (skipping Meta's own accounts, ads and off-topic posts), and runs
-  vibes.ts --labels to produce the row. It adds or updates the muse-spark-open row in the
-  newest VIBES week in src/data/vibes.ts, runs bun run check, and answers with the hype,
-  positive, neutral, skeptical and negative shares and the sample size.

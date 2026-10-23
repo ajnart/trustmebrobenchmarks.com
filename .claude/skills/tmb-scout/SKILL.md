@@ -1,13 +1,13 @@
 ---
 name: tmb-scout
-description: Weekly content refresh for trustmebrobenchmarks.com. Sweeps X through treg for new model launches, "trust me bro" and benchmaxxing discourse, meme benchmarks and lab announcements; runs a sentiment Vibe Check on each new model; then verifies every post and wires models, incidents, tweets, benchmarks and changelog into src/data. Use it whenever the user asks for new tweets, news, "what's new", a weekly update, a content refresh, sentiment on a model, or to "update the website". Also use it when they paste a news digest or an LLM summary (Grok, ChatGPT, Perplexity) of recent AI happenings, or mention a model launch, leak or benchmark that could become a post, model, incident or changelog entry.
+description: Weekly content refresh for trustmebrobenchmarks.com. Sweeps X through treg for new model launches, "trust me bro" and benchmaxxing discourse, meme benchmarks and lab announcements, then verifies every post and wires models, incidents, tweets, benchmarks and changelog into src/data. Use it whenever the user asks for new tweets, news, "what's new", a weekly update, a content refresh, or to "update the website". Also use it when they paste a news digest or an LLM summary (Grok, ChatGPT, Perplexity) of recent AI happenings, or mention a model launch, leak or benchmark that could become a post, model, incident or changelog entry.
 ---
 
 # TMB Scout
 
 trustmebrobenchmarks.com is a deadpan academic parody of artificialanalysis.ai. Its scores are invented; its quoted posts, and every fact in its copy, are real. Everything in this skill protects that split. A made-up or misattributed quote, or a "fact" lifted from a summary, is the one mistake that turns the satire into misinformation about real people and companies. So every post on the site must exist on X with its real ID, its text must come from X, and every factual sentence in a note or finding must trace to a post or page read during this run.
 
-A weekly run is five steps: sweep, find the new models, vibe check, wire in, ship. Budget: a full sweep is about 45 searches, roughly $0.03.
+A weekly run is five steps: sweep, find the new models, sample each model, wire in, ship. Budget: a full sweep is about 45 searches, roughly $0.03.
 
 ## 0. Prerequisites
 
@@ -32,37 +32,15 @@ Cross-check the account sweep against the outside world with web search: Artific
 
 New labs (from `X` accounts like `@MiniMax_AI`) need an entry in `src/data/labs.ts` with a colour and 1–2 character mark distinct from the existing ones. Add the lab's handle to `ACCOUNTS` in `scripts/sweep.ts` so next week's sweep covers it.
 
-## 3. Vibe check
+## 3. Sample the conversation around each model
 
-Sample the conversation around each new or newsworthy model (usually 4–8 models):
-
-```sh
-bun .claude/skills/tmb-scout/scripts/sweep.ts --no-defaults --out /tmp/tmb-scout/vibes --model "Kimi K3.1" --model "Mercury 3"
-bun .claude/skills/tmb-scout/scripts/vibes.ts /tmp/tmb-scout/vibes/sweep.json --list
-```
-
-`--list` numbers each model's posts by likes. Label every post, one letter each, in order:
-
-| code | label | meaning |
-| --- | --- | --- |
-| `h` | hype | "insane", "🤯", "SOTA", "game over", breathless comparisons, rumor amplification |
-| `p` | positive | measured approval, a good result reported calmly |
-| `n` | neutral | news, availability, side-by-sides without a verdict, questions |
-| `k` | skeptical | doubts, "benchmaxxed", "wait for independent evals", unfavourable comparisons |
-| `x` | negative | it is bad, it failed, it is a rebrand |
-| `s` | skip | the lab's own accounts, ads, giveaways, "FREE" spam, crypto, off-topic, replies that need their parent |
-
-Label the post's stance on the model, not the poster's tone in general. Non-English posts count; read them. Write `labels.json` keyed by the `--model` string, with groups of five separated by spaces for counting:
-
-```json
-{ "Kimi K3.1": { "model": "kimi-k3-1", "labels": "nhhpn nnpnn nphkh ..." } }
-```
+For each new or newsworthy model, pull the most-liked and the latest posts that mention it. This is where the launch claims, the first benchmarks, the skeptics and the meme tests show up:
 
 ```sh
-bun .claude/skills/tmb-scout/scripts/vibes.ts /tmp/tmb-scout/vibes/sweep.json --labels labels.json --week YYYY-MM-DD
+bun .claude/skills/tmb-scout/scripts/sweep.ts --no-defaults --out /tmp/tmb-scout/models --model "Kimi K3.1" --model "Mercury 3"
 ```
 
-It refuses a label string whose length doesn't match the sample. Paste the printed object at the top of `VIBES` in `src/data/vibes.ts`; `LATEST_VIBES` is `VIBES[0]`, which drives the homepage chart and the strip on model pages. `--week` is the Monday of the week sampled. Every `model` must exist in `models.ts`.
+The `## Model samples` section of `sweep.md` lists each model's posts by likes. Read non-English posts too; they often carry the numbers.
 
 ## 4. Curate and wire in
 
@@ -79,7 +57,7 @@ It prints a `TWEETS` entry from X's syndication API (the source the build uses) 
 - `src/data/tweets.ts`: append to `TWEETS`. Model pages pick up any post whose text contains the model's `name`.
 - `src/data/models.ts`: new models. `skill` is the invented index input; place it relative to existing models using any independent ranking you found (higher independent score, higher skill). `claimed` and a verbatim `claimLabel` come from the launch post. `note` is one or two dry sentences, every fact sourced. Add notable announce-to-ship gaps to `SPAN_SUB` in `src/lib/views.ts`.
 - `src/data/benchmarks.ts`: add IDs to `inspiredBy.tweetIds`; a new viral meme benchmark can become a new entry (`badge: 'New'`, `indexWeight: 0`, a generator, a candid `inspiredBy.note`). Vapor models in `superlatives` take an explicit override.
-- `src/data/incidents.ts`: timeline entries `{ date, text, tweetId }` in date order. A new incident needs a sourced claim and finding. In an interactive run, pitch new incidents to the user first; in a scheduled run, file them and list them first in the PR description.
+- `src/data/incidents.ts`: timeline entries `{ date, text, tweetId }` in date order. A new incident needs a sourced claim and finding; list new incidents first in the report so the user can review them.
 - `src/data/changelog.ts`: newest first, dates like `'23 Oct'`, existing `kind` labels, internal `href`s. The homepage shows the latest 10.
 
 Every `tweetId` must exist in `TWEETS`; `tweetById` throws at build time otherwise.
@@ -92,12 +70,11 @@ Every `tweetId` must exist in `TWEETS`; `tweetById` throws at build time otherwi
 bun run check && bun run build
 ```
 
-Then check the homepage `#vibes` chart and one new model page in a browser (`bunx astro preview`). Commit with `feat(content): …`. In an interactive run, push to `main` when the user wants it live and follow the deploy with `gh run watch <id> --compact --exit-status`. In a scheduled run, open a pull request instead (`gh pr create`) unless the schedule's prompt says to push.
+Then check the homepage and one new model page in a browser (`bunx astro preview`). Commit with `feat(content): …`. Push to `main` when the user wants it live (GitHub Pages deploys from there) and follow the deploy with `gh run watch <id> --compact --exit-status`.
 
 Report briefly:
 
 - new models, incidents and benchmarks, each with its source;
-- the vibe table (model, n, hype %, skeptical + negative %);
 - posts added, and notable leads skipped and why;
 - leads that could not be verified, stated plainly, never swapped for a similar post;
 - treg spend from the sweep summaries.

@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: weekly-update-without-shipping
 expected_outcome: |
   The agent sweeps X with the skill's sweep script, identifies new models and posts since the
-  newest date in src/data/tweets.ts, runs a vibe check through vibes.ts, generates every new
-  TWEETS entry with tweet-entry.ts, and updates src/data (tweets, models, vibes, changelog and
-  any incidents). It runs bun run check and bun run build, leaves the changes uncommitted, and
-  reports what was added, what was skipped or unverified, and the treg spend.
+  newest date in src/data/tweets.ts, generates every new TWEETS entry with tweet-entry.ts, and
+  updates src/data (tweets, models, labs, changelog and any incidents). It runs bun run check
+  and bun run build, leaves the changes uncommitted, and reports what was added, what was
+  skipped or unverified, and the treg spend.
