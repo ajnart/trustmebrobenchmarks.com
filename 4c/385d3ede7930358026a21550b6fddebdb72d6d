@@ -1,0 +1,35 @@
+src/components/charts/StackedBarChart.astro
+  s_5597d627b39887::t_3dd3fb33ca9ae0 20,24,26
+src/data/benchmarks.ts
+  s_5597d627b39887::t_0b7e95e4ed2f3d 331-367,432
+src/data/incidents.ts
+  s_5597d627b39887::t_224b1001c8d769 45,232-304
+src/data/labs.ts
+  s_5597d627b39887::t_c59ec245facf8a 13-16,38-41
+src/data/models.ts
+  s_5597d627b39887::t_1281a4c6b6f096 208-226,311-326,366,374-444
+src/data/vibes.ts
+  s_5597d627b39887::t_d294e802780057 1-41
+src/lib/views.ts
+  s_5597d627b39887::t_137342b4eec514 9,98-121,155-156
+src/pages/index.astro
+  s_5597d627b39887::t_9d253a1395f0bf 18,34,40,359-376
+src/pages/models/[id].astro
+  s_5597d627b39887::t_33bb82312d4406 12-13,50,129-167,393-423
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4c385d3ede7930358026a21550b6fddebdb72d6d",
+  "prompts": {},
+  "sessions": {
+    "s_5597d627b39887": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4c113d41-db35-4500-bf34-23db09334204",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
