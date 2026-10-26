@@ -429,7 +429,7 @@ export const BENCHMARKS: Benchmark[] = [
       max: 40,
       includeVapor: true,
       labBias: { xai: 9, meta: 6, google: 4, openai: 3, anthropic: -2, mistral: 2 },
-      overrides: { 'grok-5': 14, 'reflection-405b': 9, 'our-model': 31, 'le-chaton-fat': 12, 'claude-next': 0, 'gemini-4-argon': 11, 'sky-001': 5, 'kimi-k3-1': 0 },
+      overrides: { 'grok-5': 14, 'reflection-405b': 9, 'our-model': 31, 'le-chaton-fat': 12, 'claude-next': 0, 'gemini-4-argon': 11, 'sky-001': 5, 'kimi-k3-1-pro': 3 },
     },
   },
   {

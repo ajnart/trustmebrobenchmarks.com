@@ -6,6 +6,10 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { date: '26 Oct', kind: 'New incident filed', title: 'Kimi K3.1 Pro: the most benchmaxxed model ever released, allegedly', href: '/incidents/tmb-2026-0017/' },
+  { date: '26 Oct', kind: 'New model evaluation', title: 'Kimi K3.1 Pro (available; it was a teaser for about fifteen hours)', href: '/models/kimi-k3-1-pro/' },
+  { date: '26 Oct', kind: 'Incident update', title: 'Kimi K3.1 ships the same day as its teaser, not the fifth of November', href: '/incidents/tmb-2026-0016/' },
+  { date: '26 Oct', kind: 'Corpus update', title: 'Thirteen posts added to In the Wild, all concerning Kimi', href: '/in-the-wild/' },
   { date: '23 Oct', kind: 'New incident filed', title: 'Kimi K3.1 and the fifth of November', href: '/incidents/tmb-2026-0016/' },
   { date: '23 Oct', kind: 'Incident update', title: 'MiniMax M3.1 Flash weights ship on the promised date', href: '/incidents/tmb-2026-0014/' },
   { date: '23 Oct', kind: 'Corpus update', title: 'Thirty-five posts added to In the Wild, including one grandmother', href: '/in-the-wild/' },
@@ -35,9 +39,9 @@ export const CHANGELOG: ChangelogEntry[] = [
 
 export const ANNOUNCEMENTS = [
   {
-    title: 'Six new models, one of them a teaser',
-    body: 'Muse Spark Open, Beam, MiniMax M3.1 Flash, Mercury 3, SKY-001 and Kimi K3.1, scored as usual',
-    href: '/models/',
+    title: 'Kimi K3.1 Pro: benchmaxxed, or just good at benchmarks?',
+    body: 'Fourth of 215 on an independent index, and beaten by a model 49× cheaper in a hands-on test',
+    href: '/incidents/tmb-2026-0017/',
   },
   {
     title: 'Announcing the TMB Benchmaxx Gap',

@@ -128,7 +128,7 @@ const SPAN_SUB: Record<string, string> = {
   'claude-next': 'Routing rumor',
   'muse-wonder': 'Announced and shipped same day',
   'mercury-3': '"Lands next week" (it did)',
-  'kimi-k3-1': '24-second teaser',
+  'kimi-k3-1-pro': 'Teaser and launch, same day',
   'our-model': 'Internal checkpoint',
 };
 
