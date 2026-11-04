@@ -90,13 +90,13 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
 
   <section class="container highlights">
     <ChartCard title="Intelligence" subtitle={`${INDEX_NAME} · Higher is better`} marker="#7c3aed" size="sm" href="#intelligence">
-      <BarChart bars={indexBars({ limit: 12 })} slotWidth={40} plotHeight={210} labelArea={112} max={100} breakAbove={100} ariaLabel="Intelligence highlights" />
+      <BarChart bars={indexBars({ limit: 12 })} slotWidth={40} plotHeight={210} labelArea={112} labelLines={2} max={100} breakAbove={100} ariaLabel="Intelligence highlights" />
     </ChartCard>
     <ChartCard title="Speed" subtitle="Output tokens per second · Higher is better" marker="#facc15" size="sm" href="#tradeoffs">
-      <BarChart bars={speedBars(12)} slotWidth={40} plotHeight={210} labelArea={112} max={400} breakAbove={400} ariaLabel="Speed highlights" />
+      <BarChart bars={speedBars(12)} slotWidth={40} plotHeight={210} labelArea={112} labelLines={2} max={400} breakAbove={400} ariaLabel="Speed highlights" />
     </ChartCard>
     <ChartCard title="Cost per Task" subtitle="Average cost (USD) per TMB Index task · Lower is better" marker="#f97316" size="sm" href="#cost">
-      <BarChart bars={costBars(12)} slotWidth={40} plotHeight={210} labelArea={112} ariaLabel="Cost highlights" />
+      <BarChart bars={costBars(12)} slotWidth={40} plotHeight={210} labelArea={112} labelLines={2} ariaLabel="Cost highlights" />
     </ChartCard>
   </section>
 
@@ -800,6 +800,9 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
   @media (max-width: 620px) {
     .evals {
       grid-template-columns: 1fr;
+    }
+    .highlights :global(.chart-scroll > svg) {
+      min-width: 480px;
     }
     .inc-row {
       grid-template-columns: 1fr;

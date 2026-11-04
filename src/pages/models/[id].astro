@@ -85,7 +85,7 @@ const description = clip(
       kpis.map((k, i) => (
         <div class:list={['card', 'kpi', { lead: i === 0 }]}>
           <span class="k-label">{k.label}</span>
-          <b class="k-value num" style={i === 0 ? `color:${L.color}` : undefined}>
+          <b class:list={['k-value', 'num', { quote: k.value.length > 8 }]} style={i === 0 ? `color:${L.color}` : undefined}>
             {i === 0 && idx !== undefined && <Ticker value={idx} />}
             {(i > 0 || idx === undefined) && k.value}
           </b>
@@ -260,6 +260,12 @@ const description = clip(
     line-height: 1.1;
     letter-spacing: -0.02em;
   }
+  .k-value.quote {
+    font-size: 22px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    overflow-wrap: break-word;
+  }
   .lead .k-value {
     font-size: 96px;
     letter-spacing: -0.04em;
@@ -326,6 +332,9 @@ const description = clip(
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
   }
+  .incs {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
   .inc {
     padding: 18px 20px;
     display: flex;
@@ -368,7 +377,9 @@ const description = clip(
     .kpis {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .kpi.lead {
+    .kpi.lead,
+    .kpi:has(.quote),
+    .kpis:has(.quote) .kpi:last-child {
       grid-column: span 2;
       grid-row: auto;
     }

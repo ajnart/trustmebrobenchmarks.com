@@ -36,12 +36,20 @@ d.setUTCMonth(Math.ceil(d.getUTCMonth() / 3) * 3);
 for (; d.getTime() < t1; d.setUTCMonth(d.getUTCMonth() + 3)) if (d.getTime() > t0) ticks.push(d.getTime());
 const fmt = (t: number) => new Date(t).toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' }).replace(' ', " '");
 const today = BUILD_DATE.getTime();
+const P = (t: number) => ((t - t0) / (t1 - t0)) * 100;
+const years = ticks.filter((t) => new Date(t).getUTCMonth() === 0);
+
+const daysText = (days: number, open: boolean) => {
+  if (open) return `${days}d and counting →`;
+  if (days === 0) return 'same day';
+  return `${days}d`;
+};
 
 const spans = rows.map((r) => {
   const s = Date.parse(r.start);
   const e = r.end ? Date.parse(r.end) : today;
   const days = Math.max(0, Math.round((e - s) / DAY));
-  return { ...r, s, e, days, open: !r.end };
+  return { ...r, s, e, days, open: !r.end, text: daysText(days, !r.end) };
 });
 ---
 
@@ -87,20 +95,35 @@ const spans = rows.map((r) => {
             </text>
             <path d={rightRounded(x1, y + 13, w, rowH - 26, 4)} fill={s.open ? `url(#fade-${s.id})` : s.color} />
             <circle cx={x1} cy={y + rowH / 2} r="4.5" fill={s.color} stroke="var(--surface)" stroke-width="2" />
-            {s.open ? (
-              <text class="days open" x={x1 + w + 10} y={y + rowH / 2 + 4.5}>
-                {s.days}d and counting →
-              </text>
-            ) : (
-              <text class="days" x={x1 + w + 10} y={y + rowH / 2 + 4.5}>
-                {s.days === 0 ? 'same day' : `${s.days}d`}
-              </text>
-            )}
+            <text class:list={['days', { open: s.open }]} x={x1 + w + 10} y={y + rowH / 2 + 4.5}>
+              {s.text}
+            </text>
           </a>
         );
       })
     }
   </svg>
+</div>
+<div class="m-chart" style={`--today:${P(today)}%`}>
+  <div class="m-axis" aria-hidden="true">
+    {years.map((t) => <span style={`left:${P(t)}%`}>{new Date(t).getUTCFullYear()}</span>)}
+  </div>
+  <ol aria-label={ariaLabel}>
+    {
+      spans.map((s) => (
+        <li>
+          <a href={s.href} data-tip={s.tip} aria-label={`${s.label}, announced: ${s.start}, available: ${s.end ?? 'not yet'}, ${s.text}`}>
+            <span class="m-name">{s.label}</span>
+            <span class:list={['m-val', 'm-days', { open: s.open }]}>{s.text}</span>
+            <span class="m-sub">{s.sub}</span>
+            <span class="m-track">
+              <span class:list={['m-span', { open: s.open }]} style={`--c:${s.color};left:${P(s.s)}%;width:${P(s.e) - P(s.s)}%`} />
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
 </div>
 
 <style>
@@ -146,5 +169,31 @@ const spans = rows.map((r) => {
   }
   .days.open {
     fill: var(--bad);
+  }
+  .m-days {
+    color: var(--ink-2);
+  }
+  .m-days.open {
+    color: var(--bad);
+  }
+  .m-track::after {
+    content: '';
+    position: absolute;
+    left: var(--today);
+    top: -3px;
+    bottom: -3px;
+    border-left: 1.5px dashed var(--bad);
+  }
+  .m-span {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    min-width: 8px;
+    border-radius: 999px;
+    background: var(--c);
+  }
+  .m-span.open {
+    border-radius: 999px 0 0 999px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--c) 85%, transparent), color-mix(in srgb, var(--c) 18%, transparent));
   }
 </style>

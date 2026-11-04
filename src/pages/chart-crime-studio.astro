@@ -294,7 +294,7 @@ const start = verdict(Number(honest.lie));
     $('r-lie').textContent = lieText(lie);
     $('r-verdict').textContent = v.label;
     $('r-verdict-sub').textContent = v.sub;
-    $('needle').style.left = `${meterPos(lie)}%`;
+    $('needle').style.left = `clamp(2px, ${meterPos(lie)}%, calc(100% - 2px))`;
     bench?.setAttribute('data-level', v.level);
     bench?.toggleAttribute('data-axis-hidden', inputs.axis.checked);
     bench?.toggleAttribute('data-star', inputs.star.checked);
@@ -498,7 +498,7 @@ const start = verdict(Number(honest.lie));
   .brk {
     display: none;
     position: absolute;
-    left: -8px;
+    left: 0;
     right: 0;
     bottom: calc(8% - 6px);
     height: 12px;
@@ -901,8 +901,7 @@ const start = verdict(Number(honest.lie));
     .readouts {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .meter-labels span:nth-child(2),
-    .meter-labels span:nth-child(4) {
+    .meter-labels span:nth-child(2) {
       display: none;
     }
   }

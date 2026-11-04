@@ -246,6 +246,19 @@ const nodes: JsonLd[] = [
         { passive: true },
       );
 
+      document.querySelectorAll<HTMLElement>('.chart-scroll, .table-scroll, .heat-scroll, .wt-scroll, .mobile-nav').forEach((el) => {
+        const sync = () => {
+          el.toggleAttribute('data-more-l', el.scrollLeft > 2);
+          el.toggleAttribute('data-more-r', el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+        };
+        el.addEventListener('scroll', sync, { passive: true });
+        new ResizeObserver(sync).observe(el);
+      });
+
+      const nav = document.querySelector<HTMLElement>('.mobile-nav');
+      const navOn = nav?.querySelector<HTMLElement>('.on');
+      if (nav && navOn) nav.scrollLeft = navOn.getBoundingClientRect().left - nav.getBoundingClientRect().left - (nav.clientWidth - navOn.offsetWidth) / 2;
+
       document.getElementById('theme-toggle')?.addEventListener('click', (e) => {
         const root = document.documentElement;
         const next = root.dataset.theme === 'dark' ? 'light' : 'dark';

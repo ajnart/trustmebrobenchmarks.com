@@ -26,10 +26,12 @@ import Base from '../layouts/Base.astro';
 <style>
   .nf {
     padding-top: 96px;
-    padding-bottom: 40px;
+    padding-bottom: 120px;
     display: flex;
     flex-direction: column;
     gap: 24px;
+  }
+  .nf > * {
     max-width: 980px;
   }
   .display i {
@@ -70,6 +72,9 @@ import Base from '../layouts/Base.astro';
     }
     .spec div:nth-child(2) {
       border-right: 0;
+    }
+    .spec div:nth-child(-n + 2) {
+      border-bottom: 1px solid var(--line);
     }
   }
 </style>
