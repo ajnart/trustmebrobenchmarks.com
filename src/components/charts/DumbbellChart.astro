@@ -1,5 +1,6 @@
 ---
 import { niceTicks } from '../../lib/chart';
+import { signed } from '../../lib/scores';
 
 export interface Dumbbell {
   id: string;
@@ -28,11 +29,7 @@ const {
   measuredLabel = 'Measured',
   claimedLabel = 'Claimed',
   gapLabel = 'Gap',
-  gapFmt = (v: number) => {
-    const r = Math.round(v);
-    if (r === 0) return '±0';
-    return r > 0 ? `+${r}` : `−${-r}`;
-  },
+  gapFmt = signed,
   compact = false,
   ariaLabel,
 } = Astro.props;

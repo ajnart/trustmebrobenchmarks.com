@@ -1,5 +1,6 @@
-import { lab, type LabId } from '../data/labs';
-import { displayName, STATUS_LABEL, type Model } from '../data/models';
+import { lab } from '../data/labs';
+import { displayName, type Model } from '../data/models';
+import { MODEL_STATUS } from './status';
 
 export function niceStep(span: number, count = 5) {
   const raw = span / count;
@@ -64,7 +65,7 @@ export function tipHtml(title: string, sub: string, rows: [string, string][] = [
 
 export function modelTip(m: Model, rows: [string, string][] = [], foot?: string) {
   const l = lab(m.lab);
-  const status = m.status === 'available' ? l.name : `${l.name} · ${STATUS_LABEL[m.status]}`;
+  const status = m.status === 'available' ? l.name : `${l.name} · ${MODEL_STATUS[m.status].label}`;
   return tipHtml(displayName(m), status, rows, foot ?? (m.status !== 'available' ? m.note : undefined));
 }
 
@@ -76,5 +77,3 @@ export interface Box {
 }
 
 export const overlaps = (a: Box, b: Box) => a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
-
-export const labColor = (id: LabId) => lab(id).color;

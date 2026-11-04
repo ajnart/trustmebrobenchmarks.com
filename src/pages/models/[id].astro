@@ -4,15 +4,14 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import PrevNext from '../../components/PrevNext.astro';
 import TweetCard from '../../components/TweetCard.astro';
 import Ticker from '../../components/Ticker.astro';
-import { BENCHMARKS } from '../../data/benchmarks';
-import { INCIDENTS, incidentHref } from '../../data/incidents';
-import { lab } from '../../data/labs';
-import { AVAILABLE, MODELS, STATUS_LABEL, type Model } from '../../data/models';
-import { TWEETS, tweetById } from '../../data/tweets';
-import { gapText, indexRank } from '../../lib/og-pages';
-import { fmt, indexRows, money, rows, shipDays, shortDate, tmbIndex, value } from '../../lib/scores';
+import { incidentHref } from '../../data/incidents';
+import { AVAILABLE, MODELS, type Model } from '../../data/models';
+import { DIRECTION } from '../../lib/benchmark-view';
+import { modelPage } from '../../lib/model-view';
+import { fmt, money, shortDate } from '../../lib/scores';
 import { clip } from '../../lib/seo';
 import { INDEX_NAME } from '../../lib/site';
+import { INCIDENT_STATUS } from '../../lib/status';
 
 export function getStaticPaths() {
   return MODELS.map((m) => ({ params: { id: m.id }, props: { m } }));
@@ -23,59 +22,31 @@ interface Props {
 }
 
 const { m } = Astro.props;
-const DIRECTION = { higher: 'higher is better', lower: 'lower is better', unclear: 'direction unclear' };
-const L = lab(m.lab);
-const idx = tmbIndex(m);
-const rank = indexRank(m);
-const vapor = m.status !== 'available';
-const fullName = m.variant ? `${m.name} (${m.variant})` : m.name;
-const order = indexRows(true).map((r) => r.model);
-const pos = order.findIndex((x) => x.id === m.id);
-const prev = order[(pos - 1 + order.length) % order.length];
-const next = order[(pos + 1) % order.length];
-
-const results = BENCHMARKS.flatMap((b) => {
-  const v = value(b, m);
-  if (v === undefined || b.computed === 'random-axis') return [];
-  const all = rows(b);
-  const place = all.findIndex((r) => r.model.id === m.id) + 1;
-  const vals = all.map((r) => r.value);
-  const lo = Math.min(...vals, 0);
-  const hi = Math.max(...vals, 1);
-  return [{ b, v, place, n: all.length, share: (v - lo) / (hi - lo || 1) }];
-});
-
-const incidents = INCIDENTS.filter((i) => i.models?.includes(m.id));
-const incidentTweetIds = incidents.flatMap((i) => i.timeline.flatMap((e) => (e.tweetId ? [e.tweetId] : [])));
-const mentioned = TWEETS.filter((t) => t.text.toLowerCase().includes(m.name.toLowerCase())).map((t) => t.id);
-const tweets = [...new Set([...incidentTweetIds, ...mentioned])].slice(0, 4).map(tweetById);
-
-const peers = order
-  .filter((x) => x.id !== m.id)
-  .map((x) => ({ x, d: Math.abs((tmbIndex(x) ?? x.claimed) - (idx ?? m.claimed)) }))
-  .sort((a, b) => a.d - b.d)
-  .slice(0, 4)
-  .map((p) => p.x);
+const v = modelPage(m);
+const L = v.lab;
+const idx = v.index;
+const vapor = v.vapor;
+const fullName = v.name;
 
 const kpis = [
-  { label: INDEX_NAME, value: idx === undefined ? 'n/a' : String(idx), sub: rank === undefined ? 'Cannot be used, so cannot be measured' : `#${rank} of ${AVAILABLE.length} released models` },
+  { label: INDEX_NAME, value: idx === undefined ? 'n/a' : String(idx), sub: v.rank === undefined ? 'Cannot be used, so cannot be measured' : `#${v.rank} of ${AVAILABLE.length} released models` },
   { label: 'Self-reported', value: m.claimLabel ?? String(m.claimed), sub: 'The number in the launch post' },
-  { label: 'Benchmaxx Gap', value: gapText(m), sub: 'Self-reported minus measured' },
+  { label: 'Benchmaxx Gap', value: v.gapText, sub: 'Self-reported minus measured' },
   { label: 'Output speed', value: m.speed ? `${m.speed}${vapor ? '*' : ''}` : '—', sub: 'Tokens per second' },
   { label: 'Cost per task', value: money(m.cost), sub: 'USD, TMB Index task average' },
   { label: 'Context window', value: `${m.contextClaimed}k`, sub: `Remembers ${m.contextRemembered}k of it` },
-  { label: 'Days to ship', value: `${shipDays(m)}${m.released ? '' : '+'}`, sub: m.released ? 'Announcement to availability' : 'Still counting' },
+  { label: 'Days to ship', value: `${v.shipDays}${m.released ? '' : '+'}`, sub: m.released ? 'Announcement to availability' : 'Still counting' },
 ];
 
 const crumbs = [
   { name: 'Models', path: '/models/' },
-  { name: fullName, path: `/models/${m.id}/` },
+  { name: fullName, path: v.href },
 ];
 
 const description = clip(
   vapor
-    ? `${fullName} by ${L.name} is ${STATUS_LABEL[m.status].toLowerCase()}. It self-reports ${m.claimLabel ?? m.claimed}, which we ranked anyway. Benchmaxx Gap: +∞. Satirical, made-up scores.`
-    : `${fullName} by ${L.name}: ${idx} on the ${INDEX_NAME} (#${rank} of ${AVAILABLE.length}), self-reports ${m.claimed}. ${m.speed} tok/s, ${money(m.cost)} per task. Satirical, made-up scores.`,
+    ? `${fullName} by ${L.name} is ${v.status.label.toLowerCase()}. It self-reports ${m.claimLabel ?? m.claimed}, which we ranked anyway. Benchmaxx Gap: +∞. Satirical, made-up scores.`
+    : `${fullName} by ${L.name}: ${idx} on the ${INDEX_NAME} (#${v.rank} of ${AVAILABLE.length}), self-reports ${m.claimed}. ${m.speed} tok/s, ${money(m.cost)} per task. Satirical, made-up scores.`,
 );
 ---
 
@@ -92,10 +63,10 @@ const description = clip(
       <div>
         <h1 class="h1">
           <span class="vt-name" style={`view-transition-name: m-${m.id}`}>{m.name}</span>
-          {m.variant && <span class="variant"> ({m.variant})</span>}
+          {v.variant && <span class="variant"> ({v.variant})</span>}
         </h1>
         <div class="badges">
-          <span class:list={['badge', { 'badge-good': !vapor, 'badge-warn': m.status === 'announced', 'badge-bad': vapor && m.status !== 'announced' }]}>{STATUS_LABEL[m.status]}</span>
+          <span class:list={['badge', v.status.badge]}>{v.status.label}</span>
           <span class="badge">{L.name}</span>
           {m.openWeights && <span class="badge badge-accent">Open weights</span>}
           {m.reasoning && <span class="badge">Reasoning</span>}
@@ -134,12 +105,12 @@ const description = clip(
     </div>
     <div class="card results">
       {
-        results.map((r) => (
+        v.results.map((r) => (
           <a class="res" href={`/benchmarks/${r.b.slug}/`}>
             <span class="res-name">
               <b>{r.b.name}</b>
               <small>
-                {r.b.category} · {DIRECTION[r.b.better]}
+                {r.b.category} · {DIRECTION[r.b.better].toLowerCase()}
               </small>
             </span>
             <span class="res-bar" aria-hidden="true">
@@ -157,18 +128,18 @@ const description = clip(
   </section>
 
   {
-    incidents.length > 0 && (
+    v.incidents.length > 0 && (
       <section class="container section">
         <div class="section-head">
           <span class="eyebrow">Incident database</span>
           <h2 class="h2">Filed incidents</h2>
         </div>
         <div class="incs">
-          {incidents.map((i) => (
+          {v.incidents.map((i) => (
             <a class="card inc" href={incidentHref(i)}>
               <span class="mono muted">{i.id}</span>
               <b>{i.title}</b>
-              <span class="badge">{i.status}</span>
+              <span class:list={['badge', INCIDENT_STATUS[i.status].badge]}>{i.status}</span>
             </a>
           ))}
         </div>
@@ -177,7 +148,7 @@ const description = clip(
   }
 
   {
-    tweets.length > 0 && (
+    v.posts.length > 0 && (
       <section class="container section">
         <div class="section-head">
           <span class="eyebrow">In the wild</span>
@@ -185,7 +156,7 @@ const description = clip(
           <p>Real posts, quoted verbatim. The scores on this page are not real; these are.</p>
         </div>
         <div class="tweets">
-          {tweets.map((t) => (
+          {v.posts.map((t) => (
             <TweetCard tweet={t} />
           ))}
         </div>
@@ -200,23 +171,23 @@ const description = clip(
     </div>
     <div class="peers">
       {
-        peers.map((p) => (
-          <a class="card peer" href={`/models/${p.id}/`}>
-            <span class="mark sm" style={`color:${lab(p.lab).color}`}>
-              {lab(p.lab).mark}
+        v.peers.map((p) => (
+          <a class="card peer" href={p.href}>
+            <span class="mark sm" style={`color:${p.lab.color}`}>
+              {p.lab.mark}
             </span>
             <span>
-              <b>{p.name}</b>
-              <small>{lab(p.lab).name}</small>
+              <b>{p.model.name}</b>
+              <small>{p.lab.name}</small>
             </span>
-            <b class="num peer-v">{tmbIndex(p) ?? `${p.claimed}*`}</b>
+            <b class="num peer-v">{p.index ?? `${p.model.claimed}*`}</b>
           </a>
         ))
       }
     </div>
   </section>
 
-  <PrevNext prev={{ href: `/models/${prev.id}/`, label: prev.name }} next={{ href: `/models/${next.id}/`, label: next.name }} />
+  <PrevNext prev={{ href: v.prev.href, label: v.prev.model.name }} next={{ href: v.next.href, label: v.next.model.name }} />
 </Base>
 
 <style>

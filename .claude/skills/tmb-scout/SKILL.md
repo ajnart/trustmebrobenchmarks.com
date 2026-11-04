@@ -20,7 +20,7 @@ A weekly run is five steps: sweep, find the new models, sample each model, wire 
 bun .claude/skills/tmb-scout/scripts/sweep.ts
 ```
 
-It searches the discourse queries, every lab account and every benchmark author from `benchmarks.ts` (`from:<handle>`), since two days before the newest post in `tweets.ts`. It writes `sweep.md` (top 12 per query, ON-SITE marks posts already used) and `sweep.json`. Add `--query '<X search>'` for follow-ups and `--since YYYY-MM-DD` to override the cutoff. Queries take X's advanced syntax (`from:`, `min_faves:`, `OR`, quotes).
+It searches the discourse queries, every lab `handle` in `labs.ts` and every benchmark author from `benchmarks.ts` (`from:<handle>`), since two days before the newest post in `tweets.ts`. It reads those files through `src/lib/content.ts`, the same modules the build uses. It writes `sweep.md` (top 12 per query, ON-SITE marks posts already used) and `sweep.json`. Add `--query '<X search>'` for follow-ups and `--since YYYY-MM-DD` to override the cutoff. Queries take X's advanced syntax (`from:`, `min_faves:`, `OR`, quotes).
 
 Read `sweep.md` end to end. The account sections are where launches show up; the discourse sections are where the jokes are.
 
@@ -30,7 +30,7 @@ Read `sweep.md` end to end. The account sections are where launches show up; the
 
 Cross-check the account sweep against the outside world with web search: Artificial Analysis model pages and changelog, release trackers, and lab blogs. For each candidate, record from a source you actually read: lab, date, open weights or not, the headline claim (verbatim), and any independent number (AA index, an arena rank, a replication). Anything only "reported" by a fan account is a rumor and gets `status: 'rumored'` or `'announced'`, not `'available'`.
 
-New labs (from `X` accounts like `@MiniMax_AI`) need an entry in `src/data/labs.ts` with a colour and 1–2 character mark distinct from the existing ones. Add the lab's handle to `ACCOUNTS` in `scripts/sweep.ts` so next week's sweep covers it.
+New labs (from `X` accounts like `@MiniMax_AI`) need an entry in `src/data/labs.ts` with a colour, a 1–2 character mark distinct from the existing ones, and the lab's X `handle`, so next week's sweep covers it.
 
 ## 3. Sample the conversation around each model
 
@@ -50,17 +50,17 @@ The `## Model samples` section of `sweep.md` lists each model's posts by likes. 
 bun .claude/skills/tmb-scout/scripts/tweet-entry.ts <id>[:topic[:views]] ...
 ```
 
-It prints a `TWEETS` entry from X's syndication API (the source the build uses) and flags posts already on the site, replies, quotes, truncation (end at a sentence boundary with ` …`) and unavailable posts. Take `views` from the sweep's `viewCount`. Text stays verbatim; trimming with `…` is the only edit. When editing texts with a script, beware `$1`-style sequences in `String.replace` replacements (prices like `$1.93`); prefer the edit tool.
+It prints a `TWEETS` entry from X's syndication API (the source the build uses) and flags posts already on the site, replies, quotes, truncation (end at a sentence boundary with ` …`) and unavailable posts. Its `models` line comes from exact model-name matches; check it against what the post is about. Take `views` from the sweep's `viewCount`. Text stays verbatim; trimming with `…` is the only edit. When editing texts with a script, beware `$1`-style sequences in `String.replace` replacements (prices like `$1.93`); prefer the edit tool.
 
 **Where things go:**
 
-- `src/data/tweets.ts`: append to `TWEETS`. Model pages pick up any post whose text contains the model's `name`.
-- `src/data/models.ts`: new models. `skill` is the invented index input; place it relative to existing models using any independent ranking you found (higher independent score, higher skill). `claimed` and a verbatim `claimLabel` come from the launch post. `note` is one or two dry sentences, every fact sourced. Add notable announce-to-ship gaps to `SPAN_SUB` in `src/lib/views.ts`.
-- `src/data/benchmarks.ts`: add IDs to `inspiredBy.tweetIds`; a new viral meme benchmark can become a new entry (`badge: 'New'`, `indexWeight: 0`, a generator, a candid `inspiredBy.note`). Vapor models in `superlatives` take an explicit override.
-- `src/data/incidents.ts`: timeline entries `{ date, text, tweetId }` in date order. A new incident needs a sourced claim and finding; list new incidents first in the report so the user can review them.
+- `src/data/tweets.ts`: append to `TWEETS`. `models` lists the ids of the models a post is about, including ones it names differently (a post saying "Kimi K3.1" is about `kimi-k3-1-pro`). A model page shows its tagged posts first, then posts cited by its incidents, most-liked first, four at most.
+- `src/data/models.ts`: new models. `skill` is the invented index input; place it relative to existing models using any independent ranking you found (higher independent score, higher skill). `claimed` and a verbatim `claimLabel` come from the launch post. `note` is one or two dry sentences, every fact sourced. A reasoning-effort setting goes in `effort` (`'max'` or `'xhigh'`), which applies each benchmark's effort penalty; `variant` is a display label only. A `shipNote` puts a notable announce-to-ship gap on the Days to Ship chart.
+- `src/data/benchmarks.ts`: add IDs to `inspiredBy.tweetIds`; a new viral meme benchmark can become a new entry (`badge: 'New'`, `indexWeight: 0`, `items`, a generator, a candid `inspiredBy.note`). Vapor models in `superlatives` take an explicit override.
+- `src/data/incidents.ts`: timeline entries `{ date, text, tweetId }` in date order, `'ongoing'` last. A new incident needs a sourced claim and finding; list new incidents first in the report so the user can review them. `featured: true` puts an incident on the homepage.
 - `src/data/changelog.ts`: newest first, dates like `'23 Oct'`, existing `kind` labels, internal `href`s. The homepage shows the latest 10.
 
-Every `tweetId` must exist in `TWEETS`; `tweetById` throws at build time otherwise.
+`bun run build` starts with `validateContent()` from `src/lib/content.ts`, and fails with every broken reference and the entry that holds it: unknown post or model ids, duplicate ids, changelog and announcement links without a page, timeline dates out of order, and a status that disagrees with `released`.
 
 **Voice:** clinical, deadpan, academic. Credit delivered promises and independent confirmations as plainly as you mock unverified ones; the counterpoints keep the parody fair. No exclamation marks, no emoji in the site's own copy.
 

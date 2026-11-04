@@ -15,10 +15,12 @@ import { INCIDENTS } from '../data/incidents';
 import { lab } from '../data/labs';
 import { MODELS } from '../data/models';
 import { TWEETS } from '../data/tweets';
+import { EXHIBIT, exhibitPanel } from '../lib/chart-crime';
 import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
 import { BUILD_ISO, fmt, indexRows, rows, shortDate } from '../lib/scores';
 import { itemList } from '../lib/seo';
 import {
+  claimBars,
   claimDumbbells,
   contextDumbbells,
   costBars,
@@ -35,32 +37,24 @@ import {
 const marquee = [...TWEETS].filter((t) => t.text.length <= 240).sort((a, b) => b.likes - a.likes).slice(0, 20);
 const rowA = marquee.filter((_, i) => i % 2 === 0);
 const rowB = marquee.filter((_, i) => i % 2 === 1);
-const featuredIncidents = INCIDENTS.filter((i) => ['TMB-2024-0001', 'TMB-2026-0010', 'TMB-2026-0013'].includes(i.id));
+const featuredIncidents = INCIDENTS.filter((i) => i.featured);
 const yearFmt = (t: number) => new Date(t).toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' }).replace(' ', " '");
 const usd = (v: number) => `$${v}`;
 const evalCount = INDEX_BENCHMARKS.length;
-const studioPanels = [
-  {
-    title: 'The data',
-    base: 0,
-    lie: '1.0',
-    crime: false,
+const panel = (title: string, base: number, crime: boolean) => {
+  const p = exhibitPanel(base);
+  return {
+    title,
+    base,
+    lie: p.lie,
+    crime,
     bars: [
-      { cls: 'them', h: 50.1 / 60, label: '50.1', sota: false },
-      { cls: 'us', h: 52.8 / 60, label: '52.8', sota: false },
+      { cls: 'them', h: p.theirs, label: String(EXHIBIT.theirs), sota: false },
+      { cls: 'us', h: p.ours, label: `${EXHIBIT.ours}${crime ? '*' : ''}`, sota: crime },
     ],
-  },
-  {
-    title: 'The launch post',
-    base: 49.5,
-    lie: '83.5',
-    crime: true,
-    bars: [
-      { cls: 'them', h: 0.6 / 3.696, label: '50.1', sota: false },
-      { cls: 'us', h: 3.3 / 3.696, label: '52.8*', sota: true },
-    ],
-  },
-];
+  };
+};
+const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHIBIT.launchBase, true)];
 ---
 
 <Base schema={[itemList(`${INDEX_NAME}: released models`, indexRows(false).slice(0, 10).map((r) => ({ name: `${r.model.name}: ${r.value}`, path: `/models/${r.model.id}/` })))]}>
@@ -197,25 +191,7 @@ const studioPanels = [
           <BarChart bars={indexBars({ vapor: false })} max={100} showAxis minWidth={900} ariaLabel="TMB Intelligence Index, released models" />
         </div>
         <div data-panel="claims" hidden>
-          <BarChart
-            bars={[...MODELS]
-              .sort((a, b) => b.claimed - a.claimed)
-              .map((m) => ({
-                id: m.id,
-                label: m.variant ? `${m.name} (${m.variant})` : m.name,
-                value: m.claimed,
-                display: m.claimLabel === 'AGI' ? 'AGI' : String(m.claimed),
-                color: lab(m.lab).color,
-                mark: lab(m.lab).mark,
-                href: `/models/${m.id}/`,
-                tip: `<b>${m.name}</b><div class="tip-sub">${lab(m.lab).name}</div><div style="margin-top:6px">Self-reported: ${m.claimLabel ?? m.claimed}</div>`,
-              }))}
-            max={100}
-            breakAbove={100}
-            showAxis
-            minWidth={900}
-            ariaLabel="Self-reported scores"
-          />
+          <BarChart bars={claimBars()} max={100} breakAbove={100} showAxis minWidth={900} ariaLabel="Self-reported scores" />
         </div>
       </div>
       <Fragment slot="foot">

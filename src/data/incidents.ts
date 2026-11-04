@@ -15,6 +15,7 @@ export interface TimelineEntry {
 export interface Incident {
   id: string;
   date: string;
+  featured?: boolean;
   title: string;
   subject: string;
   models?: string[];
@@ -30,6 +31,7 @@ export const INCIDENTS: Incident[] = [
   {
     id: 'TMB-2024-0001',
     date: '2024-09-05',
+    featured: true,
     title: 'Reflection 70B, and the 405B that is coming next week',
     subject: 'Reflection 70B / 405B',
     models: ['reflection-405b'],
@@ -178,6 +180,7 @@ export const INCIDENTS: Incident[] = [
   {
     id: 'TMB-2026-0010',
     date: '2026-10-01',
+    featured: true,
     title: 'Announced with a benchmark table, available with a waitlist',
     subject: 'Gemini 4 Argon',
     models: ['gemini-4-argon'],
@@ -232,6 +235,7 @@ export const INCIDENTS: Incident[] = [
   {
     id: 'TMB-2026-0013',
     date: '2026-10-19',
+    featured: true,
     title: 'Beats every frontier model we tested',
     subject: 'SKY-001',
     models: ['sky-001'],
@@ -318,7 +322,7 @@ export const INCIDENTS: Incident[] = [
     claim:
       'Moonshot\'s launch thread: 65.7% on Terminal-Bench 4.0, "ahead of GPT-6 Astra"; "SOTA on OfficeQA Pro v2"; and, "on internal benchmarks", "~4.2× K3 on simulated business operation". Fan summary: it "beats every listed US frontier model on 6 of 14 benchmarks in Moonshot\'s evaluations".',
     finding:
-      'Sixty-six minutes after release it was declared "the most benchmaxxed model ever released". Hands-on reports followed: worse than Sonnet 5.5 for one user, beaten by DeepSeek V4.1 Flash at 49 times the price in one test, eleventh on a human-preference arena, 21% on BiGym 2. The complication: Artificial Analysis independently measured 67% on Terminal-Bench 4.0, above Moonshot\'s own 65.7% and the highest of any model, and an index of 55, fourth of 215. The suspicious part is the shape. Terminal-Bench 4.0 rose from 13% to 67% in one version; Humanity\'s Last Exam rose five points. That is either a breakthrough in agents or a breakthrough in Terminal-Bench, and we are not qualified to say which. Judging by the replies, neither is anyone else. Four days later Artificial Analysis moved 60% of its index to private or held-out tests, and the model fell from 55 to 46, fourth to ninth. It still leads every model on Terminal-Bench 4.0. The private tests have therefore confirmed both halves of the dispute.',
+      'Sixty-six minutes after release it was declared "the most benchmaxxed model ever released". Hands-on reports followed: worse than Sonnet 5.5 for one user, beaten by DeepSeek V4.1 Flash at 49 times the price in one test, eleventh on a human-preference arena, 21% on BiGym 2. The complication: Artificial Analysis independently measured 67% on Terminal-Bench 4.0, above Moonshot\'s own 65.7% and the highest of any model, and an index of 55, fourth of 215. The suspicious part is the shape. Terminal-Bench 4.0 rose from 13% to 67% in one version; Humanity\'s Last Exam rose five points. That is either a breakthrough in agents or a breakthrough in Terminal-Bench, and we are not qualified to say which. Judging by the replies, neither is anyone else. Four days later Artificial Analysis moved 60% of its index to private or held-out tests, and the model fell from 55 to 46, fourth to ninth. It still leads every model on Terminal-Bench 4.0. On 3 November a third party reported that the model recalls Terminal-Bench instructions it was never given, that they match the benchmark\'s hidden tests, and that it fails when a task is edited to contradict them. The best guess offered: training on benchmark tasks "with a teacher that saw the hidden rules". Another observer replied that Terminal-Bench 4.0 is not reliable, "in particular Kimi’s score there", and that the model is strong on "new definitely-not-benchmaxxed evals". This is the first explanation the file has received for the jump from 13% to 67%, and it is not a breakthrough in agents.',
     timeline: [
       { date: '2026-10-23', text: 'Self-reported: "ahead of GPT-6 Astra" on Terminal-Bench 4.0.', tweetId: '2113680705855373791' },
       { date: '2026-10-23', text: '"On internal benchmarks … ~4.2× K3 on simulated business operation."', tweetId: '2113680714311094458' },
@@ -331,6 +335,9 @@ export const INCIDENTS: Incident[] = [
       { date: '2026-10-26', text: '"Paid 29x more for the worse one."', tweetId: '2114718986097098758' },
       { date: '2026-10-27', text: 'Index v5, 60% private or held-out: 55 to 46. Still first on Terminal-Bench 4.0.' },
       { date: '2026-10-28', text: 'Re-ranking "seems to match the vibes a lot better".', tweetId: '2115452607431102917' },
+      { date: '2026-11-03', text: 'Recalls Terminal-Bench instructions it was never given. "They match the hidden tests."', tweetId: '2117613618065793160' },
+      { date: '2026-11-03', text: 'Best guess: trained "with a teacher that saw the hidden rules".', tweetId: '2117613638659825686' },
+      { date: '2026-11-03', text: 'Counterpoint: "I don’t think TB 4.0 is reliable", but strong on newer evals.', tweetId: '2117635365217423675' },
       { date: '2026-11-04', text: 'Weights public on Hugging Face, as promised.' },
     ],
   },
@@ -373,6 +380,7 @@ export const INCIDENTS: Incident[] = [
       { date: '2026-10-29', text: '"You can’t call gemini 4 carbon benchmaxxed."', tweetId: '2115819373973708975' },
       { date: '2026-10-31', text: 'Release date "REVEALED": 11 November.', tweetId: '2116615748496052364' },
       { date: '2026-10-31', text: 'A zombie hand rots to the bone, with labeled anatomy.', tweetId: '2116445289468850366' },
+      { date: '2026-10-31', text: 'A 9-cylinder radial engine. All four models fire the pistons in the correct order, which the tester checked.', tweetId: '2116606788241969445' },
       { date: 'ongoing', text: 'Expanded access: "soon".' },
     ],
   },

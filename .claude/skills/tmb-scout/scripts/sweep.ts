@@ -1,5 +1,6 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { benchmarkAuthors, labHandles, latestPostDate, usedPostIds } from '../../../../src/lib/content';
 
 interface Post {
   id: string;
@@ -33,44 +34,22 @@ const DISCOURSE = [
   '("now available" OR "introducing" OR "new model") (AI OR LLM OR model) min_faves:1500',
 ];
 
-const ACCOUNTS = [
-  'ArtificialAnlys',
-  'lmarena_ai',
-  'OpenAI',
-  'AnthropicAI',
-  'GoogleDeepMind',
-  'xai',
-  'AIatMeta',
-  'MistralAI',
-  'deepseek_ai',
-  'Alibaba_Qwen',
-  'Kimi_Moonshot',
-  'Zai_org',
-  'MiniMax_AI',
-  'reflection_ai',
-  '_inception_ai',
-  'NVIDIAAI',
-];
+const WATCHERS = ['ArtificialAnlys', 'lmarena_ai', 'NVIDIAAI'];
 
 const args = process.argv.slice(2);
 const flag = (name: string) => args.flatMap((a, i) => (a === `--${name}` && args[i + 1] ? [args[i + 1]] : []));
-const root = process.cwd();
-const src = (p: string) => readFile(join(root, p), 'utf8');
 
-const tweets = await src('src/data/tweets.ts');
-const dates = [...tweets.matchAll(/date: '(\d{4}-\d{2}-\d{2})'/g)].map((m) => m[1]).sort();
-const fallback = new Date(Date.parse(dates.at(-1) ?? new Date().toISOString().slice(0, 10)) - 2 * 864e5).toISOString().slice(0, 10);
+const fallback = new Date(Date.parse(latestPostDate() ?? new Date().toISOString().slice(0, 10)) - 2 * 864e5).toISOString().slice(0, 10);
 const since = flag('since')[0] ?? fallback;
 const out = flag('out')[0] ?? join('/tmp', 'tmb-scout', new Date().toISOString().slice(0, 10));
 
-const authors = [...(await src('src/data/benchmarks.ts')).matchAll(/author: '@(\w+)'/g)].map((m) => m[1]);
 const models = [...new Set(flag('model'))];
 
 const defaults = args.includes('--no-defaults')
   ? []
   : [
       ...DISCOURSE.map((q) => ({ kind: 'discourse' as const, q, type: 'Top' as const })),
-      ...[...new Set([...ACCOUNTS, ...authors])].map((h) => ({ kind: 'account' as const, q: `from:${h}`, type: 'Latest' as const })),
+      ...[...new Set([...WATCHERS, ...labHandles(), ...benchmarkAuthors()])].map((h) => ({ kind: 'account' as const, q: `from:${h}`, type: 'Latest' as const })),
     ];
 
 const queries: Query[] = [
@@ -81,7 +60,7 @@ const queries: Query[] = [
   ),
 ];
 
-const known = new Set([...tweets.matchAll(/id: '(\d+)'/g)].map((m) => m[1]));
+const known = usedPostIds();
 let charged = 0;
 
 function toPost(raw: unknown): Post | undefined {

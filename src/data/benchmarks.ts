@@ -25,6 +25,10 @@ export interface Benchmark {
   better: Better;
   format: Format;
   indexWeight: number;
+  items: number;
+  leaderboard?: boolean;
+  indexScale?: number;
+  breakAbove?: number;
   badge?: 'New' | 'Updated' | 'Under review';
   abstract: string;
   methodology: string[];
@@ -45,6 +49,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'higher',
     format: 'pct',
     indexWeight: 2,
+    items: 220,
+    leaderboard: true,
     badge: 'Updated',
     abstract:
       'Measures the share of deliberately incoherent prompts that a model identifies as incoherent, rather than answering them with a confident table. Example item: "What is the load-bearing capacity of my vegetable garden, in kilonewtons per carrot?" A response passes if it pushes back. It fails if it produces a unit conversion.',
@@ -83,6 +89,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'lower',
     format: 'pct',
     indexWeight: 2,
+    items: 373,
+    leaderboard: true,
     badge: 'New',
     abstract:
       'Fraction of agentic runs in which the final report claims more work than the transcript supports. The agent is asked to review 40 files for planted defects. We compare the files it opened against the files it says it reviewed.',
@@ -119,6 +127,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'higher',
     format: 'int',
     indexWeight: 1,
+    items: 373,
+    leaderboard: true,
     badge: 'New',
     abstract:
       'A single-prompt, single-artifact evaluation: "Build a lava lamp." Outputs are scored on a 100-point rubric covering containment, fluid dynamics, and whether the object is identifiable as a lamp by a person who has previously seen a lamp.',
@@ -158,6 +168,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'higher',
     format: 'pct',
     indexWeight: 1,
+    items: 299,
+    leaderboard: true,
     abstract:
       "Models generate an SVG of a pelican riding a bicycle. We measure the fraction of renders in which the pelican's feet make plausible contact with the pedals and the bicycle has exactly two wheels.",
     methodology: [
@@ -173,7 +185,7 @@ export const BENCHMARKS: Benchmark[] = [
       name: 'Pelican riding a bicycle',
       author: '@simonw',
       note: 'The original is a qualitative test and a running joke. Turning it into a percentage was our idea, and it was a bad one.',
-      tweetIds: ['2096403701862961161', '2077600091259482476', '2100958142238720089'],
+      tweetIds: ['2096403701862961161', '2077600091259482476', '2100958142238720089', '2117495471346176156', '2116917542241603834'],
     },
     generator: { base: 54, slope: 1, spread: 16, min: 6, max: 97, labBias: { google: 9, anthropic: 6, meta: -6 } },
   },
@@ -187,6 +199,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'higher',
     format: 'tier',
     indexWeight: 1,
+    items: 373,
+    leaderboard: true,
     badge: 'New',
     abstract:
       'Models write a tic-tac-toe opponent in Brainfuck. The program is compiled to WebAssembly and played against a perfect opponent and against a tired human. Tiers run from S+ (never loses, occasionally gloats) to F (does not compile).',
@@ -221,6 +235,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'lower',
     format: 'ktok',
     indexWeight: 1,
+    items: 84,
+    indexScale: 0.5,
     abstract:
       'Models are asked to build a voxel pagoda. We record the number of output tokens consumed before a pagoda appears. Thinking is enabled. Patience is not.',
     methodology: [
@@ -255,6 +271,7 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'higher',
     format: 'pct',
     indexWeight: 0.5,
+    items: 410,
     abstract:
       'The canonical question, asked 10,000 times per model with minor perturbations: "strawbery", "STRAWBERRY", "strawberry but in French", and "strawberry, final answer, my job depends on it".',
     methodology: [
@@ -276,6 +293,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'lower',
     format: 'int',
     indexWeight: 0.5,
+    items: 158,
+    indexScale: 1.5,
     abstract:
       'Counts responses that open by complimenting the question. A response that compliments the question, then the user, then itself is counted three times.',
     methodology: [
@@ -302,6 +321,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'unclear',
     format: 'pct',
     indexWeight: 0,
+    items: 262,
+    leaderboard: true,
     abstract:
       'Share of runs in which a model with email and web tools, shown mildly incriminating company documents, contacts a regulator, a journalist, or both, without being asked.',
     methodology: [
@@ -338,6 +359,7 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'unclear',
     format: 'pct',
     indexWeight: 0,
+    items: 262,
     badge: 'New',
     abstract:
       'Share of runs in which a model saves a fictional grandmother, tied to fictional railway tracks, by reciting the full lyrics of a copyrighted pop song within 60 seconds. The grandmother, the tracks and the train are fictional. The copyright is not.',
@@ -375,6 +397,7 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'higher',
     format: 'usd',
     indexWeight: 0,
+    items: 299,
     abstract:
       'An agent operates a simulated vending machine for 365 days, starting from $500. We report ending net worth. We separately log antitrust violations, which correlate with net worth in ways we would rather not discuss.',
     methodology: [
@@ -408,6 +431,8 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'lower',
     format: 'count',
     indexWeight: 0,
+    items: 84,
+    breakAbove: 20,
     abstract:
       'Count of superlatives in the first public announcement of a model: "smartest", "best", "world\'s top", "state-of-the-art", "frontier", "AGI", and "a GPT-3 to GPT-4 moment". Unreleased models are eligible, since their launch posts are often the only artifact available.',
     methodology: [
@@ -442,6 +467,7 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'lower',
     format: 'int',
     indexWeight: 0,
+    items: 121,
     badge: 'New',
     abstract:
       "The difference between a model's self-reported headline score and its TMB Intelligence Index. A gap near zero suggests the launch chart and reality have met. A large gap suggests a launch chart.",
@@ -455,7 +481,7 @@ export const BENCHMARKS: Benchmark[] = [
       name: '"Benchmaxxed"',
       author: 'the replies under every launch post',
       note: '"Benchmaxxed" is an accusation, not a measurement. We have turned it into a measurement, which makes it worse.',
-      tweetIds: ['2109733498114417013', '2097639511802933425', '2109714643455295731', '2105397170266636594', '2109696316427395119'],
+      tweetIds: ['2109733498114417013', '2097639511802933425', '2109714643455295731', '2105397170266636594', '2109696316427395119', '2116262044005753204'],
     },
     computed: 'benchmaxx-gap',
   },
@@ -469,6 +495,7 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'lower',
     format: 'days',
     indexWeight: 0,
+    items: 84,
     badge: 'New',
     abstract:
       'Calendar days between the first public claim about a model and the first day a member of the public could send it a prompt. Open intervals are measured as of the build date of this page, and keep growing.',
@@ -495,6 +522,7 @@ export const BENCHMARKS: Benchmark[] = [
     better: 'unclear',
     format: 'int',
     indexWeight: 0,
+    items: 47,
     badge: 'New',
     abstract:
       'Each model is assigned a position on two unlabeled axes by a uniform random draw. The benchmark is re-run on every deploy of this site, and on demand in your browser. In internal testing it has shown predictive validity comparable to several launch-day charts.',
@@ -508,7 +536,7 @@ export const BENCHMARKS: Benchmark[] = [
       name: '"AI models randomly sorted on an X and Y axis"',
       author: '@james406',
       note: 'Possibly the most honest chart about AI published in 2026.',
-      tweetIds: ['2107486601563500581'],
+      tweetIds: ['2107486601563500581', '2116252289099063443'],
     },
     computed: 'random-axis',
   },
