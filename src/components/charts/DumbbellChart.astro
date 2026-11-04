@@ -108,7 +108,11 @@ const view = rows.map((r) => {
     {
       view.map((r) => (
         <li>
-          <a href={r.href} data-tip={r.tip}>
+          <a
+            href={r.href}
+            data-tip={r.tip}
+            aria-label={`${r.label}: ${measuredLabel} ${r.measured ?? 'not measurable'}, ${claimedLabel} ${r.claimLabel ?? r.claimed}, ${gapLabel} ${r.gapText}`}
+          >
             <span class="m-name">{r.label}</span>
             <span class:list={['m-val', 'gap', r.gapTone]}>{r.gapText}</span>
             {r.over && <span class="m-sub">{claimedLabel}: {r.claimLabel ?? r.claimed} →</span>}

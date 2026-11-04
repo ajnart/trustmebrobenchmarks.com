@@ -112,7 +112,7 @@ const spans = rows.map((r) => {
     {
       spans.map((s) => (
         <li>
-          <a href={s.href} data-tip={s.tip}>
+          <a href={s.href} data-tip={s.tip} aria-label={`${s.label}, announced: ${s.start}, available: ${s.end ?? 'not yet'}, ${s.text}`}>
             <span class="m-name">{s.label}</span>
             <span class:list={['m-val', 'm-days', { open: s.open }]}>{s.text}</span>
             <span class="m-sub">{s.sub}</span>
