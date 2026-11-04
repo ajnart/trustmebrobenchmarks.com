@@ -23,6 +23,7 @@ interface Props {
   axisFmt?: (v: number) => string;
   breakAbove?: number;
   minWidth?: number;
+  labelLines?: number;
   ariaLabel: string;
 }
 
@@ -35,6 +36,7 @@ const {
   axisFmt = (v: number) => String(v),
   breakAbove,
   minWidth = 0,
+  labelLines = 3,
   ariaLabel,
 } = Astro.props;
 
@@ -43,7 +45,7 @@ const max = Astro.props.max ?? niceMax(Math.max(...unbroken, 1));
 const COS = Math.cos((52 * Math.PI) / 180);
 const SIN = Math.sin((52 * Math.PI) / 180);
 const CHAR = 6.5;
-const wrapped = bars.map((b) => wrapLabel(b.label, 15, 3));
+const wrapped = bars.map((b) => wrapLabel(b.label, 15, labelLines));
 const lineLen = (ls: string[]) => Math.max(...ls.map((l) => l.length));
 const baseL = showAxis ? 46 : 6;
 const leftExtent = (ls: string[]) => (ls.length - 1) * 5 + Math.max(...ls.map((l, j) => l.length * CHAR * COS - j * 12.5 * SIN)) - 4;

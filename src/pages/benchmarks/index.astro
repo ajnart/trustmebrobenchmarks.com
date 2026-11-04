@@ -168,8 +168,9 @@ const reading = (r: number) => {
   }
   .bm {
     padding: 22px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-row: span 6;
+    grid-template-rows: subgrid;
     gap: 8px;
     transition: border-color 0.15s, box-shadow 0.15s;
   }

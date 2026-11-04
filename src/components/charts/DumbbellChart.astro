@@ -41,6 +41,17 @@ const iw = W - m.l - m.r;
 const H = m.t + rows.length * rowH + m.b;
 const X = (v: number) => m.l + (Math.min(v, max) / max) * iw;
 const ticks = niceTicks(0, max, compact ? 4 : 5);
+const P = (v: number) => (Math.min(v, max) / max) * 100;
+const view = rows.map((r) => {
+  const gap = r.measured === undefined ? undefined : r.claimed - r.measured;
+  return {
+    ...r,
+    gap,
+    over: r.claimed > max,
+    gapText: gap === undefined ? '+∞' : gapFmt(gap),
+    gapTone: { inf: gap === undefined, ok: gap !== undefined && gap <= 0 },
+  };
+});
 ---
 
 <div class="chart-scroll" style={`--min-w:${compact ? 560 : 760}px`}>
@@ -56,10 +67,8 @@ const ticks = niceTicks(0, max, compact ? 4 : 5);
       ))
     }
     {
-      rows.map((r, i) => {
+      view.map((r, i) => {
         const cy = m.t + i * rowH + rowH / 2;
-        const gap = r.measured === undefined ? undefined : r.claimed - r.measured;
-        const over = r.claimed > max;
         return (
           <a href={r.href} class="row" data-tip={r.tip}>
             <rect class="hit" x="0" y={cy - rowH / 2} width={W} height={rowH} />
@@ -76,13 +85,13 @@ const ticks = niceTicks(0, max, compact ? 4 : 5);
             />
             {r.measured !== undefined && <circle cx={X(r.measured)} cy={cy} r="7" fill={r.color} />}
             <circle class="claimed" cx={X(r.claimed)} cy={cy} r="7" stroke={r.color} />
-            {over && (
+            {r.over && (
               <text class="over" x={X(max) - 10} y={cy - 11} text-anchor="end">
                 {r.claimLabel ?? r.claimed} →
               </text>
             )}
-            <text class:list={['gap', { inf: gap === undefined, ok: gap !== undefined && gap <= 0 }]} x={W - m.r + 24} y={cy + 4}>
-              {gap === undefined ? '+∞' : gapFmt(gap)}
+            <text class:list={['gap', r.gapTone]} x={W - m.r + 24} y={cy + 4}>
+              {r.gapText}
             </text>
           </a>
         );
@@ -90,6 +99,32 @@ const ticks = niceTicks(0, max, compact ? 4 : 5);
     }
     <text class="head" x={W - m.r + 24} y={m.t - 16}>{gapLabel}</text>
   </svg>
+</div>
+<div class="m-chart">
+  <div class="m-axis" aria-hidden="true">
+    {ticks.map((t) => <span style={`left:${P(t)}%`}>{t}</span>)}
+  </div>
+  <ol aria-label={ariaLabel}>
+    {
+      view.map((r) => (
+        <li>
+          <a href={r.href} data-tip={r.tip}>
+            <span class="m-name">{r.label}</span>
+            <span class:list={['m-val', 'gap', r.gapTone]}>{r.gapText}</span>
+            {r.over && <span class="m-sub">{claimedLabel}: {r.claimLabel ?? r.claimed} →</span>}
+            <span class="m-track">
+              <span
+                class:list={['m-stem', { vapor: r.measured === undefined }]}
+                style={`--c:${r.color};left:${P(r.measured ?? 0)}%;width:${P(r.claimed) - P(r.measured ?? 0)}%`}
+              />
+              {r.measured !== undefined && <span class="m-dot" style={`--c:${r.color};left:${P(r.measured)}%`} />}
+              <span class="m-dot hollow" style={`--c:${r.color};left:${P(r.claimed)}%`} />
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
 </div>
 <div class="legend db-legend">
   <span><i class="k solid"></i>{measuredLabel}</span>
@@ -159,6 +194,47 @@ const ticks = niceTicks(0, max, compact ? 4 : 5);
   }
   .db-legend {
     margin-top: 12px;
+  }
+  .m-chart .gap {
+    color: var(--bad);
+  }
+  .m-chart .gap.inf {
+    color: var(--muted);
+  }
+  .m-chart .gap.ok {
+    color: var(--good);
+  }
+  .m-track {
+    margin-inline: 7px;
+  }
+  .m-axis {
+    inset-inline: 7px;
+  }
+  .m-stem {
+    position: absolute;
+    top: 50%;
+    height: 3px;
+    margin-top: -1.5px;
+    background: var(--c);
+    opacity: 0.45;
+  }
+  .m-stem.vapor {
+    height: 0;
+    background: none;
+    border-top: 2px dashed var(--c);
+  }
+  .m-dot {
+    position: absolute;
+    top: 50%;
+    width: 13px;
+    height: 13px;
+    margin: -6.5px 0 0 -6.5px;
+    border-radius: 50%;
+    background: var(--c);
+  }
+  .m-dot.hollow {
+    background: var(--surface);
+    border: 2.5px solid var(--c);
   }
   .k {
     width: 12px;

@@ -40,7 +40,7 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
     <span class="eyebrow">Technical report · {INDEX_VERSION}</span>
     <h1 class="h1">{INDEX_NAME}: Methodology and Known Limitations</h1>
     <p class="authors">T. M. Bro<sup>1</sup>, A. Nonymous<sup>1</sup>, The Intern<sup>1,2</sup></p>
-    <p class="affil"><sup>1</sup>Trust Me Bro Labs &nbsp; <sup>2</sup>Unpaid &nbsp; · &nbsp; Last revised {BUILD_ISO}</p>
+    <p class="affil"><sup>1</sup>Trust Me Bro Labs &nbsp; <sup>2</sup>Unpaid &nbsp; · &nbsp; Last revised <span class="nowrap">{BUILD_ISO}</span></p>
   </section>
 
   <section class="container paper">
@@ -86,24 +86,26 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
         Scores are normalized to 0–100 with higher-is-better before weighting. Weights were chosen by a committee of one, after looking at the results, in keeping
         with industry practice.
       </p>
-      <table class="wt">
-        <thead>
-          <tr><th>Evaluation</th><th>Category</th><th>Normalization</th><th class="r">Weight</th><th class="r">Share</th></tr>
-        </thead>
-        <tbody>
-          {
-            INDEX_BENCHMARKS.map((b) => (
-              <tr>
-                <td><a class="link" href={benchHref(b)}>{b.name}</a></td>
-                <td>{b.category}</td>
-                <td class="mono">{indexFormula(b)}</td>
-                <td class="r num">{b.indexWeight}×</td>
-                <td class="r num">{((b.indexWeight / totalWeight) * 100).toFixed(1)}%</td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
+      <div class="wt-scroll">
+        <table class="wt">
+          <thead>
+            <tr><th>Evaluation</th><th>Category</th><th>Normalization</th><th class="r">Weight</th><th class="r">Share</th></tr>
+          </thead>
+          <tbody>
+            {
+              INDEX_BENCHMARKS.map((b) => (
+                <tr>
+                  <td><a class="link" href={benchHref(b)}>{b.name}</a></td>
+                  <td>{b.category}</td>
+                  <td class="mono">{indexFormula(b)}</td>
+                  <td class="r num">{b.indexWeight}×</td>
+                  <td class="r num">{((b.indexWeight / totalWeight) * 100).toFixed(1)}%</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
       <p>
         Models that cannot be evaluated are assigned the score from their announcement. These scores are displayed with hatched bars and an asterisk, which we are told
         is the internationally recognized symbol for "trust me".
@@ -356,12 +358,18 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
     color: var(--muted);
     font-size: 16px;
   }
+  .nowrap {
+    white-space: nowrap;
+  }
+  .wt-scroll {
+    overflow-x: auto;
+    margin: 0 0 1.2em;
+  }
   .wt {
     width: 100%;
     border-collapse: collapse;
     font-family: var(--sans);
     font-size: 14px;
-    margin: 0 0 1.2em;
   }
   .wt th {
     text-align: left;
@@ -421,7 +429,7 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
       margin-left: 0;
     }
     .paper {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .toc {
       display: none;

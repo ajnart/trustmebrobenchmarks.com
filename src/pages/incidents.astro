@@ -68,30 +68,6 @@ const counts = INCIDENTS.reduce<Record<string, number>>((acc, i) => ({ ...acc, [
 </Base>
 
 <style>
-  .stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 8px;
-  }
-  .stats div {
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 12px 18px;
-    display: flex;
-    flex-direction: column;
-    min-width: 120px;
-  }
-  .stats :global(.num) {
-    font-family: var(--serif);
-    font-size: 30px;
-    font-weight: 450;
-    line-height: 1.1;
-  }
-  .stats > div > span:last-child {
-    font-size: 13px;
-    color: var(--muted);
-  }
   .list {
     display: flex;
     flex-direction: column;
