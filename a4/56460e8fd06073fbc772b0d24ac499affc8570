@@ -1,0 +1,23 @@
+.claude/skills/tmb-scout/SKILL.md
+  s_a412134a98f5ee::t_7fc2777e940a98 58
+src/data/models.ts
+  s_a412134a98f5ee::t_9d39de4ad7cc22 13,214,317,355,373,528,547
+src/lib/views.ts
+  s_a412134a98f5ee::t_a407efa1c44819 45,59-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a456460e8fd06073fbc772b0d24ac499affc8570",
+  "prompts": {},
+  "sessions": {
+    "s_a412134a98f5ee": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "25586869-0ab9-4dc9-9a9f-a15f1a24eefd",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
