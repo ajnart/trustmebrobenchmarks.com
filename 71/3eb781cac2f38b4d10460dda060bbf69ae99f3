@@ -1,0 +1,63 @@
+.claude/skills/tmb-scout/SKILL.md
+  s_66d07b1824b7d0::t_36f32741a5ce2e 57,63,70
+.claude/skills/tmb-scout/scripts/tweet-entry.ts
+  s_66d07b1824b7d0::t_9f7fc6e0a8ede4 47
+astro.config.mjs
+  s_66d07b1824b7d0::t_4e41a35d698e72 5,14
+package.json
+  s_66d07b1824b7d0::t_c5079c18d8533d 11-12
+scripts/check-content.ts
+  s_66d07b1824b7d0::t_67dadf9952921a 1-8
+src/components/Footer.astro
+  s_66d07b1824b7d0::t_072cc680a4838c 3,21-23
+src/data/benchmarks.ts
+  s_66d07b1824b7d0::t_b0086ad780410d 13,78,551-553
+src/data/models.ts
+  s_66d07b1824b7d0::t_252d69a2cf14fe 587
+src/data/tweets.ts
+  s_66d07b1824b7d0::t_6b83eaec768f48 109,213,264,380,714,830,852,863,907,929,961,1005,1107,1193,1237,1248,1270,1314,1347,1358,1409,1420,1671,1682
+src/lib/benchmark-view.ts
+  s_66d07b1824b7d0::t_a4df97dcc882c2 18-19,28,30-33,38
+src/lib/chart-crime.ts
+  s_66d07b1824b7d0::t_6e349efbc4c064 3-4,7-23,25-29,34-37
+src/lib/content.ts
+  s_66d07b1824b7d0::t_711d50f586711c 1-3,5-6,11,13-35,43-45,53,57,63-65,67-71,89-93,95-98,100,105,110-111,114,118,129,131,136-137,139-140
+src/lib/model-view.ts
+  s_66d07b1824b7d0::t_4237075fdd04e1 4,6,18,33,48
+src/lib/og-pages.ts
+  s_66d07b1824b7d0::t_9b90bf14780998 7,137
+src/lib/scores.ts
+  s_66d07b1824b7d0::t_35fbce49a03268 22
+src/lib/views.ts
+  s_66d07b1824b7d0::t_dd2b8a05fdcf4c 8,26
+src/pages/benchmarks/[slug].astro
+  s_66d07b1824b7d0::t_ea53b1d615daad 11-12,17,39,44,49,125,135,194
+src/pages/benchmarks/index.astro
+  s_66d07b1824b7d0::t_f269876e82e017 4,7-8,10,52,65,67,71,82
+src/pages/chart-crime-studio.astro
+  s_66d07b1824b7d0::t_3c36592131536e 6,22,25-26,31,50,54,119,148-149,153,158,163-164,169,173,210,297-298,319-323,325
+src/pages/incidents/[id].astro
+  s_66d07b1824b7d0::t_db1f4265cdbf75 9,84
+src/pages/index.astro
+  s_66d07b1824b7d0::t_750f09034ebf48 13-14,16,18,20,22,24,62,107,171,251,262,308,310,323,363,369
+src/pages/methodology.astro
+  s_66d07b1824b7d0::t_cae13b89233b0d 4,97,121
+src/pages/models/[id].astro
+  s_66d07b1824b7d0::t_30af04dbc4041a 7,110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "713eb781cac2f38b4d10460dda060bbf69ae99f3",
+  "prompts": {},
+  "sessions": {
+    "s_66d07b1824b7d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c9c8c42-86b8-4c2a-8fc1-bef65914612e",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
