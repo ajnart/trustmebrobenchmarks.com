@@ -42,6 +42,7 @@ const toBar = (d: Datum, tip: string): Bar => ({
 
 export function indexBars(opts: { vapor?: boolean; limit?: number } = {}): Bar[] {
   return indexSeries(opts.vapor ?? true)
+    .filter((d) => !d.model.archived)
     .slice(0, opts.limit ?? 99)
     .map((d) => {
       if (d.vapor) return toBar(d, modelTip(d.model, [['Claimed', d.model.claimLabel ?? String(d.value)], ['Measured', 'n/a (cannot be used)']]));
@@ -55,7 +56,10 @@ export function benchBars(b: Benchmark, limit = 99): Bar[] {
     .map((d) => toBar(d, modelTip(d.model, [[b.short, d.display]], d.vapor ? 'Value derived from public claims, not measurement.' : undefined)));
 }
 
-export const claimBars = (): Bar[] => claimSeries().map((d) => toBar(d, modelTip(d.model, [['Self-reported', d.model.claimLabel ?? String(d.value)]])));
+export const claimBars = (): Bar[] =>
+  claimSeries()
+    .filter((d) => !d.model.archived)
+    .map((d) => toBar(d, modelTip(d.model, [['Self-reported', d.model.claimLabel ?? String(d.value)]])));
 
 export function speedBars(limit = 99): Bar[] {
   return [...MODELS]

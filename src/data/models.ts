@@ -10,6 +10,7 @@ export interface Model {
   effort?: Effort;
   lab: LabId;
   status: Status;
+  archived?: boolean;
   announced: string;
   released?: string;
   shipNote?: string;
@@ -210,6 +211,7 @@ export const MODELS: Model[] = [
     name: 'Gemini 3.8 Flash',
     lab: 'google',
     status: 'available',
+    archived: true,
     announced: '2026-08-20',
     released: '2026-08-20',
     skill: 52,
@@ -312,6 +314,7 @@ export const MODELS: Model[] = [
     name: 'Grok 5',
     lab: 'xai',
     status: 'promised',
+    archived: true,
     announced: '2025-08-21',
     shipNote: '"A shot at being true AGI"',
     skill: 0,
@@ -349,6 +352,7 @@ export const MODELS: Model[] = [
     variant: '30T, rumored',
     lab: 'mistral',
     status: 'rumored',
+    archived: true,
     announced: '2026-06-15',
     shipNote: 'Rumored 30T spec',
     skill: 0,
@@ -366,6 +370,7 @@ export const MODELS: Model[] = [
     name: 'Kimi K3',
     lab: 'moonshot',
     status: 'available',
+    archived: true,
     announced: '2026-07-15',
     released: '2026-07-15',
     skill: 59,
@@ -520,6 +525,7 @@ export const MODELS: Model[] = [
     name: 'Reflection 405B',
     lab: 'reflection',
     status: 'promised',
+    archived: true,
     announced: '2024-09-05',
     shipNote: '"Coming next week"',
     skill: 0,
@@ -538,6 +544,7 @@ export const MODELS: Model[] = [
     variant: 'routing rumor',
     lab: 'anthropic',
     status: 'rumored',
+    archived: true,
     announced: '2026-10-12',
     shipNote: 'Routing rumor',
     skill: 0,
