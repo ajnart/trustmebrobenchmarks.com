@@ -116,12 +116,12 @@ export const INCIDENTS: Incident[] = [
     subject: 'Mistral Large 4',
     models: ['mistral-large-4', 'le-chaton-fat'],
     category: 'Rumor → partial delivery',
-    status: 'Partially delivered',
+    status: 'Resolved',
     severity: 2,
     claim:
       'A teased Mistral model, immediately nicknamed "Le Chaton Fat", spread with a rumored spec sheet: 30T-parameter MoE, 256 experts, "outperforms Fable 5 on every benchmark". It was then "confirmed to launch this summer".',
     finding:
-      'The CEO clarified the name ("It\'s actually le gros chaton"). The model shipped on 6 October as Mistral Large 4, "Le Chonk": 1T parameters, 49B active, with open weights scheduled for "the end of October". Delta versus rumor: 29 trillion parameters and one season. Severity is low because the cat was real.',
+      'The CEO clarified the name ("It\'s actually le gros chaton"). The model shipped on 6 October as Mistral Large 4, "Le Chonk": 1T parameters, 49B active, with open weights scheduled for "the end of October". The weights shipped on 29 October. An independent index scored the release 26, the highest of any open-weight model from outside China and six points behind the open-weight leaders. Delta versus rumor: 29 trillion parameters, one season, and every benchmark. Severity is low because the cat was real and arrived on schedule.',
     timeline: [
       { date: '2026-06-15', text: 'Rumored spec: 30T MoE, outperforms Fable 5 on every benchmark.', tweetId: '2066423720042959176' },
       { date: '2026-06-15', text: '"It\'s actually le gros chaton."', tweetId: '2066456715650793956' },
@@ -129,7 +129,7 @@ export const INCIDENTS: Incident[] = [
       { date: '2026-06-16', text: '"Confirmed to launch this summer."', tweetId: '2066915923626172424' },
       { date: '2026-09-08', text: 'Still waiting.', tweetId: '2097356014873931777' },
       { date: '2026-10-06', text: 'Mistral Large 4 "Le Chonk" ships: 1T params, 49B active.', tweetId: '2107457414387622310' },
-      { date: 'ongoing', text: 'Open weights: "end of October".' },
+      { date: '2026-10-29', text: 'Open weights released, as scheduled.', tweetId: '2115811242556137820' },
     ],
   },
   {
@@ -295,7 +295,7 @@ export const INCIDENTS: Incident[] = [
     severity: 1,
     claim: 'From fan accounts: it "will release before Tuesday next week", "will be a state of the art Open Source model", and "from what ive heard (rumors/leaks) it will be the best open weight models there is".',
     finding:
-      'The official artifact was a 24-second teaser with no model card, price or benchmark table. Release estimates ranged from "probably today" to "the fifth of November". It was probably today: Kimi K3.1 Pro shipped fifteen hours after the teaser, announced as "open-weight", with weights not yet public at the time of this build. Benchmarks arrived 48 minutes into "the next thirty minutes", which by industry standards is early.',
+      'The official artifact was a 24-second teaser with no model card, price or benchmark table. Release estimates ranged from "probably today" to "the fifth of November". It was probably today: Kimi K3.1 Pro shipped fifteen hours after the teaser, announced as "open-weight", with weights promised "by Nov 4". Benchmarks arrived 48 minutes into "the next thirty minutes", which by industry standards is early. The weights were public on Hugging Face on 4 November, one day ahead of the fifth.',
     timeline: [
       { date: '2026-10-22', text: '"Will release before Tuesday next week."', tweetId: '2113180444858667485' },
       { date: '2026-10-23', text: 'Teaser published. Rumor: "the best open weight models there is."', tweetId: '2113537155897151976' },
@@ -303,6 +303,7 @@ export const INCIDENTS: Incident[] = [
       { date: '2026-10-23', text: '"Expect benchmarks and release announcement in the next thirty minutes."', tweetId: '2113668549592203275' },
       { date: '2026-10-23', text: '"Where\'s the benchmarks?"', tweetId: '2113680112952422669' },
       { date: '2026-10-23', text: 'Released, with benchmarks: "our most capable 3T-class open-weight model."', tweetId: '2113680701770068067' },
+      { date: '2026-11-04', text: 'Weights public on Hugging Face, on the promised date.' },
     ],
   },
   {
@@ -317,7 +318,7 @@ export const INCIDENTS: Incident[] = [
     claim:
       'Moonshot\'s launch thread: 65.7% on Terminal-Bench 4.0, "ahead of GPT-6 Astra"; "SOTA on OfficeQA Pro v2"; and, "on internal benchmarks", "~4.2× K3 on simulated business operation". Fan summary: it "beats every listed US frontier model on 6 of 14 benchmarks in Moonshot\'s evaluations".',
     finding:
-      'Sixty-six minutes after release it was declared "the most benchmaxxed model ever released". Hands-on reports followed: worse than Sonnet 5.5 for one user, beaten by DeepSeek V4.1 Flash at 49 times the price in one test, eleventh on a human-preference arena, 21% on BiGym 2. The complication: Artificial Analysis independently measured 67% on Terminal-Bench 4.0, above Moonshot\'s own 65.7% and the highest of any model, and an index of 55, fourth of 215. The suspicious part is the shape. Terminal-Bench 4.0 rose from 13% to 67% in one version; Humanity\'s Last Exam rose five points. That is either a breakthrough in agents or a breakthrough in Terminal-Bench, and we are not qualified to say which. Judging by the replies, neither is anyone else.',
+      'Sixty-six minutes after release it was declared "the most benchmaxxed model ever released". Hands-on reports followed: worse than Sonnet 5.5 for one user, beaten by DeepSeek V4.1 Flash at 49 times the price in one test, eleventh on a human-preference arena, 21% on BiGym 2. The complication: Artificial Analysis independently measured 67% on Terminal-Bench 4.0, above Moonshot\'s own 65.7% and the highest of any model, and an index of 55, fourth of 215. The suspicious part is the shape. Terminal-Bench 4.0 rose from 13% to 67% in one version; Humanity\'s Last Exam rose five points. That is either a breakthrough in agents or a breakthrough in Terminal-Bench, and we are not qualified to say which. Judging by the replies, neither is anyone else. Four days later Artificial Analysis moved 60% of its index to private or held-out tests, and the model fell from 55 to 46, fourth to ninth. It still leads every model on Terminal-Bench 4.0. The private tests have therefore confirmed both halves of the dispute.',
     timeline: [
       { date: '2026-10-23', text: 'Self-reported: "ahead of GPT-6 Astra" on Terminal-Bench 4.0.', tweetId: '2113680705855373791' },
       { date: '2026-10-23', text: '"On internal benchmarks … ~4.2× K3 on simulated business operation."', tweetId: '2113680714311094458' },
@@ -328,6 +329,142 @@ export const INCIDENTS: Incident[] = [
       { date: '2026-10-25', text: '"Couldn\'t even beat DeepSeek V4.1 Flash on xhigh. At 49x the price."', tweetId: '2114402762607992914' },
       { date: '2026-10-25', text: '21% on BiGym 2.', tweetId: '2114389591503581475' },
       { date: '2026-10-26', text: '"Paid 29x more for the worse one."', tweetId: '2114718986097098758' },
+      { date: '2026-10-27', text: 'Index v5, 60% private or held-out: 55 to 46. Still first on Terminal-Bench 4.0.' },
+      { date: '2026-10-28', text: 'Re-ranking "seems to match the vibes a lot better".', tweetId: '2115452607431102917' },
+      { date: '2026-11-04', text: 'Weights public on Hugging Face, as promised.' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0018',
+    date: '2026-10-27',
+    title: 'Obsidian 3: first place for about a day',
+    subject: 'Obsidian 3 (unattributed)',
+    category: 'Leak',
+    status: 'Unconfirmed',
+    severity: 2,
+    claim:
+      'A model called "Obsidian 3", present in the results file behind Cognition\'s FrontierCode 2.0 but not on its leaderboard, scored 46.8% at high effort, above the published leader, Claude Opus 5.5, at 45.5%. It ran in the claude-code harness, so it was "maybe a new Opus 5.5", or Fable 5.5.',
+    finding:
+      'An archived copy of the file from 27 October lists the row; the live file read the next day did not. Cognition has not explained the removal and no lab has claimed the model. Its scores went 46.8% at high effort, 45.9% at xhigh and 45.5% at max, while mean cost per task rose from $8.62 to $47.44. A model that gets worse the longer it thinks would be a notable result, if anyone would say whose it is.',
+    timeline: [
+      { date: '2026-10-27', text: 'FrontierCode 2.0 published. Claude Opus 5.5 leads at 45.5%.' },
+      { date: '2026-10-28', text: '"Cognition deleted Obsidian 3 from FrontierCode 2.0, but the archive kept it."', tweetId: '2115363228788396138' },
+      { date: '2026-10-28', text: '"If this is fable 5.5, it’s not looking that good."', tweetId: '2115429544089788743' },
+      { date: 'ongoing', text: 'Unattributed.' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0019',
+    date: '2026-10-28',
+    title: 'Number one on the index, available by appointment',
+    subject: 'Gemini 4 Carbon',
+    models: ['gemini-4-carbon'],
+    category: 'Announced, not available',
+    status: 'Open',
+    severity: 2,
+    claim:
+      'Carbon is "ranking #1 on v5.0 of the @ArtificialAnlys Intelligence Index", and "rolling out starting this week to cyber defenders through our Fairwind Program, with expanded access coming soon".',
+    finding:
+      'The ranking is real: Artificial Analysis scores it 59, one point above Claude Opus 5.5. The availability follows the Argon pattern (TMB-2026-0010). Access goes to vetted defenders in the Fairwind Program, and Google has given no date for developers. On 4 November the public Gemini API listed one Gemini 4 model, and it was Argon. Fan testers, meanwhile, report a superior zombie hand. Severity is low because the number was independently measured, which is more than most entries here can say.',
+    timeline: [
+      { date: '2026-10-28', text: 'Announced: #1 on the index, rolling out to cyber defenders.', tweetId: '2115489522603466766' },
+      { date: '2026-10-28', text: '"Before we expand access soon."', tweetId: '2115489359415890211' },
+      { date: '2026-10-29', text: 'The Chrome Dino is given leg day.', tweetId: '2115953941808550313' },
+      { date: '2026-10-29', text: '"You can’t call gemini 4 carbon benchmaxxed."', tweetId: '2115819373973708975' },
+      { date: '2026-10-31', text: 'Release date "REVEALED": 11 November.', tweetId: '2116615748496052364' },
+      { date: '2026-10-31', text: 'A zombie hand rots to the bone, with labeled anatomy.', tweetId: '2116445289468850366' },
+      { date: 'ongoing', text: 'Expanded access: "soon".' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0020',
+    date: '2026-10-30',
+    title: '"Not optimizing for benchmarks"',
+    subject: 'Grok 4.8',
+    models: ['grok-4-8'],
+    category: 'Promised capability',
+    status: 'Open',
+    severity: 2,
+    claim:
+      '"I know it’s taken longer than expected, but Grok 4.8 will not be a disappointment. We’re not optimizing for benchmarks and I really don’t care how Grok does on those, but it will be incredibly useful."',
+    finding:
+      'On 14 September it was described as a 2.5T model that would finish training that week. The post arrived the same week a reworked independent index took 12 points off Grok 4.7, and FrontierCode 2.0 placed Grok 4.7 at 28.6% against 45.5% for Claude Opus 5.5. A model that is not optimized for benchmarks cannot fairly be judged on them, and a model that has not shipped cannot be judged on usefulness. This leaves the entry with very little to do.',
+    timeline: [
+      { date: '2026-09-14', text: 'Described as a 2.5T model finishing training that week (as reported).' },
+      { date: '2026-10-30', text: '"Not optimizing for benchmarks."', tweetId: '2116036703538606301' },
+      { date: '2026-11-02', text: '"Elon says it\'s coming, no date yet but November for sure."', tweetId: '2117184281076171054' },
+      { date: 'ongoing', text: 'Taking longer than expected.' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0021',
+    date: '2026-10-30',
+    title: 'Gemini 4 Xenon beats a model nobody has released',
+    subject: 'Gemini 4 Xenon (rumored)',
+    models: ['gemini-4-xenon'],
+    category: 'Rumor',
+    status: 'Unconfirmed',
+    severity: 2,
+    claim:
+      '"A new Google insider just dropped some interesting details." Xenon, "the rumored model after Carbon", "could outperform the unreleased Fable 5.5, max out several public and private benchmarks", and is "reportedly significantly cheaper to serve".',
+    finding:
+      'The insider is unnamed. Carbon was two days old and not yet public. The comparison is therefore between a rumored model and an unreleased one, on benchmarks some of which are private. Google has not mentioned Xenon. We have entered it at a claimed score of 97, which it may well max out.',
+    timeline: [
+      { date: '2026-10-30', text: '"LEAKED."', tweetId: '2116001462933430542' },
+      { date: 'ongoing', text: 'Awaiting Carbon, then Xenon, then Fable 5.5.' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0022',
+    date: '2026-10-31',
+    title: 'Chad 4 benchmarks have leaked',
+    subject: 'Chad 4 (parody)',
+    category: 'Leak',
+    status: 'Resolved',
+    severity: 1,
+    claim:
+      'A launch post: "69T Params, scored 120 on AA and surpasses all benchmarks everywhere", rolled out "to our trusted mythical partners", output priced at "we pay you $5/m". Hours later: "Chad 4 benchmarks HAVE LEAKED", including 97.6% on ChadBench 2.0.',
+    finding:
+      'There is no model, and the Artificial Analysis index is scaled from 0 to 100. Within hours the leak had scored it on Terminal-Bench-6.7 and Sigma-Eval anyway, with the customary conclusion that it "outperforms Opus 5.5, Astra, and Gemini 4 Carbon across most tasks". Whether the leak was also a joke cannot be determined from the post. Its author later described the launch as "an IQ test on X". The genre can now produce both the launch and the leak without a model.',
+    timeline: [
+      { date: '2026-10-31', text: 'Introducing Chad 4.', tweetId: '2116424714348593313' },
+      { date: '2026-10-31', text: 'Benchmarks leak.', tweetId: '2116544773737828535' },
+      { date: '2026-10-31', text: 'Described by its author as "an IQ test on X".' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0023',
+    date: '2026-11-01',
+    title: 'DeepSeek V4.1 Pro leaks via a quick-start example',
+    subject: 'DeepSeek V4.1 Pro',
+    category: 'Rumor',
+    status: 'Resolved',
+    severity: 1,
+    claim:
+      '"DeepSeek V4.1 Pro leak: could it take on Opus 5.5?" It "is now showing up as the target model on the SearchQA benchmark", and evaluation scripts "reportedly pair deepseek-v4.1-pro as the main model".',
+    finding:
+      'The sighting was one model name in the quick-start example of a university research framework\'s English README. The project\'s actual SearchQA configuration used the V4 models, and the worker ID in the example is not a valid model ID. This was pointed out on 1 November; the leak post followed on 3 November. DeepSeek\'s product lead said in late October that V4.1 Pro was still in training. It has not been benchmarked by SearchQA or by anyone else.',
+    timeline: [
+      { date: '2026-11-01', text: 'Named once, in a README quick-start.' },
+      { date: '2026-11-01', text: '"Nowhere else." Also: "noise".', tweetId: '2116854115779121384' },
+      { date: '2026-11-03', text: '"Could it take on Opus 5.5?"', tweetId: '2117474351213584715' },
+    ],
+  },
+  {
+    id: 'TMB-2026-0024',
+    date: '2026-11-02',
+    title: 'LifeVal, on which every model tested is ChatGPT',
+    subject: 'LifeVal (OpenAI)',
+    category: 'Self-reported benchmark',
+    status: 'Unfalsifiable',
+    severity: 2,
+    claim:
+      'A benchmark of 169 everyday tasks, "shaped by feedback from thousands of ChatGPT users". GPT-6 Astra scores 80.6%, up from 49.3% for GPT-5.2. "Over the past year, we’ve used LifeVal to measure and improve how well our models handle these everyday tasks."',
+    finding:
+      'The paper evaluates GPT-5.2, 5.4, 5.5, 5.6 and GPT-6 Astra, and no model from another lab. The task set has not been published, so no one else can run it. The five tasks shown on the announcement page score between 90.4% and 100%. The benchmark was used for a year to improve the models it now measures, which OpenAI disclosed in the launch post, an unusual degree of candor for the genre. The tasks are real and worth measuring. We would like someone else to measure them.',
+    timeline: [
+      { date: '2026-11-02', text: 'Published, with five OpenAI models and none from anyone else.', tweetId: '2117307611338997846' },
+      { date: 'ongoing', text: 'Task set: not public.' },
     ],
   },
 ];

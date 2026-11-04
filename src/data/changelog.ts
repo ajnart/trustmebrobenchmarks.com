@@ -6,6 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { date: '4 Nov', kind: 'New incident filed', title: 'LifeVal, on which every model tested is ChatGPT', href: '/incidents/tmb-2026-0024/' },
+  { date: '4 Nov', kind: 'New incident filed', title: 'DeepSeek V4.1 Pro leaks via a quick-start example', href: '/incidents/tmb-2026-0023/' },
+  { date: '4 Nov', kind: 'New incident filed', title: 'Chad 4 benchmarks have leaked; Chad 4 does not exist', href: '/incidents/tmb-2026-0022/' },
+  { date: '4 Nov', kind: 'New incident filed', title: 'Gemini 4 Xenon beats a model nobody has released', href: '/incidents/tmb-2026-0021/' },
+  { date: '4 Nov', kind: 'New incident filed', title: 'Grok 4.8 is "not optimizing for benchmarks"', href: '/incidents/tmb-2026-0020/' },
+  { date: '4 Nov', kind: 'New incident filed', title: 'Gemini 4 Carbon: number one on the index, available by appointment', href: '/incidents/tmb-2026-0019/' },
+  { date: '4 Nov', kind: 'New incident filed', title: 'Obsidian 3: first place for about a day', href: '/incidents/tmb-2026-0018/' },
+  { date: '4 Nov', kind: 'New model evaluation', title: 'GPT-6.1 Terra, which beat its own Terminal-Bench claim', href: '/models/gpt-6-1-terra/' },
+  { date: '4 Nov', kind: 'Model update', title: 'Kimi K3.1 Pro weights ship on the promised date; index v5 moves it from fourth to ninth', href: '/models/kimi-k3-1-pro/' },
+  { date: '4 Nov', kind: 'Incident update', title: 'Le Chonk open weights ship as scheduled. Incident resolved', href: '/incidents/tmb-2026-0006/' },
+  { date: '4 Nov', kind: 'Corpus update', title: 'Twenty-three posts added to In the Wild, including a crocodile', href: '/in-the-wild/' },
   { date: '26 Oct', kind: 'New incident filed', title: 'Kimi K3.1 Pro: the most benchmaxxed model ever released, allegedly', href: '/incidents/tmb-2026-0017/' },
   { date: '26 Oct', kind: 'New model evaluation', title: 'Kimi K3.1 Pro (available; it was a teaser for about fifteen hours)', href: '/models/kimi-k3-1-pro/' },
   { date: '26 Oct', kind: 'Incident update', title: 'Kimi K3.1 ships the same day as its teaser, not the fifth of November', href: '/incidents/tmb-2026-0016/' },
@@ -39,9 +50,9 @@ export const CHANGELOG: ChangelogEntry[] = [
 
 export const ANNOUNCEMENTS = [
   {
-    title: 'Kimi K3.1 Pro: benchmaxxed, or just good at benchmarks?',
-    body: 'Fourth of 215 on an independent index, and beaten by a model 49× cheaper in a hands-on test',
-    href: '/incidents/tmb-2026-0017/',
+    title: 'Gemini 4 Carbon: number one on the index, available by appointment',
+    body: 'First on an independent index, and available to cyber defenders in a trusted-access program',
+    href: '/incidents/tmb-2026-0019/',
   },
   {
     title: 'Announcing the TMB Benchmaxx Gap',

@@ -32,7 +32,7 @@ Contribute to this website [here](https://github.com/ajnart/trustmebrobenchmarks
 ## What's on the site
 
 - **Leaderboard** with the Trust Me Bro Intelligence Index, Benchmaxx Gap, Days to Ship and other fake metrics, styled after [Artificial Analysis](https://artificialanalysis.ai/) (not affiliated)
-- **14 evaluations** inspired by real meme benchmarks (BullshitBench, the pelican, Brainfuck tic-tac-toe, lava lamps, the strawberry...)
+- **15 evaluations** inspired by real meme benchmarks (BullshitBench, the pelican, Brainfuck tic-tac-toe, lava lamps, the strawberry...)
 - **Incident database** of claims that outran their evidence, sourced from public posts
 - **In the Wild**: the real, verbatim posts that inspired it all
 - **Chart Crime Studio**: truncate a y-axis and watch Tufte's Lie Factor climb

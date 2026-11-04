@@ -108,7 +108,7 @@ export function ogPages(): OgSpec[] {
     {
       key: 'benchmarks',
       eyebrow: 'Benchmarks',
-      title: 'Fourteen evaluations nobody asked for',
+      title: 'Fifteen evaluations nobody asked for',
       subtitle: 'Each inspired by a meme benchmark that went viral on X. Theirs are real. Ours are not.',
       visual: { kind: 'chips', caption: `${BENCHMARKS.length} evaluations`, items: BENCHMARKS.map((b) => b.short) },
     },
