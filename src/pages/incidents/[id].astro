@@ -6,7 +6,7 @@ import PrevNext from '../../components/PrevNext.astro';
 import TweetCard from '../../components/TweetCard.astro';
 import { INCIDENTS, incidentHref, incidentSlug, type Incident } from '../../data/incidents';
 import { lab } from '../../data/labs';
-import { modelById } from '../../data/models';
+import { modelById, modelHref } from '../../data/models';
 import { tweetById } from '../../data/tweets';
 import { tmbIndex } from '../../lib/scores';
 import { clip } from '../../lib/seo';
@@ -81,7 +81,7 @@ const crumbs = [
           <div class="card box">
             <h3>Models involved</h3>
             {models.map((m) => (
-              <a class="model" href={`/models/${m.id}/`}>
+              <a class="model" href={modelHref(m)}>
                 <span class="mark" style={`color:${lab(m.lab).color}`}>
                   {lab(m.lab).mark}
                 </span>

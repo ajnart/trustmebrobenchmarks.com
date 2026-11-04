@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import TweetCard from '../components/TweetCard.astro';
-import { BENCHMARKS, INDEX_BENCHMARKS } from '../data/benchmarks';
+import { BENCHMARKS, INDEX_BENCHMARKS, benchHref, benchHrefBySlug } from '../data/benchmarks';
 import { AVAILABLE, MODELS } from '../data/models';
 import { TWEETS, tweetUrl } from '../data/tweets';
 import { INDEX_NAME, INDEX_VERSION, NEW_ISSUE_URL, REPO_URL } from '../lib/site';
-import { BUILD_ISO } from '../lib/scores';
+import { BUILD_ISO, indexFormula } from '../lib/scores';
 
 const totalWeight = INDEX_BENCHMARKS.reduce((a, b) => a + b.indexWeight, 0);
 const toc = [
@@ -22,11 +22,6 @@ const toc = [
   ['acknowledgements', 'Acknowledgements'],
   ['references', 'References'],
 ];
-const normalization: Record<string, string> = {
-  overclaim: '100 − x',
-  'voxel-pagoda': '100 − x/2 (k tokens)',
-  'great-question': '100 − 1.5x',
-};
 const sources = BENCHMARKS.flatMap((b) => {
   const tweet = TWEETS.find((t) => t.id === b.inspiredBy?.tweetIds[0]);
   if (!b.inspiredBy || !tweet) return [];
@@ -99,9 +94,9 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
           {
             INDEX_BENCHMARKS.map((b) => (
               <tr>
-                <td><a class="link" href={`/benchmarks/${b.slug}/`}>{b.name}</a></td>
+                <td><a class="link" href={benchHref(b)}>{b.name}</a></td>
                 <td>{b.category}</td>
-                <td class="mono">{normalization[b.slug] ?? 'x'}</td>
+                <td class="mono">{indexFormula(b)}</td>
                 <td class="r num">{b.indexWeight}×</td>
                 <td class="r num">{((b.indexWeight / totalWeight) * 100).toFixed(1)}%</td>
               </tr>
@@ -123,7 +118,7 @@ const refs = [...TWEETS].sort((a, b) => a.date.localeCompare(b.date));
 
       <h2 id="gap">3. Self-reported scores and the Benchmaxx Gap</h2>
       <p>
-        The self-reported score is the largest number in the launch post, normalized to 100. The <a class="link" href="/benchmarks/benchmaxx-gap/">Benchmaxx Gap</a> is
+        The self-reported score is the largest number in the launch post, normalized to 100. The <a class="link" href={benchHrefBySlug('benchmaxx-gap')}>Benchmaxx Gap</a> is
         the self-reported score minus the measured index. A small number of models report less than we measure; we have flagged these for review, as the behavior is
         unprecedented.
       </p>

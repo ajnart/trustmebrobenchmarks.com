@@ -57,4 +57,4 @@ bun run check    # typecheck
 - Production builds load Cloudflare Web Analytics (cookieless, no consent banner needed)
 - New posts and news are found and verified with the `tmb-scout` agent skill (`.claude/skills/tmb-scout`)
 
-Data lives in `src/data/` (models, benchmarks, tweets, incidents). Add a meme benchmark or a tweet there and open a PR.
+Data lives in `src/data/` (models, benchmarks, tweets, incidents). Add a meme benchmark or a tweet there and open a PR. `bun run build` checks every cross-reference first (`src/lib/content.ts`) and lists the broken ones.

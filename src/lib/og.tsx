@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ReactNode } from 'react';
 import satori from 'satori';
+import { EXHIBIT, exhibitPanel } from './chart-crime';
 import { svgToPng, CHECK_PATH, SEAL_PATH } from './icons';
 import { OG_SIZE } from './seo';
 
@@ -240,8 +241,8 @@ function Crime() {
       <Caption>TrustMeBench Pro (Verified) · y-axis starts at 50</Caption>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 48, height: 260, borderBottom: `2px solid ${C.line}` }}>
         {[
-          { label: 'Us', v: '52.8*', h: 240, c: C.accent },
-          { label: 'Them', v: '50.1', h: 34, c: C.faint },
+          { label: 'Us', v: `${EXHIBIT.ours}*`, h: 240, c: C.accent },
+          { label: 'Them', v: String(EXHIBIT.theirs), h: 34, c: C.faint },
         ].map((b) => (
           <div key={b.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
             <div style={{ display: 'flex', fontSize: 22, fontWeight: 700, color: C.ink }}>{b.v}</div>
@@ -251,7 +252,7 @@ function Crime() {
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 18 }}>
         <div style={{ display: 'flex', fontSize: 18, color: C.muted }}>Lie Factor (Tufte)</div>
-        <div style={{ display: 'flex', fontSize: 30, fontWeight: 700, color: '#c2410c' }}>83.5</div>
+        <div style={{ display: 'flex', fontSize: 30, fontWeight: 700, color: '#c2410c' }}>{exhibitPanel(EXHIBIT.launchBase).lie}</div>
       </div>
     </Panel>
   );

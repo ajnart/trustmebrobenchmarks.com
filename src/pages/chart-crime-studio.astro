@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
 import TweetCard from '../components/TweetCard.astro';
 import { TWEETS } from '../data/tweets';
+import { EXHIBIT, LEAD, VERDICTS, dataEffect, exhibitPanel, meterPos, verdict } from '../lib/chart-crime';
 import { absolute } from '../lib/seo';
 
 const exhibits = TWEETS.filter((t) => t.topic === 'chart-crime').sort((a, b) => b.likes - a.likes);
@@ -18,22 +19,17 @@ const presets = [
   ['launch', 'Launch day'],
   ['deck', 'Investor deck'],
 ] as const;
-const zones = [
-  ['Honest', 1, 1.1],
-  ['Spin', 1.1, 2],
-  ['Marketing', 2, 5],
-  ['Launch post', 5, 15],
-  ['Chart crime', 15, 100],
-] as const;
-const pos = (v: number) => (Math.log10(v) / 2) * 100;
+const zones = VERDICTS.map((v, i) => [v.label, meterPos(VERDICTS[i - 1]?.limit ?? 1), meterPos(v.limit)] as const);
 const intent = (text: string) => `https://x.com/intent/post?text=${encodeURIComponent(text)}`;
-const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeBench Pro (Verified): 52.8%.\n\nvia trustmebrobenchmarks.com/chart-crime-studio';
+const defaultPost = `Introducing Our Model. 🚀\n\nState of the art on TrustMeBench Pro (Verified): ${EXHIBIT.ours}%.\n\nvia trustmebrobenchmarks.com/chart-crime-studio`;
+const honest = exhibitPanel(0);
+const start = verdict(Number(honest.lie));
 ---
 
 <Base
   title="Chart Crime Studio: Truncated Y-Axis Maker"
-  description="Turn a 2.7-point lead into a generational leap. Truncate the y-axis, hide the labels, add an asterisk, and watch Tufte's Lie Factor climb in real time."
-  imageAlt="Chart Crime Studio: a 52.8 vs 50.1 bar chart with a truncated y-axis and a Lie Factor of 83.5."
+  description={`Turn a ${LEAD}-point lead into a generational leap. Truncate the y-axis, hide the labels, add an asterisk, and watch Tufte's Lie Factor climb in real time.`}
+  imageAlt={`Chart Crime Studio: a ${EXHIBIT.ours} vs ${EXHIBIT.theirs} bar chart with a truncated y-axis and a Lie Factor of ${exhibitPanel(EXHIBIT.launchBase).lie}.`}
   breadcrumbs={[{ name: 'Chart Crime Studio', path: '/chart-crime-studio/' }]}
   schema={[
     {
@@ -51,11 +47,11 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
   <PageHead
     eyebrow="Tools · Beta"
     title="Chart Crime Studio"
-    lede="Turn a 2.7-point lead into a generational leap. Drag the y-axis baseline until the difference looks like a launch post. Tufte's Lie Factor is computed live, so you know exactly how much you are lying."
+    lede={`Turn a ${LEAD}-point lead into a generational leap. Drag the y-axis baseline until the difference looks like a launch post. Tufte's Lie Factor is computed live, so you know exactly how much you are lying.`}
   />
 
   <section class="container">
-    <div class="card bench" data-level="honest">
+    <div class="card bench" data-level={start.level}>
       <div class="stage">
         <header class="stage-head">
           <div>
@@ -74,20 +70,20 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
           </div>
         </header>
 
-        <div class="plot" id="plot" role="img" aria-label="Bar chart: Our Model 52.8, Competitor 50.1">
+        <div class="plot" id="plot" role="img" aria-label={`Bar chart: Our Model ${EXHIBIT.ours}, Competitor ${EXHIBIT.theirs}`}>
           <div class="grid" id="grid" aria-hidden="true"></div>
           <div class="cols" aria-hidden="true">
             <div class="col">
               <div class="bar ours" id="bar-ours">
                 <span class="tag">
                   <b class="sota">SOTA</b>
-                  <span class="val" id="val-ours">52.8</span>
+                  <span class="val" id="val-ours">{EXHIBIT.ours}</span>
                 </span>
               </div>
             </div>
             <div class="col">
               <div class="bar theirs" id="bar-theirs">
-                <span class="tag"><span class="val" id="val-theirs">50.1</span></span>
+                <span class="tag"><span class="val" id="val-theirs">{EXHIBIT.theirs}</span></span>
               </div>
             </div>
           </div>
@@ -109,18 +105,18 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
           <div class="series">
             <i class="sw ours"></i>
             <input id="ours-name" type="text" value="Our Model" aria-label="Your model name" maxlength="22" />
-            <input id="ours" type="number" value="52.8" step="0.1" min="0" max="100" aria-label="Your model score" />
+            <input id="ours" type="number" value={EXHIBIT.ours} step="0.1" min="0" max="100" aria-label="Your model score" />
           </div>
           <div class="series">
             <i class="sw theirs"></i>
             <input id="theirs-name" type="text" value="Competitor" aria-label="Competitor model name" maxlength="22" />
-            <input id="theirs" type="number" value="50.1" step="0.1" min="0" max="100" aria-label="Competitor score" />
+            <input id="theirs" type="number" value={EXHIBIT.theirs} step="0.1" min="0" max="100" aria-label="Competitor score" />
           </div>
         </fieldset>
         <fieldset>
           <legend>Y-axis starts at <output id="base-out" class="num">0.0</output></legend>
           <input id="base" class="range" type="range" min="0" max="49.9" step="0.1" value="0" aria-label="Y-axis baseline" />
-          <div class="range-legend"><span>Honest</span><span>Launch post</span></div>
+          <div class="range-legend"><span>{VERDICTS[0].label}</span><span>{VERDICTS[3].label}</span></div>
         </fieldset>
         <fieldset>
           <legend>Enhancements</legend>
@@ -149,32 +145,32 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
         <dl class="readouts">
           <div>
             <dt>Actual difference</dt>
-            <dd id="r-actual" class="num">+2.7 pts</dd>
-            <small id="r-actual-sub">+5.4% relative</small>
+            <dd id="r-actual" class="num">+{LEAD} pts</dd>
+            <small id="r-actual-sub">+{(dataEffect(EXHIBIT.ours, EXHIBIT.theirs) * 100).toFixed(1)}% relative</small>
           </div>
           <div>
             <dt>Visual difference</dt>
-            <dd id="r-visual" class="num">1.05×</dd>
+            <dd id="r-visual" class="num">{(honest.ours / honest.theirs).toFixed(2)}×</dd>
             <small>our bar vs. theirs</small>
           </div>
           <div>
             <dt>Lie Factor <a class="link" href="#lie-factor">(Tufte)</a></dt>
-            <dd id="r-lie" class="num lie-val">1.0</dd>
+            <dd id="r-lie" class="num lie-val">{honest.lie}</dd>
             <small>1.0 is honest</small>
           </div>
           <div>
             <dt>Verdict</dt>
-            <dd id="r-verdict" class="lie-val">Honest</dd>
-            <small id="r-verdict-sub">Nobody will share this.</small>
+            <dd id="r-verdict" class="lie-val">{start.label}</dd>
+            <small id="r-verdict-sub">{start.sub}</small>
           </div>
         </dl>
         <div class="meter" aria-hidden="true">
           <div class="meter-track">
-            {zones.map(([label, a, b]) => <span class="zone" style={`left:${pos(a)}%;width:${pos(b) - pos(a)}%`} title={label} />)}
+            {zones.map(([label, a, b]) => <span class="zone" style={`left:${a}%;width:${b - a}%`} title={label} />)}
             <i class="needle" id="needle"></i>
           </div>
           <div class="meter-labels">
-            {zones.map(([label, a, b]) => <span style={`left:${(pos(a) + pos(b)) / 2}%`}>{label}</span>)}
+            {zones.map(([label, a, b]) => <span style={`left:${(a + b) / 2}%`}>{label}</span>)}
           </div>
         </div>
       </div>
@@ -211,8 +207,8 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
 </Base>
 
 <script>
-  const NERF = 7.4;
-  const BREAK = 0.08;
+  import { EXHIBIT, NERF, PRESETS, axis, dataEffect, lieFactor, lieText, meterPos, verdict } from '../lib/chart-crime';
+
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const bench = document.querySelector<HTMLElement>('.bench');
   const inputs = {
@@ -227,14 +223,6 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
     nerf: $<HTMLInputElement>('nerf'),
     brk: $<HTMLInputElement>('brk'),
   };
-
-  const VERDICTS: [number, string, string][] = [
-    [1.1, 'Honest', 'Nobody will share this.'],
-    [2, 'Spin', 'Acceptable in a blog post.'],
-    [5, 'Marketing', 'Ready for the keynote.'],
-    [15, 'Launch post', 'Expect 2M views and a quote-tweet from Gary Marcus.'],
-    [Infinity, 'Chart crime', 'Felony. Your chart will appear on this site.'],
-  ];
 
   const num = (el: HTMLInputElement, fallback: number) => {
     const v = Number.parseFloat(el.value);
@@ -256,11 +244,6 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
     return '';
   };
 
-  const lieText = (lie: number) => {
-    if (lie >= 100) return lie.toFixed(0);
-    return lie.toFixed(1);
-  };
-
   const names = () => {
     const ours = inputs.oursName.value.trim() || 'Our Model';
     let theirs = inputs.theirsName.value.trim() || 'Competitor';
@@ -269,20 +252,13 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
   };
 
   function state() {
-    const ours = num(inputs.ours, 52.8);
-    const theirs = Math.max(0, num(inputs.theirs, 50.1) - (inputs.nerf.checked ? NERF : 0));
+    const ours = num(inputs.ours, EXHIBIT.ours);
+    const theirs = Math.max(0, num(inputs.theirs, EXHIBIT.theirs) - (inputs.nerf.checked ? NERF : 0));
     const max = Math.max(0, Math.floor((Math.min(ours, theirs) - 0.1) * 10) / 10);
     inputs.base.max = String(max);
     const base = Math.min(Number.parseFloat(inputs.base.value) || 0, max);
     const brk = inputs.brk.checked && base > 0;
-    const hi = Math.max(ours, theirs, 0.1);
-    let top = hi + (hi - base) * 0.12;
-    if (base === 0) top = Math.ceil((hi * 1.12) / 10) * 10;
-    const frac = (v: number) => {
-      if (!brk) return (v - base) / (top - base);
-      if (v <= base) return (BREAK * v) / base;
-      return BREAK + ((1 - BREAK) * (v - base)) / (top - base);
-    };
+    const { top, frac } = axis(ours, theirs, base, brk);
     return { ours, theirs, base, brk, top, frac, max };
   }
 
@@ -304,24 +280,22 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
     if (s.brk) marks.unshift(0);
     $('grid').innerHTML = marks.map((t) => `<span style="bottom:${s.frac(t) * 100}%"><b>${t}</b></span>`).join('');
 
-    const dataEffect = (s.ours - s.theirs) / Math.max(0.01, s.theirs);
-    const shownEffect = (hOurs - hTheirs) / hTheirs;
-    let lie = shownEffect / dataEffect;
-    if (Math.abs(dataEffect) < 1e-6) lie = 1;
+    const effect = dataEffect(s.ours, s.theirs);
+    const lie = lieFactor(s.ours, s.theirs, hOurs, hTheirs);
     const diff = s.ours - s.theirs;
     const sign = diff >= 0 ? '+' : '−';
-    const [, verdict, sub] = VERDICTS.find(([limit]) => lie < limit) ?? VERDICTS[VERDICTS.length - 1];
+    const v = verdict(lie);
 
     $('base-out').textContent = s.base.toFixed(1);
     inputs.base.style.setProperty('--p', `${s.max ? (s.base / s.max) * 100 : 0}%`);
     $('r-actual').textContent = `${sign}${Math.abs(diff).toFixed(1)} pts`;
-    $('r-actual-sub').textContent = `${sign}${Math.abs(dataEffect * 100).toFixed(1)}% relative`;
+    $('r-actual-sub').textContent = `${sign}${Math.abs(effect * 100).toFixed(1)}% relative`;
     $('r-visual').textContent = `${(hOurs / hTheirs).toFixed(2)}×`;
     $('r-lie').textContent = lieText(lie);
-    $('r-verdict').textContent = verdict;
-    $('r-verdict-sub').textContent = sub;
-    $('needle').style.left = `${Math.min(100, (Math.log10(Math.max(1, lie)) / 2) * 100)}%`;
-    bench?.setAttribute('data-level', verdict.toLowerCase().replace(/\s+/g, '-'));
+    $('r-verdict').textContent = v.label;
+    $('r-verdict-sub').textContent = v.sub;
+    $('needle').style.left = `${meterPos(lie)}%`;
+    bench?.setAttribute('data-level', v.level);
     bench?.toggleAttribute('data-axis-hidden', inputs.axis.checked);
     bench?.toggleAttribute('data-star', inputs.star.checked);
     bench?.toggleAttribute('data-sota', inputs.sota.checked);
@@ -334,12 +308,6 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
     return `Introducing ${names().ours}. 🚀\n\nState of the art on TrustMeBench Pro (Verified)${star()}: ${s.ours.toFixed(1)}%, a massive leap over the competition.\n\nThe chart speaks for itself. (Lie Factor: ${lieText(lie)})\n\nvia trustmebrobenchmarks.com/chart-crime-studio`;
   }
 
-  const PRESETS: Record<string, Partial<Record<keyof typeof inputs, string | boolean>>> = {
-    honest: { base: '0', axis: false, star: false, sota: false, nerf: false, brk: false },
-    launch: { base: '49.5', axis: true, star: true, sota: true, nerf: false, brk: false },
-    deck: { base: '42.6', axis: true, star: true, sota: true, nerf: true, brk: false },
-  };
-
   const presetButtons = document.querySelectorAll<HTMLButtonElement>('[data-preset]');
   const press = (active?: HTMLButtonElement) => presetButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === active)));
 
@@ -348,13 +316,13 @@ const defaultPost = 'Introducing Our Model. 🚀\n\nState of the art on TrustMeB
       const p = PRESETS[btn.dataset.preset ?? ''];
       if (!p) return;
       press(btn);
-      for (const [k, v] of Object.entries(p)) {
-        const el = inputs[k as keyof typeof inputs];
-        if (typeof v === 'boolean') el.checked = v;
-        else el.value = v;
-      }
+      inputs.axis.checked = p.axis;
+      inputs.star.checked = p.star;
+      inputs.sota.checked = p.sota;
+      inputs.nerf.checked = p.nerf;
+      inputs.brk.checked = p.brk;
       state();
-      if (typeof p.base === 'string') inputs.base.value = p.base;
+      inputs.base.value = String(p.base);
       render();
     });
   });

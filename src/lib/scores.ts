@@ -1,4 +1,4 @@
-import { BENCHMARKS, INDEX_BENCHMARKS, type Benchmark, type Format } from '../data/benchmarks';
+import { INDEX_BENCHMARKS, type Benchmark, type Format } from '../data/benchmarks';
 import { MODELS, AVAILABLE, type Model } from '../data/models';
 import { clamp, jitter, mulberry32 } from './rng';
 
@@ -19,17 +19,23 @@ function generated(b: Benchmark, m: Model): number | undefined {
   if (override !== undefined) return override;
   if (m.status !== 'available' && !g.includeVapor) return undefined;
   const bias = g.labBias?.[m.lab] ?? 0;
-  const effort = m.variant === 'max' || m.variant === 'xhigh' ? (g.maxEffortPenalty ?? 0) : 0;
+  const effort = m.effort ? (g.effortPenalty ?? 0) : 0;
   const raw = g.base + g.slope * (m.skill - 50) + bias + effort + jitter(`${b.slug}:${m.id}`) * g.spread;
   return clamp(raw, g.min, g.max);
 }
 
 const normalized = (b: Benchmark, v: number) => {
-  if (b.slug === 'voxel-pagoda') return clamp(100 - v / 2, 0, 100);
-  if (b.slug === 'great-question') return clamp(100 - v * 1.5, 0, 100);
-  if (b.better === 'lower') return 100 - v;
-  return v;
+  if (b.better !== 'lower') return v;
+  return clamp(100 - v * (b.indexScale ?? 1), 0, 100);
 };
+
+export function indexFormula(b: Benchmark) {
+  if (b.better !== 'lower') return 'x';
+  const k = b.indexScale ?? 1;
+  if (k === 1) return '100 − x';
+  if (k < 1) return `100 − x/${1 / k}`;
+  return `100 − ${k}x`;
+}
 
 const indexCache = new Map<string, number>();
 
@@ -121,6 +127,14 @@ export function fmt(v: number, f: Format): string {
   }
 }
 
+export const signed = (v: number | undefined) => {
+  if (v === undefined) return '+∞';
+  const r = Math.round(v);
+  if (r > 0) return `+${r}`;
+  if (r === 0) return '±0';
+  return `−${-r}`;
+};
+
 export const money = (v: number) => {
   if (v === 0) return '—';
   if (v < 0.01) return `$${v.toFixed(3)}`;
@@ -153,5 +167,3 @@ export function costBreakdown(m: Model) {
   const total = Object.values(raw).reduce((a, b) => a + b, 0);
   return COST_SEGMENTS.map((s) => ({ ...s, value: (raw[s.key] / total) * m.cost }));
 }
-
-export { BENCHMARKS };

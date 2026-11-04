@@ -2,13 +2,25 @@ import { defineConfig, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
+import { formatProblems, validateContent } from './src/lib/content.ts';
 
 const lastmod = new Date();
+
+const contentIntegrity = {
+  name: 'content-integrity',
+  hooks: {
+    'astro:build:start': () => {
+      const problems = validateContent();
+      if (problems.length > 0) throw new Error(formatProblems(problems));
+    },
+  },
+};
 
 export default defineConfig({
   site: 'https://trustmebrobenchmarks.com',
   trailingSlash: 'ignore',
   integrations: [
+    contentIntegrity,
     react(),
     sitemap({
       filter: (page) => !page.includes('/404'),

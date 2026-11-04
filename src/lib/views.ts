@@ -5,72 +5,76 @@ import type { Span } from '../components/charts/GanttChart.astro';
 import type { Stack } from '../components/charts/StackedBarChart.astro';
 import type { Benchmark } from '../data/benchmarks';
 import { lab } from '../data/labs';
-import { AVAILABLE, MODELS, displayName, modelById, STATUS_LABEL, type Model } from '../data/models';
+import { AVAILABLE, MODELS, displayName, modelHref as href, shortClaim, type Model } from '../data/models';
 import { modelTip } from './chart';
 import { INDEX_NAME } from './site';
-import { costBreakdown, fmt, indexRows, money, randomAxis, rows, shipDays, tmbIndex } from './scores';
+import { costBreakdown, fmt, indexRows, money, randomAxis, rows, shipDays, signed, tmbIndex } from './scores';
 
-const href = (m: Model) => `/models/${m.id}/`;
+export interface Datum {
+  model: Model;
+  value: number;
+  display: string;
+  vapor: boolean;
+}
 
-export const chartLabel = (m: Model) => (m.variant ? `${m.name} (${m.variant})` : m.name);
+export const indexSeries = (vapor = true): Datum[] =>
+  indexRows(vapor).map((r) => ({ model: r.model, value: r.value, display: r.vapor ? `${shortClaim(r.model)}*` : String(r.value), vapor: Boolean(r.vapor) }));
 
-const bar = (m: Model, value: number, display: string, tip: string, hatched = false): Bar => ({
-  id: m.id,
-  label: chartLabel(m),
-  value,
-  display,
-  color: lab(m.lab).color,
-  mark: lab(m.lab).mark,
-  hatched,
-  href: href(m),
+export const benchSeries = (b: Benchmark): Datum[] =>
+  rows(b).map((r) => ({ model: r.model, value: r.value, display: fmt(r.value, b.format), vapor: Boolean(r.vapor) }));
+
+const claimSeries = (): Datum[] =>
+  [...MODELS].sort((a, b) => b.claimed - a.claimed).map((m) => ({ model: m, value: m.claimed, display: shortClaim(m), vapor: false }));
+
+const toBar = (d: Datum, tip: string): Bar => ({
+  id: d.model.id,
+  label: displayName(d.model),
+  value: d.value,
+  display: d.display,
+  color: lab(d.model.lab).color,
+  mark: lab(d.model.lab).mark,
+  hatched: d.vapor,
+  href: href(d.model),
   tip,
 });
 
 export function indexBars(opts: { vapor?: boolean; limit?: number } = {}): Bar[] {
-  const list = indexRows(opts.vapor ?? true).slice(0, opts.limit ?? 99);
-  return list.map((r) =>
-    r.vapor
-      ? bar(
-          r.model,
-          r.value,
-          r.model.claimLabel === 'AGI' ? 'AGI*' : `${r.value}*`,
-          modelTip(r.model, [['Claimed', r.model.claimLabel ?? String(r.value)], ['Measured', 'n/a (cannot be used)']]),
-          true,
-        )
-      : bar(r.model, r.value, String(r.value), modelTip(r.model, [[INDEX_NAME, String(r.value)], ['Self-reported', String(r.model.claimed)]])),
-  );
+  return indexSeries(opts.vapor ?? true)
+    .filter((d) => !d.model.archived)
+    .slice(0, opts.limit ?? 99)
+    .map((d) => {
+      if (d.vapor) return toBar(d, modelTip(d.model, [['Claimed', d.model.claimLabel ?? String(d.value)], ['Measured', 'n/a (cannot be used)']]));
+      return toBar(d, modelTip(d.model, [[INDEX_NAME, d.display], ['Self-reported', String(d.model.claimed)]]));
+    });
 }
 
 export function benchBars(b: Benchmark, limit = 99): Bar[] {
-  return rows(b)
+  return benchSeries(b)
     .slice(0, limit)
-    .map((r) =>
-      bar(
-        r.model,
-        r.value,
-        fmt(r.value, b.format),
-        modelTip(r.model, [[b.short, fmt(r.value, b.format)]], r.vapor ? 'Value derived from public claims, not measurement.' : undefined),
-        r.vapor,
-      ),
-    );
+    .map((d) => toBar(d, modelTip(d.model, [[b.short, d.display]], d.vapor ? 'Value derived from public claims, not measurement.' : undefined)));
 }
 
+export const claimBars = (): Bar[] =>
+  claimSeries()
+    .filter((d) => !d.model.archived)
+    .map((d) => toBar(d, modelTip(d.model, [['Self-reported', d.model.claimLabel ?? String(d.value)]])));
+
 export function speedBars(limit = 99): Bar[] {
-  const list = [...MODELS].filter((m) => m.speed > 0).sort((a, b) => b.speed - a.speed);
-  return list.slice(0, limit).map((m) =>
-    bar(
-      m,
-      m.speed,
-      m.status === 'available' ? String(m.speed) : `${m.speed}*`,
-      modelTip(m, [['Output speed', `${m.speed} tok/s`]], m.status === 'available' ? undefined : 'Claimed. Measured on a slide.'),
-      m.status !== 'available',
-    ),
-  );
+  return [...MODELS]
+    .filter((m) => m.speed > 0)
+    .sort((a, b) => b.speed - a.speed)
+    .slice(0, limit)
+    .map((m) => {
+      if (m.status === 'available') return toBar({ model: m, value: m.speed, display: String(m.speed), vapor: false }, modelTip(m, [['Output speed', `${m.speed} tok/s`]]));
+      return toBar({ model: m, value: m.speed, display: `${m.speed}*`, vapor: true }, modelTip(m, [['Output speed', `${m.speed} tok/s`]], 'Claimed. Measured on a slide.'));
+    });
 }
 
 export function costBars(limit = 99): Bar[] {
-  const list = AVAILABLE.filter((m) => m.cost > 0).sort((a, b) => a.cost - b.cost);
-  return list.slice(0, limit).map((m) => bar(m, m.cost, money(m.cost), modelTip(m, [['Cost per TMB task', money(m.cost)]])));
+  return AVAILABLE.filter((m) => m.cost > 0)
+    .sort((a, b) => a.cost - b.cost)
+    .slice(0, limit)
+    .map((m) => toBar({ model: m, value: m.cost, display: money(m.cost), vapor: false }, modelTip(m, [['Cost per TMB task', money(m.cost)]])));
 }
 
 export function costStacks(): Stack[] {
@@ -80,7 +84,7 @@ export function costStacks(): Stack[] {
       const segments = costBreakdown(m);
       return {
         id: m.id,
-        label: chartLabel(m),
+        label: displayName(m),
         color: lab(m.lab).color,
         mark: lab(m.lab).mark,
         total: money(m.cost),
@@ -99,7 +103,7 @@ export function claimDumbbells(): Dumbbell[] {
     const measured = tmbIndex(m);
     return {
       id: m.id,
-      label: chartLabel(m),
+      label: displayName(m),
       color: lab(m.lab).color,
       measured,
       claimed: m.claimed,
@@ -108,7 +112,7 @@ export function claimDumbbells(): Dumbbell[] {
       tip: modelTip(m, [
         ['Self-reported', m.claimLabel ? `${m.claimed} (${m.claimLabel})` : String(m.claimed)],
         ['Measured', measured === undefined ? 'n/a' : String(measured)],
-        ['Gap', measured === undefined ? '+∞' : `+${m.claimed - measured}`],
+        ['Gap', signed(measured === undefined ? undefined : m.claimed - measured)],
       ]),
     };
   }).sort((a, b) => {
@@ -119,28 +123,13 @@ export function claimDumbbells(): Dumbbell[] {
   });
 }
 
-const SPAN_SUB: Record<string, string> = {
-  'reflection-405b': '"Coming next week"',
-  'grok-5': '"A shot at being true AGI"',
-  'le-chaton-fat': 'Rumored 30T spec',
-  'mistral-large-4': 'Le Chaton Fat → Le Chonk',
-  'gemini-4-argon': 'Benchmark table first, model later',
-  'gemini-4-carbon': '#1 on the index, defenders only',
-  'grok-4-8': '"Taken longer than expected"',
-  'claude-next': 'Routing rumor',
-  'muse-wonder': 'Announced and shipped same day',
-  'mercury-3': '"Lands next week" (it did)',
-  'kimi-k3-1-pro': 'Teaser and launch, same day',
-  'our-model': 'Internal checkpoint',
-};
-
 export function shipSpans(): Span[] {
-  return Object.keys(SPAN_SUB).map((id) => {
-    const m = modelById(id);
-    return {
+  return MODELS.flatMap((m) => (m.shipNote ? [{ m, sub: m.shipNote }] : []))
+    .sort((a, b) => a.m.announced.localeCompare(b.m.announced))
+    .map(({ m, sub }) => ({
       id: m.id,
       label: m.name,
-      sub: SPAN_SUB[id],
+      sub,
       color: lab(m.lab).color,
       start: m.announced,
       end: m.released,
@@ -150,8 +139,7 @@ export function shipSpans(): Span[] {
         ['Available', m.released ?? 'not yet'],
         ['Days', `${shipDays(m)}${m.released ? '' : ' and counting'}`],
       ]),
-    };
-  });
+    }));
 }
 
 const point = (m: Model, x: number, y: number, tip: string): Point => ({
@@ -211,7 +199,7 @@ export function randomPoints(): Point[] {
 export function contextDumbbells(): Dumbbell[] {
   return AVAILABLE.map((m) => ({
     id: m.id,
-    label: chartLabel(m),
+    label: displayName(m),
     color: lab(m.lab).color,
     measured: m.contextRemembered,
     claimed: m.contextClaimed,
@@ -223,5 +211,3 @@ export function contextDumbbells(): Dumbbell[] {
     ]),
   })).sort((a, b) => b.claimed - b.measured! - (a.claimed - a.measured!));
 }
-
-export { displayName, STATUS_LABEL };

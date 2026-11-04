@@ -1,5 +1,6 @@
 ---
 import Logo from './Logo.astro';
+import { benchHrefBySlug } from '../data/benchmarks';
 import { REPO_URL, NEW_ISSUE_URL } from '../lib/site';
 import { BUILD_ISO } from '../lib/scores';
 
@@ -17,9 +18,9 @@ const cols = [
     title: 'Products',
     links: [
       { href: '/chart-crime-studio/', label: 'Chart Crime Studio' },
-      { href: '/benchmarks/random-axis/', label: 'Random Axis, Re-run' },
-      { href: '/benchmarks/benchmaxx-gap/', label: 'Benchmaxx Gap' },
-      { href: '/benchmarks/ship-latency/', label: 'Days to Ship' },
+      { href: benchHrefBySlug('random-axis'), label: 'Random Axis, Re-run' },
+      { href: benchHrefBySlug('benchmaxx-gap'), label: 'Benchmaxx Gap' },
+      { href: benchHrefBySlug('ship-latency'), label: 'Days to Ship' },
     ],
   },
   {

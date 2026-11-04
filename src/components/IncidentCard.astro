@@ -1,8 +1,9 @@
 ---
-import type { Incident, IncidentStatus } from '../data/incidents';
+import type { Incident } from '../data/incidents';
 import { incidentHref, incidentSlug } from '../data/incidents';
 import { tweetById, tweetUrl } from '../data/tweets';
 import { compact, shortDate } from '../lib/scores';
+import { INCIDENT_STATUS } from '../lib/status';
 
 interface Props {
   inc: Incident;
@@ -10,14 +11,6 @@ interface Props {
 }
 
 const { inc, standalone = false } = Astro.props;
-const STATUS_CLASS: Record<IncidentStatus, string> = {
-  Open: 'badge-bad',
-  Resolved: 'badge-good',
-  Disputed: 'badge-warn',
-  Unconfirmed: 'badge',
-  'Partially delivered': 'badge-accent',
-  Unfalsifiable: 'badge',
-};
 const Heading = standalone ? 'h1' : 'h2';
 const vtName = `view-transition-name: i-${incidentSlug(inc)}`;
 ---
@@ -35,7 +28,7 @@ const vtName = `view-transition-name: i-${incidentSlug(inc)}`;
       <span class="sev" title={`Severity ${inc.severity} of 5`} aria-label={`Severity ${inc.severity} of 5`}>
         {'🤝'.repeat(inc.severity)}
       </span>
-      <span class:list={['badge', STATUS_CLASS[inc.status]]}>{inc.status}</span>
+      <span class:list={['badge', INCIDENT_STATUS[inc.status].badge]}>{inc.status}</span>
     </div>
   </header>
   <Heading class="title">

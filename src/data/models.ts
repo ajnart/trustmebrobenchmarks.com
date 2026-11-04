@@ -1,15 +1,19 @@
 import type { LabId } from './labs';
 
 export type Status = 'available' | 'announced' | 'rumored' | 'promised' | 'self-reported';
+export type Effort = 'max' | 'xhigh';
 
 export interface Model {
   id: string;
   name: string;
   variant?: string;
+  effort?: Effort;
   lab: LabId;
   status: Status;
+  archived?: boolean;
   announced: string;
   released?: string;
+  shipNote?: string;
   skill: number;
   claimed: number;
   claimLabel?: string;
@@ -22,19 +26,11 @@ export interface Model {
   note?: string;
 }
 
-export const STATUS_LABEL: Record<Status, string> = {
-  available: 'Available',
-  announced: 'Announced, not available',
-  rumored: 'Rumored',
-  promised: 'Promised',
-  'self-reported': 'Self-reported',
-};
-
 export const MODELS: Model[] = [
   {
     id: 'opus-5-5',
     name: 'Claude Opus 5.5',
-    variant: 'max',
+    effort: 'max',
     lab: 'anthropic',
     status: 'available',
     announced: '2026-09-22',
@@ -50,7 +46,7 @@ export const MODELS: Model[] = [
   {
     id: 'fable-5-1',
     name: 'Claude Fable 5.1',
-    variant: 'max',
+    effort: 'max',
     lab: 'anthropic',
     status: 'available',
     announced: '2026-09-01',
@@ -96,7 +92,7 @@ export const MODELS: Model[] = [
   {
     id: 'gpt-6-astra',
     name: 'GPT-6 Astra',
-    variant: 'max',
+    effort: 'max',
     lab: 'openai',
     status: 'available',
     announced: '2026-09-03',
@@ -112,7 +108,7 @@ export const MODELS: Model[] = [
   {
     id: 'gpt-6-1-sol',
     name: 'GPT-6.1 Sol',
-    variant: 'max',
+    effort: 'max',
     lab: 'openai',
     status: 'available',
     announced: '2026-09-29',
@@ -144,7 +140,7 @@ export const MODELS: Model[] = [
   {
     id: 'gpt-6-1-terra',
     name: 'GPT-6.1 Terra',
-    variant: 'max',
+    effort: 'max',
     lab: 'openai',
     status: 'available',
     announced: '2026-10-26',
@@ -166,6 +162,7 @@ export const MODELS: Model[] = [
     status: 'available',
     announced: '2026-10-01',
     released: '2026-10-13',
+    shipNote: 'Benchmark table first, model later',
     skill: 58,
     claimed: 84,
     speed: 140,
@@ -181,6 +178,7 @@ export const MODELS: Model[] = [
     lab: 'google',
     status: 'announced',
     announced: '2026-10-28',
+    shipNote: '#1 on the index, defenders only',
     skill: 75,
     claimed: 86,
     claimLabel: '"#1 on v5.0 of the @ArtificialAnlys Intelligence Index"',
@@ -213,6 +211,7 @@ export const MODELS: Model[] = [
     name: 'Gemini 3.8 Flash',
     lab: 'google',
     status: 'available',
+    archived: true,
     announced: '2026-08-20',
     released: '2026-08-20',
     skill: 52,
@@ -226,7 +225,7 @@ export const MODELS: Model[] = [
   {
     id: 'muse-wonder-full',
     name: 'Muse Wonder Full',
-    variant: 'max',
+    effort: 'max',
     lab: 'meta',
     status: 'available',
     announced: '2026-10-12',
@@ -243,11 +242,12 @@ export const MODELS: Model[] = [
   {
     id: 'muse-wonder',
     name: 'Muse Wonder',
-    variant: 'max',
+    effort: 'max',
     lab: 'meta',
     status: 'available',
     announced: '2026-10-12',
     released: '2026-10-12',
+    shipNote: 'Announced and shipped same day',
     skill: 55,
     claimed: 79,
     speed: 118,
@@ -259,7 +259,7 @@ export const MODELS: Model[] = [
   {
     id: 'muse-spark-open',
     name: 'Muse Spark Open',
-    variant: 'xhigh',
+    effort: 'xhigh',
     lab: 'meta',
     status: 'available',
     announced: '2026-10-15',
@@ -278,7 +278,7 @@ export const MODELS: Model[] = [
   {
     id: 'grok-4-7',
     name: 'Grok 4.7',
-    variant: 'xhigh',
+    effort: 'xhigh',
     lab: 'xai',
     status: 'available',
     announced: '2026-10-01',
@@ -298,6 +298,7 @@ export const MODELS: Model[] = [
     lab: 'xai',
     status: 'promised',
     announced: '2026-09-14',
+    shipNote: '"Taken longer than expected"',
     skill: 0,
     claimed: 90,
     claimLabel: '"Will not be a disappointment"',
@@ -313,7 +314,9 @@ export const MODELS: Model[] = [
     name: 'Grok 5',
     lab: 'xai',
     status: 'promised',
+    archived: true,
     announced: '2025-08-21',
+    shipNote: '"A shot at being true AGI"',
     skill: 0,
     claimed: 140,
     claimLabel: 'AGI',
@@ -332,6 +335,7 @@ export const MODELS: Model[] = [
     status: 'available',
     announced: '2026-06-15',
     released: '2026-10-06',
+    shipNote: 'Le Chaton Fat → Le Chonk',
     skill: 51,
     claimed: 72,
     speed: 116,
@@ -348,7 +352,9 @@ export const MODELS: Model[] = [
     variant: '30T, rumored',
     lab: 'mistral',
     status: 'rumored',
+    archived: true,
     announced: '2026-06-15',
+    shipNote: 'Rumored 30T spec',
     skill: 0,
     claimed: 96,
     claimLabel: '"Outperforms Fable 5 on every benchmark"',
@@ -364,6 +370,7 @@ export const MODELS: Model[] = [
     name: 'Kimi K3',
     lab: 'moonshot',
     status: 'available',
+    archived: true,
     announced: '2026-07-15',
     released: '2026-07-15',
     skill: 59,
@@ -382,6 +389,7 @@ export const MODELS: Model[] = [
     status: 'available',
     announced: '2026-10-23',
     released: '2026-10-23',
+    shipNote: 'Teaser and launch, same day',
     skill: 64,
     claimed: 85,
     claimLabel: '65.7% Terminal-Bench 4.0, "ahead of GPT-6 Astra"',
@@ -426,7 +434,7 @@ export const MODELS: Model[] = [
   {
     id: 'deepseek-v4-1-flash',
     name: 'DeepSeek V4.1 Flash',
-    variant: 'max',
+    effort: 'max',
     lab: 'deepseek',
     status: 'available',
     announced: '2026-09-05',
@@ -466,6 +474,7 @@ export const MODELS: Model[] = [
     status: 'available',
     announced: '2026-10-15',
     released: '2026-10-19',
+    shipNote: '"Lands next week" (it did)',
     skill: 47,
     claimed: 70,
     claimLabel: '"Outperforms GPT-6 Luna and Haiku 5.5"',
@@ -516,7 +525,9 @@ export const MODELS: Model[] = [
     name: 'Reflection 405B',
     lab: 'reflection',
     status: 'promised',
+    archived: true,
     announced: '2024-09-05',
+    shipNote: '"Coming next week"',
     skill: 0,
     claimed: 99,
     claimLabel: '"Best model in the world"',
@@ -533,7 +544,9 @@ export const MODELS: Model[] = [
     variant: 'routing rumor',
     lab: 'anthropic',
     status: 'rumored',
+    archived: true,
     announced: '2026-10-12',
+    shipNote: 'Routing rumor',
     skill: 0,
     claimed: 92,
     speed: 0,
@@ -550,6 +563,7 @@ export const MODELS: Model[] = [
     lab: 'tmb',
     status: 'self-reported',
     announced: '2026-10-13',
+    shipNote: 'Internal checkpoint',
     skill: 0,
     claimed: 112,
     claimLabel: 'Internal benchmarks',
@@ -570,4 +584,14 @@ export const modelById = (id: string) => {
   if (!m) throw new Error(`Unknown model ${id}`);
   return m;
 };
-export const displayName = (m: Model) => (m.variant ? `${m.name} (${m.variant})` : m.name);
+export const modelHref = (m: Model) => `/models/${m.id}/`;
+export const shortClaim = (m: Model) => {
+  if (m.claimLabel && m.claimLabel.length <= 5) return m.claimLabel;
+  return String(m.claimed);
+};
+export const variantLabel = (m: Model) => m.variant ?? m.effort;
+export const displayName = (m: Model) => {
+  const v = variantLabel(m);
+  if (!v) return m.name;
+  return `${m.name} (${v})`;
+};

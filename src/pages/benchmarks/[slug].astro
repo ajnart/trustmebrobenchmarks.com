@@ -8,12 +8,13 @@ import BarChart from '../../components/charts/BarChart.astro';
 import ScatterChart from '../../components/charts/ScatterChart.astro';
 import DumbbellChart from '../../components/charts/DumbbellChart.astro';
 import GanttChart from '../../components/charts/GanttChart.astro';
-import { BENCHMARKS, type Benchmark } from '../../data/benchmarks';
+import { BENCHMARKS, benchHref, type Benchmark } from '../../data/benchmarks';
+import { modelHref } from '../../data/models';
 import { tweetById } from '../../data/tweets';
+import { benchmarkView } from '../../lib/benchmark-view';
 import { INDEX_NAME } from '../../lib/site';
-import { BUILD_ISO, fmt, rows } from '../../lib/scores';
-import { benchBars, claimDumbbells, randomPoints, shipSpans } from '../../lib/views';
-import { clip, itemList } from '../../lib/seo';
+import { BUILD_ISO, fmt } from '../../lib/scores';
+import { SITE_URL, clip, itemList } from '../../lib/seo';
 
 export function getStaticPaths() {
   return BENCHMARKS.map((b) => ({ params: { slug: b.slug }, props: { b } }));
@@ -28,25 +29,24 @@ const i = BENCHMARKS.findIndex((x) => x.slug === b.slug);
 const prev = BENCHMARKS[(i - 1 + BENCHMARKS.length) % BENCHMARKS.length];
 const next = BENCHMARKS[(i + 1) % BENCHMARKS.length];
 const tweets = (b.inspiredBy?.tweetIds ?? []).map(tweetById);
-const results = rows(b);
-const direction = { higher: 'Higher is better', lower: 'Lower is better', unclear: 'Direction unclear' }[b.better];
-const items = 40 + ((b.slug.length * 37) % 400);
+const { direction, random, results, unmeasured, chart } = benchmarkView(b);
+const items = b.items;
 const key = b.slug.replace(/-/g, '');
 const bibtex = `@misc{tmb2026${key},
   title        = {${b.name}: ${b.tagline}},
   author       = {Bro, Trust Me and {et al.}},
   year         = {2026},
-  howpublished = {\\url{https://trustmebrobenchmarks.com/benchmarks/${b.slug}/}},
+  howpublished = {\\url{${SITE_URL}${benchHref(b)}}},
   note         = {Results not reproducible. Please do not cite.}
 }`;
 const crumbs = [
   { name: 'Benchmarks', path: '/benchmarks/' },
-  { name: b.name, path: `/benchmarks/${b.slug}/` },
+  { name: b.name, path: benchHref(b) },
 ];
 const published = tweets.map((t) => t.date).sort()[0] ?? '2026-10-01';
 const top = results.slice(0, 3).map((r) => `${r.model.name} ${fmt(r.value, b.format)}`).join(', ');
 const description = clip(`${b.tagline} ${b.abstract}`);
-const schema = b.computed === 'random-axis' ? [] : [itemList(`${b.name} results`, results.slice(0, 10).map((r) => ({ name: `${r.model.name}: ${fmt(r.value, b.format)}`, path: `/models/${r.model.id}/` })))];
+const schema = random ? [] : [itemList(`${b.name} results`, results.slice(0, 10).map((r) => ({ name: `${r.model.name}: ${fmt(r.value, b.format)}`, path: modelHref(r.model) })))];
 ---
 
 <Base
@@ -76,20 +76,20 @@ const schema = b.computed === 'random-axis' ? [] : [itemList(`${b.name} results`
         <p>{b.abstract}</p>
       </div>
 
-      <ChartCard title="Results" subtitle={`${b.short} · ${b.unit} · ${direction}${b.slug === 'random-axis' ? ' · re-randomized every deploy' : ''}`}>
-        {b.computed === 'random-axis' && (
+      <ChartCard title="Results" subtitle={`${b.short} · ${b.unit} · ${direction}${random ? ' · re-randomized every deploy' : ''}`}>
+        {random && (
           <Fragment slot="actions">
             <button class="pill pill-ink" id="rerun" type="button">
               Re-run benchmark
             </button>
           </Fragment>
         )}
-        {b.computed === 'random-axis' && <ScatterChart points={randomPoints()} pareto={false} hideAxes shuffle yDomain={[0, 100]} xLabel="x (unlabeled)" yLabel="y (unlabeled)" ariaLabel="Random axis" />}
-        {b.computed === 'benchmaxx-gap' && <DumbbellChart rows={claimDumbbells()} max={100} measuredLabel="TMB Index (measured)" claimedLabel="Self-reported" ariaLabel="Benchmaxx gap" />}
-        {b.computed === 'ship-latency' && <GanttChart rows={shipSpans()} ariaLabel="Days to ship" />}
-        {!b.computed && <BarChart bars={benchBars(b)} showAxis minWidth={820} breakAbove={b.slug === 'superlatives' ? 20 : undefined} ariaLabel={`${b.name} results`} />}
+        {chart.kind === 'scatter' && <ScatterChart points={chart.points} pareto={false} hideAxes shuffle yDomain={[0, 100]} xLabel="x (unlabeled)" yLabel="y (unlabeled)" ariaLabel="Random axis" />}
+        {chart.kind === 'dumbbell' && <DumbbellChart rows={chart.rows} max={100} measuredLabel="TMB Index (measured)" claimedLabel="Self-reported" ariaLabel="Benchmaxx gap" />}
+        {chart.kind === 'gantt' && <GanttChart rows={chart.spans} ariaLabel="Days to ship" />}
+        {chart.kind === 'bars' && <BarChart bars={chart.bars} showAxis minWidth={820} breakAbove={chart.breakAbove} ariaLabel={`${b.name} results`} />}
         <Fragment slot="foot">
-          {b.slug === 'random-axis' ? (
+          {random ? (
             <span>Seed for this build: {BUILD_ISO}. Click "Re-run benchmark" to re-sample in your browser. Your results will differ from ours, and both will be equally valid.</span>
           ) : (
             <span>
@@ -106,7 +106,7 @@ const schema = b.computed === 'random-axis' ? [] : [itemList(`${b.name} results`
         <h2>Limitations</h2>
         <ul>{b.limitations.map((l) => <li>{l}</li>)}</ul>
         {
-          b.computed !== 'random-axis' && results.length > 0 && (
+          results.length > 0 && (
             <>
               <h2>Results table</h2>
               <table class="rt">
@@ -122,10 +122,20 @@ const schema = b.computed === 'random-axis' ? [] : [itemList(`${b.name} results`
                     <tr>
                       <td class="muted">{k + 1}</td>
                       <td>
-                        <a href={`/models/${r.model.id}/`}>{r.model.name}</a>
+                        <a href={modelHref(r.model)}>{r.model.name}</a>
                         {r.vapor && <span class="badge badge-warn">claimed</span>}
                       </td>
                       <td class="r num">{fmt(r.value, b.format)}</td>
+                    </tr>
+                  ))}
+                  {unmeasured.map((m) => (
+                    <tr>
+                      <td class="muted">—</td>
+                      <td>
+                        <a href={modelHref(m)}>{m.name}</a>
+                        <span class="badge badge-warn">cannot be used</span>
+                      </td>
+                      <td class="r num">+∞</td>
                     </tr>
                   ))}
                 </tbody>
@@ -181,7 +191,7 @@ const schema = b.computed === 'random-axis' ? [] : [itemList(`${b.name} results`
     </aside>
   </section>
 
-  <PrevNext prev={{ href: `/benchmarks/${prev.slug}/`, label: prev.name }} next={{ href: `/benchmarks/${next.slug}/`, label: next.name }} />
+  <PrevNext prev={{ href: benchHref(prev), label: prev.name }} next={{ href: benchHref(next), label: next.name }} />
 </Base>
 
 <script>

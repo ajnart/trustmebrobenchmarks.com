@@ -1,31 +1,19 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
-import { benchBySlug } from '../data/benchmarks';
-import { lab } from '../data/labs';
-import { MODELS, STATUS_LABEL, type Model } from '../data/models';
+import { BENCHMARKS } from '../data/benchmarks';
+import { AVAILABLE, MODELS } from '../data/models';
 import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
 import { itemList } from '../lib/seo';
-import { fmt, money, shipDays, tmbIndex, value } from '../lib/scores';
+import { modelView } from '../lib/model-view';
+import { fmt, money, value } from '../lib/scores';
 
-const cols = [
-  { key: 'nonsense-pushback', label: 'Nonsense Pushback' },
-  { key: 'overclaim', label: 'Overclaim' },
-  { key: 'lava-lamp', label: 'Lava Lamp' },
-  { key: 'pelican', label: 'Pelican' },
-  { key: 'brainfuck', label: 'Brainfuck' },
-  { key: 'snitch', label: 'Snitch' },
-].map((c) => ({ ...c, bench: benchBySlug(c.key) }));
+const cols = BENCHMARKS.filter((b) => b.leaderboard);
 
-const sorted = [...MODELS].sort((a, b) => (tmbIndex(b) ?? -1) - (tmbIndex(a) ?? -1) || b.claimed - a.claimed);
+const sorted = MODELS.map(modelView).sort((a, b) => (b.index ?? -1) - (a.index ?? -1) || b.model.claimed - a.model.claimed);
 
-const statusClass = (m: Model) => {
-  if (m.status === 'available') return 'badge-good';
-  if (m.status === 'announced') return 'badge-warn';
-  return 'badge-bad';
-};
 const num = (v: number | undefined) => (v === undefined ? '' : String(v));
-const available = MODELS.filter((m) => m.status === 'available').length;
+const available = AVAILABLE.length;
 ---
 
 <Base
@@ -33,7 +21,7 @@ const available = MODELS.filter((m) => m.status === 'available').length;
   description={`${MODELS.length} AI models ranked on the ${INDEX_NAME}: GPT-6, Claude, Gemini, Grok, Mistral and more, including several that do not exist yet. Satirical scores.`}
   pageType="CollectionPage"
   breadcrumbs={[{ name: 'Models', path: '/models/' }]}
-  schema={[itemList('AI model leaderboard', sorted.map((m) => ({ name: m.variant ? `${m.name} (${m.variant})` : m.name, path: `/models/${m.id}/` })))]}
+  schema={[itemList('AI model leaderboard', sorted.map((v) => ({ name: v.name, path: v.href })))]}
 >
   <PageHead
     eyebrow="Leaderboard"
@@ -51,7 +39,7 @@ const available = MODELS.filter((m) => m.status === 'available').length;
               <th data-sort="num" class="r" aria-sort="descending">{INDEX_NAME.replace('Trust Me Bro ', 'TMB ')}</th>
               <th data-sort="num" class="r">Self-reported</th>
               <th data-sort="num" class="r">Benchmaxx Gap</th>
-              {cols.map((c) => <th data-sort="num" class="r">{c.label}</th>)}
+              {cols.map((b) => <th data-sort="num" class="r">{b.short}</th>)}
               <th data-sort="num" class="r">Speed (tok/s)</th>
               <th data-sort="num" class="r">Cost / task</th>
               <th data-sort="num" class="r">Days to ship</th>
@@ -59,22 +47,20 @@ const available = MODELS.filter((m) => m.status === 'available').length;
           </thead>
           <tbody>
             {
-              sorted.map((m) => {
-                const idx = tmbIndex(m);
-                const gap = idx === undefined ? undefined : m.claimed - idx;
-                const vapor = m.status !== 'available';
+              sorted.map((v) => {
+                const m = v.model;
                 return (
-                  <tr id={m.id} class:list={{ vapor }}>
+                  <tr id={m.id} class:list={{ vapor: v.vapor }}>
                     <td class="sticky" data-v={m.name}>
                       <div class="mcell">
-                        <span class="lab-mark" style={`color:${lab(m.lab).color}`}>
-                          {lab(m.lab).mark}
+                        <span class="lab-mark" style={`color:${v.lab.color}`}>
+                          {v.lab.mark}
                         </span>
                         <div>
-                          <a class="mlink vt-name" href={`/models/${m.id}/`} style={`view-transition-name: m-${m.id}`}>{m.name}</a>
-                          {m.variant && <span class="variant"> ({m.variant})</span>}
+                          <a class="mlink vt-name" href={v.href} style={`view-transition-name: m-${m.id}`}>{m.name}</a>
+                          {v.variant && <span class="variant"> ({v.variant})</span>}
                           <div class="sub">
-                            {lab(m.lab).name}
+                            {v.lab.name}
                             {m.openWeights && ' · Open weights'}
                           </div>
                           {m.note && <div class="note">{m.note}</div>}
@@ -82,33 +68,34 @@ const available = MODELS.filter((m) => m.status === 'available').length;
                       </div>
                     </td>
                     <td data-v={m.status}>
-                      <span class:list={['badge', statusClass(m)]}>{STATUS_LABEL[m.status]}</span>
+                      <span class:list={['badge', v.status.badge]}>{v.status.label}</span>
                     </td>
-                    <td class="r strong" data-v={num(idx ?? -1)}>
-                      {idx === undefined ? <span class="muted">n/a</span> : idx}
+                    <td class="r strong" data-v={num(v.index ?? -1)}>
+                      {v.index === undefined ? <span class="muted">n/a</span> : v.index}
                     </td>
                     <td class="r" data-v={num(m.claimed)}>
                       {m.claimLabel ?? m.claimed}
                     </td>
-                    <td class="r" data-v={num(gap ?? 999)}>
-                      {gap === undefined ? <span class="inf">+∞</span> : <span class:list={{ bad: gap > 10, good: gap <= 0 }}>{gap > 0 ? `+${gap}` : gap === 0 ? '±0' : `−${-gap}`}</span>}
+                    <td class="r" data-v={num(v.gap ?? 999)}>
+                      {v.gap === undefined ? <span class="inf">{v.gapText}</span> : <span class:list={{ bad: v.gap > 10, good: v.gap <= 0 }}>{v.gapText}</span>}
                     </td>
-                    {cols.map((c) => {
-                      const v = value(c.bench, m);
+                    {cols.map((b) => {
+                      const x = value(b, m);
                       return (
-                        <td class="r" data-v={num(v ?? -1)}>
-                          {v === undefined ? <span class="muted">—</span> : fmt(v, c.bench.format)}
+                        <td class="r" data-v={num(x ?? -1)}>
+                          {x === undefined ? <span class="muted">—</span> : fmt(x, b.format)}
                         </td>
                       );
                     })}
                     <td class="r" data-v={num(m.speed)}>
-                      {m.speed === 0 ? <span class="muted">—</span> : vapor ? `${m.speed}*` : m.speed}
+                      {m.speed === 0 && <span class="muted">—</span>}
+                      {m.speed > 0 && `${m.speed}${v.vapor ? '*' : ''}`}
                     </td>
                     <td class="r" data-v={num(m.cost || 999)}>
                       {money(m.cost)}
                     </td>
-                    <td class="r" data-v={num(shipDays(m))}>
-                      {shipDays(m)}
+                    <td class="r" data-v={num(v.shipDays)}>
+                      {v.shipDays}
                       {!m.released && '+'}
                     </td>
                   </tr>

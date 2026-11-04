@@ -16,7 +16,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   { date: '4 Nov', kind: 'New model evaluation', title: 'GPT-6.1 Terra, which beat its own Terminal-Bench claim', href: '/models/gpt-6-1-terra/' },
   { date: '4 Nov', kind: 'Model update', title: 'Kimi K3.1 Pro weights ship on the promised date; index v5 moves it from fourth to ninth', href: '/models/kimi-k3-1-pro/' },
   { date: '4 Nov', kind: 'Incident update', title: 'Le Chonk open weights ship as scheduled. Incident resolved', href: '/incidents/tmb-2026-0006/' },
-  { date: '4 Nov', kind: 'Corpus update', title: 'Twenty-three posts added to In the Wild, including a crocodile', href: '/in-the-wild/' },
+  { date: '4 Nov', kind: 'Corpus update', title: 'Thirty-four posts added to In the Wild, including a crocodile', href: '/in-the-wild/' },
   { date: '26 Oct', kind: 'New incident filed', title: 'Kimi K3.1 Pro: the most benchmaxxed model ever released, allegedly', href: '/incidents/tmb-2026-0017/' },
   { date: '26 Oct', kind: 'New model evaluation', title: 'Kimi K3.1 Pro (available; it was a teaser for about fifteen hours)', href: '/models/kimi-k3-1-pro/' },
   { date: '26 Oct', kind: 'Incident update', title: 'Kimi K3.1 ships the same day as its teaser, not the fifth of November', href: '/incidents/tmb-2026-0016/' },
