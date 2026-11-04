@@ -1,0 +1,77 @@
+.claude/skills/tmb-scout/SKILL.md
+  s_a412134a98f5ee::t_944143d912b0b1 23,33,53,57-60,63
+.claude/skills/tmb-scout/scripts/sweep.ts
+  s_a412134a98f5ee::t_e1259e420637fd 1,3,37,42,52,63
+.claude/skills/tmb-scout/scripts/tweet-entry.ts
+  s_a412134a98f5ee::t_db04d241b5ff78 2-3,5,30,36,45-47,54,58-60
+README.md
+  s_a412134a98f5ee::t_9ac2bc590f6268 60
+astro.config.mjs
+  s_a412134a98f5ee::t_921ee9d84fcaf2 5,9-18,23
+src/components/IncidentCard.astro
+  s_a412134a98f5ee::t_6677f55c34cfa0 2,6,31
+src/components/charts/DumbbellChart.astro
+  s_a412134a98f5ee::t_bde7fd147f9722 3,32
+src/data/benchmarks.ts
+  s_a412134a98f5ee::t_ee43422f334508 28-31,52-53,92-93,130-131,171-172,188,202-203,238-239,274,296-297,324-325,362,400,434-435,470,484,498,525,539
+src/data/changelog.ts
+  s_a412134a98f5ee::t_f739e87b8e5aa5 19
+src/data/incidents.ts
+  s_a412134a98f5ee::t_d702b6300db785 18,34,183,238,325,338-340,383
+src/data/labs.ts
+  s_a412134a98f5ee::t_ca34fc13098008 24,28-37,39-42
+src/data/models.ts
+  s_a412134a98f5ee::t_fa21d468704a1c 4,10,15,32,48,94,110,142,164,180,226,243,248,260,279,299,316,335,353,387,432,472,524,542,559,580-589
+src/data/tweets.ts
+  s_a412134a98f5ee::t_e1cbb7ed1632cb 18,169,190,201,292,323,334,345,356,387,398,409,420,431,442,453,464,485,526,607,638,659,720,781,792,803,814,835,866,877,888,899,910,921,942,953,964,975,986,1007,1098,1109,1120,1141,1152,1163,1194,1205,1216,1227,1248,1259,1270,1281,1292,1303,1314,1325,1336,1347,1387,1418,1429,1440,1451,1461,1492,1503,1514,1534,1565-1678
+src/lib/benchmark-view.ts
+  s_a412134a98f5ee::t_2bf7f9f73623bc 1-40
+src/lib/chart-crime.ts
+  s_a412134a98f5ee::t_2cce67914cb2c2 1-45
+src/lib/chart.ts
+  s_a412134a98f5ee::t_3be002396dcf7f 1-3,68
+src/lib/content.ts
+  s_a412134a98f5ee::t_46ff1a7fb0c7f5 1-112
+src/lib/model-view.ts
+  s_a412134a98f5ee::t_de916b709711b4 1-70
+src/lib/og-pages.ts
+  s_a412134a98f5ee::t_4cda3ff022f975 2,4,6-8,11-12,14,16-19,22-23,29,34,37-39,42-44,47,49,66,73,106
+src/lib/og.tsx
+  s_a412134a98f5ee::t_7245a4ce738c6f 5,244-245,255
+src/lib/scores.ts
+  s_a412134a98f5ee::t_ef29db62098cfe 1,22,28-29,32-39,130-137
+src/lib/site.ts
+  s_a412134a98f5ee::t_b33ecbe0177e04 1-2,7
+src/lib/status.ts
+  s_a412134a98f5ee::t_e0d1f2dc02891d 1-19
+src/lib/views.ts
+  s_a412134a98f5ee::t_ea90ed5223db68 8,11,13-18,20-21,23-39,44-49,53,55,58-59,61-68,72-75,85,104,113,125-127,130,140,200
+src/pages/benchmarks/[slug].astro
+  s_a412134a98f5ee::t_70b398fc9bea24 13,15,31-32,48,78-79,86-89,91,108,130-139
+src/pages/chart-crime-studio.astro
+  s_a412134a98f5ee::t_0691d3a0d180d7 6,22,25-26,31-32,73,80,86,108,113,210-211,256-257,262,284-285,288,293,296-297,299,314
+src/pages/index.astro
+  s_a412134a98f5ee::t_66da38f2239e36 18,23,40,44-50,52-53,55-57,194
+src/pages/methodology.astro
+  s_a412134a98f5ee::t_b5e67875eeb385 8,99
+src/pages/models.astro
+  s_a412134a98f5ee::t_28e1e9d8833af0 4-5,8-9,11,13,16,24,42,50-51,53,56-57,60-61,63,71,73-74,79-80,82-83,85-86,91-92,97-98
+src/pages/models/[id].astro
+  s_a412134a98f5ee::t_69bb6390c1856a 7-11,14,25-29,32,34,38,43,48-49,66,69,108,113,131,138,142,151,159,174-177,180-181,183,190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2bd3649c66eccee7cbaabb17603234d6c85c41a8",
+  "prompts": {},
+  "sessions": {
+    "s_a412134a98f5ee": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "25586869-0ab9-4dc9-9a9f-a15f1a24eefd",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
