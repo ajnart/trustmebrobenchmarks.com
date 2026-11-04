@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import PageHead from '../components/PageHead.astro';
 import TweetCard from '../components/TweetCard.astro';
 import { TWEETS } from '../data/tweets';
-import { EXHIBIT, VERDICTS, exhibitPanel } from '../lib/chart-crime';
+import { EXHIBIT, LEAD, VERDICTS, dataEffect, exhibitPanel, meterPos, verdict } from '../lib/chart-crime';
 import { absolute } from '../lib/seo';
 
 const exhibits = TWEETS.filter((t) => t.topic === 'chart-crime').sort((a, b) => b.likes - a.likes);
@@ -19,16 +19,16 @@ const presets = [
   ['launch', 'Launch day'],
   ['deck', 'Investor deck'],
 ] as const;
-const zones = VERDICTS.map((v, i) => [v.label, VERDICTS[i - 1]?.limit ?? 1, Math.min(v.limit, 100)] as const);
-const pos = (v: number) => (Math.log10(v) / 2) * 100;
+const zones = VERDICTS.map((v, i) => [v.label, meterPos(VERDICTS[i - 1]?.limit ?? 1), meterPos(v.limit)] as const);
 const intent = (text: string) => `https://x.com/intent/post?text=${encodeURIComponent(text)}`;
 const defaultPost = `Introducing Our Model. 🚀\n\nState of the art on TrustMeBench Pro (Verified): ${EXHIBIT.ours}%.\n\nvia trustmebrobenchmarks.com/chart-crime-studio`;
-const lead = (EXHIBIT.ours - EXHIBIT.theirs).toFixed(1);
+const honest = exhibitPanel(0);
+const start = verdict(Number(honest.lie));
 ---
 
 <Base
   title="Chart Crime Studio: Truncated Y-Axis Maker"
-  description={`Turn a ${lead}-point lead into a generational leap. Truncate the y-axis, hide the labels, add an asterisk, and watch Tufte's Lie Factor climb in real time.`}
+  description={`Turn a ${LEAD}-point lead into a generational leap. Truncate the y-axis, hide the labels, add an asterisk, and watch Tufte's Lie Factor climb in real time.`}
   imageAlt={`Chart Crime Studio: a ${EXHIBIT.ours} vs ${EXHIBIT.theirs} bar chart with a truncated y-axis and a Lie Factor of ${exhibitPanel(EXHIBIT.launchBase).lie}.`}
   breadcrumbs={[{ name: 'Chart Crime Studio', path: '/chart-crime-studio/' }]}
   schema={[
@@ -47,11 +47,11 @@ const lead = (EXHIBIT.ours - EXHIBIT.theirs).toFixed(1);
   <PageHead
     eyebrow="Tools · Beta"
     title="Chart Crime Studio"
-    lede="Turn a 2.7-point lead into a generational leap. Drag the y-axis baseline until the difference looks like a launch post. Tufte's Lie Factor is computed live, so you know exactly how much you are lying."
+    lede={`Turn a ${LEAD}-point lead into a generational leap. Drag the y-axis baseline until the difference looks like a launch post. Tufte's Lie Factor is computed live, so you know exactly how much you are lying.`}
   />
 
   <section class="container">
-    <div class="card bench" data-level="honest">
+    <div class="card bench" data-level={start.level}>
       <div class="stage">
         <header class="stage-head">
           <div>
@@ -116,7 +116,7 @@ const lead = (EXHIBIT.ours - EXHIBIT.theirs).toFixed(1);
         <fieldset>
           <legend>Y-axis starts at <output id="base-out" class="num">0.0</output></legend>
           <input id="base" class="range" type="range" min="0" max="49.9" step="0.1" value="0" aria-label="Y-axis baseline" />
-          <div class="range-legend"><span>Honest</span><span>Launch post</span></div>
+          <div class="range-legend"><span>{VERDICTS[0].label}</span><span>{VERDICTS[3].label}</span></div>
         </fieldset>
         <fieldset>
           <legend>Enhancements</legend>
@@ -145,32 +145,32 @@ const lead = (EXHIBIT.ours - EXHIBIT.theirs).toFixed(1);
         <dl class="readouts">
           <div>
             <dt>Actual difference</dt>
-            <dd id="r-actual" class="num">+2.7 pts</dd>
-            <small id="r-actual-sub">+5.4% relative</small>
+            <dd id="r-actual" class="num">+{LEAD} pts</dd>
+            <small id="r-actual-sub">+{(dataEffect(EXHIBIT.ours, EXHIBIT.theirs) * 100).toFixed(1)}% relative</small>
           </div>
           <div>
             <dt>Visual difference</dt>
-            <dd id="r-visual" class="num">1.05×</dd>
+            <dd id="r-visual" class="num">{(honest.ours / honest.theirs).toFixed(2)}×</dd>
             <small>our bar vs. theirs</small>
           </div>
           <div>
             <dt>Lie Factor <a class="link" href="#lie-factor">(Tufte)</a></dt>
-            <dd id="r-lie" class="num lie-val">1.0</dd>
+            <dd id="r-lie" class="num lie-val">{honest.lie}</dd>
             <small>1.0 is honest</small>
           </div>
           <div>
             <dt>Verdict</dt>
-            <dd id="r-verdict" class="lie-val">Honest</dd>
-            <small id="r-verdict-sub">Nobody will share this.</small>
+            <dd id="r-verdict" class="lie-val">{start.label}</dd>
+            <small id="r-verdict-sub">{start.sub}</small>
           </div>
         </dl>
         <div class="meter" aria-hidden="true">
           <div class="meter-track">
-            {zones.map(([label, a, b]) => <span class="zone" style={`left:${pos(a)}%;width:${pos(b) - pos(a)}%`} title={label} />)}
+            {zones.map(([label, a, b]) => <span class="zone" style={`left:${a}%;width:${b - a}%`} title={label} />)}
             <i class="needle" id="needle"></i>
           </div>
           <div class="meter-labels">
-            {zones.map(([label, a, b]) => <span style={`left:${(pos(a) + pos(b)) / 2}%`}>{label}</span>)}
+            {zones.map(([label, a, b]) => <span style={`left:${(a + b) / 2}%`}>{label}</span>)}
           </div>
         </div>
       </div>
@@ -207,9 +207,8 @@ const lead = (EXHIBIT.ours - EXHIBIT.theirs).toFixed(1);
 </Base>
 
 <script>
-  import { EXHIBIT, axis, dataEffect, lieFactor, lieText, verdict } from '../lib/chart-crime';
+  import { EXHIBIT, NERF, PRESETS, axis, dataEffect, lieFactor, lieText, meterPos, verdict } from '../lib/chart-crime';
 
-  const NERF = 7.4;
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const bench = document.querySelector<HTMLElement>('.bench');
   const inputs = {
@@ -295,8 +294,8 @@ const lead = (EXHIBIT.ours - EXHIBIT.theirs).toFixed(1);
     $('r-lie').textContent = lieText(lie);
     $('r-verdict').textContent = v.label;
     $('r-verdict-sub').textContent = v.sub;
-    $('needle').style.left = `${Math.min(100, (Math.log10(Math.max(1, lie)) / 2) * 100)}%`;
-    bench?.setAttribute('data-level', v.label.toLowerCase().replace(/\s+/g, '-'));
+    $('needle').style.left = `${meterPos(lie)}%`;
+    bench?.setAttribute('data-level', v.level);
     bench?.toggleAttribute('data-axis-hidden', inputs.axis.checked);
     bench?.toggleAttribute('data-star', inputs.star.checked);
     bench?.toggleAttribute('data-sota', inputs.sota.checked);
@@ -309,12 +308,6 @@ const lead = (EXHIBIT.ours - EXHIBIT.theirs).toFixed(1);
     return `Introducing ${names().ours}. 🚀\n\nState of the art on TrustMeBench Pro (Verified)${star()}: ${s.ours.toFixed(1)}%, a massive leap over the competition.\n\nThe chart speaks for itself. (Lie Factor: ${lieText(lie)})\n\nvia trustmebrobenchmarks.com/chart-crime-studio`;
   }
 
-  const PRESETS: Record<string, Partial<Record<keyof typeof inputs, string | boolean>>> = {
-    honest: { base: '0', axis: false, star: false, sota: false, nerf: false, brk: false },
-    launch: { base: String(EXHIBIT.launchBase), axis: true, star: true, sota: true, nerf: false, brk: false },
-    deck: { base: '42.6', axis: true, star: true, sota: true, nerf: true, brk: false },
-  };
-
   const presetButtons = document.querySelectorAll<HTMLButtonElement>('[data-preset]');
   const press = (active?: HTMLButtonElement) => presetButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === active)));
 
@@ -323,13 +316,13 @@ const lead = (EXHIBIT.ours - EXHIBIT.theirs).toFixed(1);
       const p = PRESETS[btn.dataset.preset ?? ''];
       if (!p) return;
       press(btn);
-      for (const [k, v] of Object.entries(p)) {
-        const el = inputs[k as keyof typeof inputs];
-        if (typeof v === 'boolean') el.checked = v;
-        else el.value = v;
-      }
+      inputs.axis.checked = p.axis;
+      inputs.star.checked = p.star;
+      inputs.sota.checked = p.sota;
+      inputs.nerf.checked = p.nerf;
+      inputs.brk.checked = p.brk;
       state();
-      if (typeof p.base === 'string') inputs.base.value = p.base;
+      inputs.base.value = String(p.base);
       render();
     });
   });

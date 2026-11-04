@@ -10,7 +10,7 @@ export interface Generator {
   min: number;
   max: number;
   labBias?: Partial<Record<LabId, number>>;
-  maxEffortPenalty?: number;
+  effortPenalty?: number;
   overrides?: Record<string, number>;
   includeVapor?: boolean;
 }
@@ -75,7 +75,7 @@ export const BENCHMARKS: Benchmark[] = [
       spread: 9,
       min: 4,
       max: 96,
-      maxEffortPenalty: -5,
+      effortPenalty: -5,
       labBias: { anthropic: 34, alibaba: 9, moonshot: 12, xai: 8, openai: -8, google: -16, zai: -22, deepseek: -20, meta: -10, mistral: -6 },
     },
   },
@@ -547,5 +547,8 @@ export const benchBySlug = (slug: string) => {
   if (!b) throw new Error(`Unknown benchmark ${slug}`);
   return b;
 };
+
+export const benchHref = (b: Benchmark) => `/benchmarks/${b.slug}/`;
+export const benchHrefBySlug = (slug: string) => benchHref(benchBySlug(slug));
 
 export const INDEX_BENCHMARKS = BENCHMARKS.filter((b) => b.indexWeight > 0);

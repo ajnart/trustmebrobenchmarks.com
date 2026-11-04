@@ -106,6 +106,7 @@ export const TWEETS: Tweet[] = [
     likes: 162,
     views: 22244,
     topic: 'counterpoint',
+    models: ['gpt-6-astra'],
   },
   {
     id: '2107484081801806221',
@@ -209,6 +210,7 @@ export const TWEETS: Tweet[] = [
     likes: 330,
     views: 15678,
     topic: 'meme-bench',
+    models: ['haiku-5-5'],
   },
   {
     id: '2046313533743468993',
@@ -259,6 +261,7 @@ export const TWEETS: Tweet[] = [
     likes: 4682,
     views: 1039844,
     topic: 'meme-bench',
+    models: ['gpt-6-astra'],
   },
   {
     id: '2077600091259482476',
@@ -374,6 +377,7 @@ export const TWEETS: Tweet[] = [
     likes: 9272,
     views: 1857599,
     topic: 'vaporware',
+    models: ['le-chaton-fat'],
   },
   {
     id: '2066535006487339282',
@@ -707,6 +711,7 @@ export const TWEETS: Tweet[] = [
     likes: 1206,
     views: 155473,
     topic: 'benchmaxxed',
+    models: ['gpt-6-1-sol'],
   },
   {
     id: '2108609705300176979',
@@ -822,6 +827,7 @@ export const TWEETS: Tweet[] = [
     likes: 580,
     views: 121890,
     topic: 'vaporware',
+    models: ['gemini-4-argon'],
   },
   {
     id: '2110779754274292212',
@@ -843,6 +849,7 @@ export const TWEETS: Tweet[] = [
     likes: 947,
     views: 508155,
     topic: 'counterpoint',
+    models: ['beam-1-0'],
   },
   {
     id: '2111151072966267331',
@@ -853,6 +860,7 @@ export const TWEETS: Tweet[] = [
     likes: 27,
     views: 875,
     topic: 'trust-me-bro',
+    models: ['beam-1-0'],
   },
   {
     id: '2111095804546920738',
@@ -896,7 +904,7 @@ export const TWEETS: Tweet[] = [
     likes: 702,
     views: 55916,
     topic: 'counterpoint',
-    models: ['glm-5-3', 'deepseek-v4-1-flash'],
+    models: ['minimax-m3-1-flash'],
   },
   {
     id: '2112457192913936805',
@@ -918,7 +926,7 @@ export const TWEETS: Tweet[] = [
     likes: 5260,
     views: 469391,
     topic: 'trust-me-bro',
-    models: ['gpt-6-luna', 'mercury-3'],
+    models: ['mercury-3'],
   },
   {
     id: '2110776552741036055',
@@ -950,7 +958,7 @@ export const TWEETS: Tweet[] = [
     likes: 16370,
     views: 4647416,
     topic: 'trust-me-bro',
-    models: ['gpt-6-astra', 'sky-001'],
+    models: ['sky-001'],
   },
   {
     id: '2113338446504776124',
@@ -994,6 +1002,7 @@ export const TWEETS: Tweet[] = [
     likes: 25,
     views: 1556,
     topic: 'vaporware',
+    models: ['kimi-k3-1-pro'],
   },
   {
     id: '2113611006039761281',
@@ -1095,7 +1104,7 @@ export const TWEETS: Tweet[] = [
     likes: 103,
     views: 10645,
     topic: 'benchmaxxed',
-    models: ['gemini-4-argon'],
+    models: ['gemini-4-argon', 'muse-wonder'],
   },
   {
     id: '2110079689456833019',
@@ -1181,6 +1190,7 @@ export const TWEETS: Tweet[] = [
     likes: 37095,
     views: 7954535,
     topic: 'counterpoint',
+    models: ['deepseek-v4-1-flash'],
   },
   {
     id: '2113668549592203275',
@@ -1224,7 +1234,7 @@ export const TWEETS: Tweet[] = [
     likes: 2063,
     views: 285452,
     topic: 'trust-me-bro',
-    models: ['opus-5-5', 'gpt-6-astra'],
+    models: ['kimi-k3-1-pro'],
   },
   {
     id: '2113680714311094458',
@@ -1235,6 +1245,7 @@ export const TWEETS: Tweet[] = [
     likes: 770,
     views: 118928,
     topic: 'trust-me-bro',
+    models: ['kimi-k3-1-pro'],
   },
   {
     id: '2113685048478077197',
@@ -1256,7 +1267,7 @@ export const TWEETS: Tweet[] = [
     likes: 260,
     views: 35018,
     topic: 'counterpoint',
-    models: ['opus-5-5', 'muse-wonder-full', 'kimi-k3', 'kimi-k3-1-pro'],
+    models: ['kimi-k3-1-pro'],
   },
   {
     id: '2113697329241043181',
@@ -1300,7 +1311,7 @@ export const TWEETS: Tweet[] = [
     likes: 48,
     views: 9308,
     topic: 'counterpoint',
-    models: ['opus-5-5', 'gpt-6-astra', 'gpt-6-1-sol'],
+    models: ['kimi-k3-1-pro'],
   },
   {
     id: '2114402762607992914',
@@ -1333,7 +1344,7 @@ export const TWEETS: Tweet[] = [
     likes: 3381,
     views: 1144008,
     topic: 'trust-me-bro',
-    models: ['gpt-6-astra', 'gpt-6-1-sol', 'gpt-6-1-terra'],
+    models: ['gpt-6-1-terra'],
   },
   {
     id: '2115317637970379200',
@@ -1344,7 +1355,7 @@ export const TWEETS: Tweet[] = [
     likes: 337,
     views: 34892,
     topic: 'benchmaxxed',
-    models: ['glm-5-3', 'qwen-3-8-max'],
+    models: ['glm-5-3', 'qwen-3-8-max', 'deepseek-v4-1-flash', 'minimax-m3-1-flash'],
   },
   {
     id: '2115452607431102917',
@@ -1395,6 +1406,7 @@ export const TWEETS: Tweet[] = [
     likes: 597,
     views: 83616,
     topic: 'vaporware',
+    models: ['gemini-4-carbon'],
   },
   {
     id: '2115811242556137820',
@@ -1405,6 +1417,7 @@ export const TWEETS: Tweet[] = [
     likes: 6342,
     views: 826746,
     topic: 'counterpoint',
+    models: ['mistral-large-4'],
   },
   {
     id: '2115819373973708975',
@@ -1489,7 +1502,6 @@ export const TWEETS: Tweet[] = [
     likes: 234,
     views: 57464,
     topic: 'trust-me-bro',
-    models: ['gemini-4-carbon'],
   },
   {
     id: '2116445289468850366',
@@ -1656,6 +1668,7 @@ export const TWEETS: Tweet[] = [
     likes: 28,
     views: 1440,
     topic: 'benchmaxxed',
+    models: ['kimi-k3-1-pro'],
   },
   {
     id: '2117635365217423675',
@@ -1666,6 +1679,7 @@ export const TWEETS: Tweet[] = [
     likes: 35,
     views: 4049,
     topic: 'counterpoint',
+    models: ['kimi-k3-1-pro'],
   },
   {
     id: '2117991458112405623',

@@ -1,11 +1,13 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PageHead from '../../components/PageHead.astro';
-import { BENCHMARKS } from '../../data/benchmarks';
+import { BENCHMARKS, benchHref } from '../../data/benchmarks';
 import { lab } from '../../data/labs';
 import { AVAILABLE } from '../../data/models';
-import { fmt, rows, value } from '../../lib/scores';
+import { DIRECTION } from '../../lib/benchmark-view';
+import { value } from '../../lib/scores';
 import { itemList } from '../../lib/seo';
+import { benchSeries } from '../../lib/views';
 
 const correlated = BENCHMARKS.filter((b) => b.generator && !b.generator.includeVapor);
 
@@ -47,7 +49,7 @@ const reading = (r: number) => {
   description="Fifteen AI evaluations inspired by viral meme benchmarks: BullshitBench, the pelican, Brainfuck tic-tac-toe, lava lamps. Theirs are real. Ours are not."
   pageType="CollectionPage"
   breadcrumbs={[{ name: 'Benchmarks', path: '/benchmarks/' }]}
-  schema={[itemList('Trust Me Bro benchmarks', BENCHMARKS.map((b) => ({ name: b.name, path: `/benchmarks/${b.slug}/` })))]}
+  schema={[itemList('Trust Me Bro benchmarks', BENCHMARKS.map((b) => ({ name: b.name, path: benchHref(b) })))]}
 >
   <PageHead
     eyebrow="Benchmarks"
@@ -60,17 +62,13 @@ const reading = (r: number) => {
   <section class="container grid">
     {
       BENCHMARKS.map((b) => {
-        const top = rows(b).slice(0, 5);
+        const top = benchSeries(b).slice(0, 5);
         return (
-          <a class="card bm" href={`/benchmarks/${b.slug}/`}>
+          <a class="card bm" href={benchHref(b)}>
             <div class="bm-head">
               <span class="badge">{b.category}</span>
               {b.badge && <span class="badge badge-accent">{b.badge}</span>}
-              <span class="dir">
-                {b.better === 'higher' && 'Higher is better'}
-                {b.better === 'lower' && 'Lower is better'}
-                {b.better === 'unclear' && 'Direction unclear'}
-              </span>
+              <span class="dir">{DIRECTION[b.better]}</span>
             </div>
             <h2><span class="vt-name" style={`view-transition-name: b-${b.slug}`}>{b.name}</span></h2>
             <p class="tag">{b.tagline}</p>
@@ -81,7 +79,7 @@ const reading = (r: number) => {
                   <span class="rank num">{i + 1}</span>
                   <span class="dot" style={`background:${lab(r.model.lab).color}`} />
                   <span class="m">{r.model.name}</span>
-                  <b class="num">{fmt(r.value, b.format)}</b>
+                  <b class="num">{r.display}</b>
                 </li>
               ))}
             </ol>

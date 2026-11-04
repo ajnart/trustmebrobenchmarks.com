@@ -2,7 +2,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
-import { validateContent } from './src/lib/content.ts';
+import { formatProblems, validateContent } from './src/lib/content.ts';
 
 const lastmod = new Date();
 
@@ -11,7 +11,7 @@ const contentIntegrity = {
   hooks: {
     'astro:build:start': () => {
       const problems = validateContent();
-      if (problems.length > 0) throw new Error(`Content integrity: ${problems.length} problem(s)\n${problems.map((p) => `  - ${p}`).join('\n')}`);
+      if (problems.length > 0) throw new Error(formatProblems(problems));
     },
   },
 };

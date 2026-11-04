@@ -5,7 +5,7 @@ import type { Span } from '../components/charts/GanttChart.astro';
 import type { Stack } from '../components/charts/StackedBarChart.astro';
 import type { Benchmark } from '../data/benchmarks';
 import { lab } from '../data/labs';
-import { AVAILABLE, MODELS, displayName, shortClaim, type Model } from '../data/models';
+import { AVAILABLE, MODELS, displayName, modelHref as href, shortClaim, type Model } from '../data/models';
 import { modelTip } from './chart';
 import { INDEX_NAME } from './site';
 import { costBreakdown, fmt, indexRows, money, randomAxis, rows, shipDays, signed, tmbIndex } from './scores';
@@ -23,10 +23,8 @@ export const indexSeries = (vapor = true): Datum[] =>
 export const benchSeries = (b: Benchmark): Datum[] =>
   rows(b).map((r) => ({ model: r.model, value: r.value, display: fmt(r.value, b.format), vapor: Boolean(r.vapor) }));
 
-export const claimSeries = (): Datum[] =>
+const claimSeries = (): Datum[] =>
   [...MODELS].sort((a, b) => b.claimed - a.claimed).map((m) => ({ model: m, value: m.claimed, display: shortClaim(m), vapor: false }));
-
-const href = (m: Model) => `/models/${m.id}/`;
 
 const toBar = (d: Datum, tip: string): Bar => ({
   id: d.model.id,

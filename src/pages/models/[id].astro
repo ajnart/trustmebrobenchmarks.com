@@ -4,6 +4,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import PrevNext from '../../components/PrevNext.astro';
 import TweetCard from '../../components/TweetCard.astro';
 import Ticker from '../../components/Ticker.astro';
+import { benchHref } from '../../data/benchmarks';
 import { incidentHref } from '../../data/incidents';
 import { AVAILABLE, MODELS, type Model } from '../../data/models';
 import { DIRECTION } from '../../lib/benchmark-view';
@@ -106,7 +107,7 @@ const description = clip(
     <div class="card results">
       {
         v.results.map((r) => (
-          <a class="res" href={`/benchmarks/${r.b.slug}/`}>
+          <a class="res" href={benchHref(r.b)}>
             <span class="res-name">
               <b>{r.b.name}</b>
               <small>

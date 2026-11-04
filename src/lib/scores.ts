@@ -19,7 +19,7 @@ function generated(b: Benchmark, m: Model): number | undefined {
   if (override !== undefined) return override;
   if (m.status !== 'available' && !g.includeVapor) return undefined;
   const bias = g.labBias?.[m.lab] ?? 0;
-  const effort = m.effort ? (g.maxEffortPenalty ?? 0) : 0;
+  const effort = m.effort ? (g.effortPenalty ?? 0) : 0;
   const raw = g.base + g.slope * (m.skill - 50) + bias + effort + jitter(`${b.slug}:${m.id}`) * g.spread;
   return clamp(raw, g.min, g.max);
 }

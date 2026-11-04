@@ -8,7 +8,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "check:content": "bun scripts/check-content.ts"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.1",

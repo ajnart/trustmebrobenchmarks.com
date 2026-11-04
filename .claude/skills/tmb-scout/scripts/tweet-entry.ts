@@ -44,7 +44,7 @@ for (const arg of args) {
   if (t.quoted_tweet) notes.push(`quotes @${t.quoted_tweet.user.screen_name}: the joke may live in the quoted post`);
   const text = clean(t);
   const models = mentionedModels(text);
-  if (models.length > 0) notes.push('models: matched by exact name; drop any the post is not about, add any it names differently');
+  if (models.length > 0) notes.push('models: matched by name; keep only the subject, drop models it merely compares against, add any it names differently');
   const lines = [
     '  {',
     `    id: '${t.id_str}',`,

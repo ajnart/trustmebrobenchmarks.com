@@ -1,8 +1,9 @@
 import { BENCHMARKS } from '../data/benchmarks';
 import { INCIDENTS } from '../data/incidents';
 import { lab } from '../data/labs';
-import { AVAILABLE, displayName, variantLabel, type Model } from '../data/models';
+import { AVAILABLE, displayName, modelHref, variantLabel, type Model } from '../data/models';
 import { TWEETS, tweetById, type Tweet } from '../data/tweets';
+import { isRandom } from './benchmark-view';
 import { indexRows, rows, shipDays, signed, tmbIndex, value } from './scores';
 import { MODEL_STATUS } from './status';
 
@@ -14,7 +15,7 @@ export function modelView(m: Model) {
     lab: lab(m.lab),
     name: displayName(m),
     variant: variantLabel(m),
-    href: `/models/${m.id}/`,
+    href: modelHref(m),
     vapor: m.status !== 'available',
     status: MODEL_STATUS[m.status],
     index,
@@ -29,7 +30,7 @@ export type ModelView = ReturnType<typeof modelView>;
 
 const incidentsFor = (m: Model) => INCIDENTS.filter((i) => i.models?.includes(m.id));
 
-export function postsFor(m: Model, limit = 4): Tweet[] {
+function postsFor(m: Model, limit = 4): Tweet[] {
   const byLikes = (a: Tweet, b: Tweet) => b.likes - a.likes || b.date.localeCompare(a.date);
   const tagged = TWEETS.filter((t) => t.models?.includes(m.id)).sort(byLikes);
   const cited = incidentsFor(m)
@@ -44,7 +45,7 @@ export function modelPage(m: Model) {
   const pos = order.findIndex((x) => x.id === m.id);
   const results = BENCHMARKS.flatMap((b) => {
     const v = value(b, m);
-    if (v === undefined || b.computed === 'random-axis') return [];
+    if (v === undefined || isRandom(b)) return [];
     const all = rows(b);
     const vals = all.map((r) => r.value);
     const lo = Math.min(...vals, 0);

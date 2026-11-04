@@ -10,16 +10,18 @@ import DumbbellChart from '../components/charts/DumbbellChart.astro';
 import GanttChart from '../components/charts/GanttChart.astro';
 import StackedBarChart from '../components/charts/StackedBarChart.astro';
 import { ANNOUNCEMENTS, CHANGELOG } from '../data/changelog';
-import { BENCHMARKS, INDEX_BENCHMARKS } from '../data/benchmarks';
-import { INCIDENTS } from '../data/incidents';
+import { BENCHMARKS, INDEX_BENCHMARKS, benchHref, benchHrefBySlug } from '../data/benchmarks';
+import { INCIDENTS, incidentHref } from '../data/incidents';
 import { lab } from '../data/labs';
-import { MODELS } from '../data/models';
+import { MODELS, modelHref } from '../data/models';
 import { TWEETS } from '../data/tweets';
-import { EXHIBIT, exhibitPanel } from '../lib/chart-crime';
+import { EXHIBIT, LEAD, exhibitPanel } from '../lib/chart-crime';
 import { INDEX_NAME, INDEX_VERSION } from '../lib/site';
-import { BUILD_ISO, fmt, indexRows, rows, shortDate } from '../lib/scores';
+import { BUILD_ISO, indexRows, shortDate } from '../lib/scores';
 import { itemList } from '../lib/seo';
+import { INCIDENT_STATUS } from '../lib/status';
 import {
+  benchSeries,
   claimBars,
   claimDumbbells,
   contextDumbbells,
@@ -57,7 +59,7 @@ const panel = (title: string, base: number, crime: boolean) => {
 const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHIBIT.launchBase, true)];
 ---
 
-<Base schema={[itemList(`${INDEX_NAME}: released models`, indexRows(false).slice(0, 10).map((r) => ({ name: `${r.model.name}: ${r.value}`, path: `/models/${r.model.id}/` })))]}>
+<Base schema={[itemList(`${INDEX_NAME}: released models`, indexRows(false).slice(0, 10).map((r) => ({ name: `${r.model.name}: ${r.value}`, path: modelHref(r.model) })))]}>
   <section class="container hero">
     <div class="hero-l">
       <a class="status" href="/methodology/">
@@ -102,7 +104,7 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
     <a class="card studio" href="/chart-crime-studio/">
       <div class="studio-copy">
         <span class="eyebrow">New tool · Chart Crime Studio</span>
-        <h3 class="h2">Make a 2.7-point lead look like a landslide</h3>
+        <h3 class="h2">Make a {LEAD}-point lead look like a landslide</h3>
         <p>Truncate the y-axis, hide the labels, add an asterisk. Tufte's Lie Factor is computed live, so you know exactly how much you are lying.</p>
       </div>
       <div class="sd" aria-hidden="true">
@@ -166,7 +168,7 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
         {
           INDEX_BENCHMARKS.map((b, i) => (
             <>
-              <a class="link" href={`/benchmarks/${b.slug}/`}>
+              <a class="link" href={benchHref(b)}>
                 {b.name}
               </a>
               {i < INDEX_BENCHMARKS.length - 1 ? ', ' : '.'}
@@ -246,7 +248,7 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
       <h2 class="h1">Self-reported vs. measured</h2>
       <p>The distance between the number in the launch post and the number we measured. Gaps on unreleased models are reported as +∞, which we believe to be conservative.</p>
     </div>
-    <ChartCard title="Benchmaxx Gap" subtitle="Launch-post score (hollow) vs. TMB Intelligence Index (solid) · Smaller gap is better" href="/benchmarks/benchmaxx-gap/">
+    <ChartCard title="Benchmaxx Gap" subtitle="Launch-post score (hollow) vs. TMB Intelligence Index (solid) · Smaller gap is better" href={benchHrefBySlug('benchmaxx-gap')}>
       <DumbbellChart rows={claimDumbbells()} max={100} measuredLabel="TMB Index (measured)" claimedLabel="Self-reported" ariaLabel="Benchmaxx gap" />
     </ChartCard>
   </section>
@@ -257,7 +259,7 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
       <h2 class="h1">Announce-to-availability latency</h2>
       <p>Calendar days between the first public claim about a model and the first day a member of the public could send it a prompt. Open intervals keep growing every time this site is rebuilt.</p>
     </div>
-    <ChartCard title="Days to Ship" subtitle="From first claim to general availability · Lower is better" href="/benchmarks/ship-latency/">
+    <ChartCard title="Days to Ship" subtitle="From first claim to general availability · Lower is better" href={benchHrefBySlug('ship-latency')}>
       <GanttChart rows={shipSpans()} ariaLabel="Announce to availability" />
       <Fragment slot="foot">
         Sources for every start date are on the <a class="link" href="/incidents/">incident pages</a>. Reflection 405B was announced as "coming next week" on 5 September 2024.
@@ -303,9 +305,9 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
     <div class="evals">
       {
         BENCHMARKS.map((b) => {
-          const top = rows(b).slice(0, 3);
+          const top = benchSeries(b).slice(0, 3);
           return (
-            <a class="card ev" href={`/benchmarks/${b.slug}/`}>
+            <a class="card ev" href={benchHref(b)}>
               <div class="ev-head">
                 <span class="badge">{b.category}</span>
                 {b.badge && <span class="badge badge-accent">{b.badge}</span>}
@@ -318,7 +320,7 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
                   <li>
                     <span class="dot" style={`background:${lab(r.model.lab).color}`} />
                     <span class="ev-m">{r.model.name}</span>
-                    <b class="num">{fmt(r.value, b.format)}</b>
+                    <b class="num">{r.display}</b>
                   </li>
                 ))}
               </ol>
@@ -358,13 +360,13 @@ const studioPanels = [panel('The data', 0, false), panel('The launch post', EXHI
     <div class="inc">
       {
         featuredIncidents.map((i) => (
-          <a class="card inc-row" href={`/incidents/${i.id.toLowerCase()}/`}>
+          <a class="card inc-row" href={incidentHref(i)}>
             <span class="mono inc-id">{i.id}</span>
             <div>
               <h3>{i.title}</h3>
               <p>{i.claim}</p>
             </div>
-            <span class:list={['badge', i.status === 'Resolved' ? 'badge-good' : i.status === 'Open' ? 'badge-bad' : 'badge-warn']}>{i.status}</span>
+            <span class:list={['badge', INCIDENT_STATUS[i.status].badge]}>{i.status}</span>
           </a>
         ))
       }

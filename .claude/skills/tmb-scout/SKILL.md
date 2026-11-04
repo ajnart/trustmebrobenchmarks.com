@@ -54,20 +54,20 @@ It prints a `TWEETS` entry from X's syndication API (the source the build uses) 
 
 **Where things go:**
 
-- `src/data/tweets.ts`: append to `TWEETS`. `models` lists the ids of the models a post is about, including ones it names differently (a post saying "Kimi K3.1" is about `kimi-k3-1-pro`). A model page shows its tagged posts first, then posts cited by its incidents, most-liked first, four at most.
+- `src/data/tweets.ts`: append to `TWEETS`. `models` lists the ids of the models a post is about, including ones it names differently (a post saying "Kimi K3.1" is about `kimi-k3-1-pro`). A model it only compares against does not count ("beats GPT-6 Astra" is not a post about Astra); tag the subject. A model page shows its tagged posts first, then posts cited by its incidents, most-liked first, four at most.
 - `src/data/models.ts`: new models. `skill` is the invented index input; place it relative to existing models using any independent ranking you found (higher independent score, higher skill). `claimed` and a verbatim `claimLabel` come from the launch post. `note` is one or two dry sentences, every fact sourced. A reasoning-effort setting goes in `effort` (`'max'` or `'xhigh'`), which applies each benchmark's effort penalty; `variant` is a display label only. A `shipNote` puts a notable announce-to-ship gap on the Days to Ship chart. When a newer model supersedes one, or a rumor resolves, set `archived: true` on the old one to take it off the homepage index chart. Its page and leaderboard row stay.
 - `src/data/benchmarks.ts`: add IDs to `inspiredBy.tweetIds`; a new viral meme benchmark can become a new entry (`badge: 'New'`, `indexWeight: 0`, `items`, a generator, a candid `inspiredBy.note`). Vapor models in `superlatives` take an explicit override.
 - `src/data/incidents.ts`: timeline entries `{ date, text, tweetId }` in date order, `'ongoing'` last. A new incident needs a sourced claim and finding; list new incidents first in the report so the user can review them. `featured: true` puts an incident on the homepage.
 - `src/data/changelog.ts`: newest first, dates like `'23 Oct'`, existing `kind` labels, internal `href`s. The homepage shows the latest 10.
 
-`bun run build` starts with `validateContent()` from `src/lib/content.ts`, and fails with every broken reference and the entry that holds it: unknown post or model ids, duplicate ids, changelog and announcement links without a page, timeline dates out of order, and a status that disagrees with `released`.
+`bun run check:content` runs `validateContent()` from `src/lib/content.ts` in under a second; `bun run build` runs it first too. It lists every broken reference with the entry that holds it: unknown post or model ids, duplicate ids, incident ids mentioned in text that don't exist, changelog and announcement links without a page, timeline dates out of order, and a status that disagrees with `released`. Run it after each batch of edits.
 
 **Voice:** clinical, deadpan, academic. Credit delivered promises and independent confirmations as plainly as you mock unverified ones; the counterpoints keep the parody fair. No exclamation marks, no emoji in the site's own copy.
 
 ## 5. Ship and report
 
 ```sh
-bun run check && bun run build
+bun run check:content && bun run check && bun run build
 ```
 
 Then check the homepage and one new model page in a browser (`bunx astro preview`). Commit with `feat(content): …`. Push to `main` when the user wants it live (GitHub Pages deploys from there) and follow the deploy with `gh run watch <id> --compact --exit-status`.

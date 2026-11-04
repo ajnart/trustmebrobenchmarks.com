@@ -15,6 +15,8 @@ export type BenchChart =
   | { kind: 'gantt'; spans: Span[] }
   | { kind: 'bars'; bars: Bar[]; breakAbove?: number };
 
+export const isRandom = (b: Benchmark) => b.computed === 'random-axis';
+
 function chart(b: Benchmark): BenchChart {
   switch (b.computed) {
     case 'random-axis':
@@ -23,13 +25,17 @@ function chart(b: Benchmark): BenchChart {
       return { kind: 'dumbbell', rows: claimDumbbells() };
     case 'ship-latency':
       return { kind: 'gantt', spans: shipSpans() };
-    default:
+    case undefined:
       return { kind: 'bars', bars: benchBars(b), breakAbove: b.breakAbove };
+    default: {
+      const unknown: never = b.computed;
+      return unknown;
+    }
   }
 }
 
 export function benchmarkView(b: Benchmark) {
-  const random = b.computed === 'random-axis';
+  const random = isRandom(b);
   return {
     direction: DIRECTION[b.better],
     random,

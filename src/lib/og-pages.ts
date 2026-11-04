@@ -4,6 +4,7 @@ import { lab } from '../data/labs';
 import { AVAILABLE, MODELS, shortClaim, type Model } from '../data/models';
 import { TWEETS } from '../data/tweets';
 import { DIRECTION } from './benchmark-view';
+import { LEAD } from './chart-crime';
 import { modelView } from './model-view';
 import { compact, money } from './scores';
 import type { OgBar, OgSpec } from './og';
@@ -133,7 +134,7 @@ export function ogPages(): OgSpec[] {
       key: 'chart-crime-studio',
       eyebrow: 'Tools · Beta',
       title: 'Chart Crime Studio',
-      subtitle: "Turn a 2.7-point lead into a generational leap. Tufte's Lie Factor, computed live.",
+      subtitle: `Turn a ${LEAD}-point lead into a generational leap. Tufte's Lie Factor, computed live.`,
       visual: { kind: 'crime' },
     },
   ];

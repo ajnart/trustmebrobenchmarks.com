@@ -8,12 +8,13 @@ import BarChart from '../../components/charts/BarChart.astro';
 import ScatterChart from '../../components/charts/ScatterChart.astro';
 import DumbbellChart from '../../components/charts/DumbbellChart.astro';
 import GanttChart from '../../components/charts/GanttChart.astro';
-import { BENCHMARKS, type Benchmark } from '../../data/benchmarks';
+import { BENCHMARKS, benchHref, type Benchmark } from '../../data/benchmarks';
+import { modelHref } from '../../data/models';
 import { tweetById } from '../../data/tweets';
 import { benchmarkView } from '../../lib/benchmark-view';
 import { INDEX_NAME } from '../../lib/site';
 import { BUILD_ISO, fmt } from '../../lib/scores';
-import { clip, itemList } from '../../lib/seo';
+import { SITE_URL, clip, itemList } from '../../lib/seo';
 
 export function getStaticPaths() {
   return BENCHMARKS.map((b) => ({ params: { slug: b.slug }, props: { b } }));
@@ -35,17 +36,17 @@ const bibtex = `@misc{tmb2026${key},
   title        = {${b.name}: ${b.tagline}},
   author       = {Bro, Trust Me and {et al.}},
   year         = {2026},
-  howpublished = {\\url{https://trustmebrobenchmarks.com/benchmarks/${b.slug}/}},
+  howpublished = {\\url{${SITE_URL}${benchHref(b)}}},
   note         = {Results not reproducible. Please do not cite.}
 }`;
 const crumbs = [
   { name: 'Benchmarks', path: '/benchmarks/' },
-  { name: b.name, path: `/benchmarks/${b.slug}/` },
+  { name: b.name, path: benchHref(b) },
 ];
 const published = tweets.map((t) => t.date).sort()[0] ?? '2026-10-01';
 const top = results.slice(0, 3).map((r) => `${r.model.name} ${fmt(r.value, b.format)}`).join(', ');
 const description = clip(`${b.tagline} ${b.abstract}`);
-const schema = random ? [] : [itemList(`${b.name} results`, results.slice(0, 10).map((r) => ({ name: `${r.model.name}: ${fmt(r.value, b.format)}`, path: `/models/${r.model.id}/` })))];
+const schema = random ? [] : [itemList(`${b.name} results`, results.slice(0, 10).map((r) => ({ name: `${r.model.name}: ${fmt(r.value, b.format)}`, path: modelHref(r.model) })))];
 ---
 
 <Base
@@ -121,7 +122,7 @@ const schema = random ? [] : [itemList(`${b.name} results`, results.slice(0, 10)
                     <tr>
                       <td class="muted">{k + 1}</td>
                       <td>
-                        <a href={`/models/${r.model.id}/`}>{r.model.name}</a>
+                        <a href={modelHref(r.model)}>{r.model.name}</a>
                         {r.vapor && <span class="badge badge-warn">claimed</span>}
                       </td>
                       <td class="r num">{fmt(r.value, b.format)}</td>
@@ -131,7 +132,7 @@ const schema = random ? [] : [itemList(`${b.name} results`, results.slice(0, 10)
                     <tr>
                       <td class="muted">—</td>
                       <td>
-                        <a href={`/models/${m.id}/`}>{m.name}</a>
+                        <a href={modelHref(m)}>{m.name}</a>
                         <span class="badge badge-warn">cannot be used</span>
                       </td>
                       <td class="r num">+∞</td>
@@ -190,7 +191,7 @@ const schema = random ? [] : [itemList(`${b.name} results`, results.slice(0, 10)
     </aside>
   </section>
 
-  <PrevNext prev={{ href: `/benchmarks/${prev.slug}/`, label: prev.name }} next={{ href: `/benchmarks/${next.slug}/`, label: next.name }} />
+  <PrevNext prev={{ href: benchHref(prev), label: prev.name }} next={{ href: benchHref(next), label: next.name }} />
 </Base>
 
 <script>

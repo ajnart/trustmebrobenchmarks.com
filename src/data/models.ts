@@ -584,6 +584,7 @@ export const modelById = (id: string) => {
   if (!m) throw new Error(`Unknown model ${id}`);
   return m;
 };
+export const modelHref = (m: Model) => `/models/${m.id}/`;
 export const shortClaim = (m: Model) => {
   if (m.claimLabel && m.claimLabel.length <= 5) return m.claimLabel;
   return String(m.claimed);
