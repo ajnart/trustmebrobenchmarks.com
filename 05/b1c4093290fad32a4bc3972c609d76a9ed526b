@@ -1,0 +1,23 @@
+src/components/Footer.astro
+  s_66d07b1824b7d0::t_8911ba48af6779 44-45
+src/components/charts/GanttChart.astro
+  s_66d07b1824b7d0::t_58252465caeaeb 39-46,52,98-100,107-127,173-198
+src/layouts/Base.astro
+  s_66d07b1824b7d0::t_9a5602d98cde11 249-261
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "05b1c4093290fad32a4bc3972c609d76a9ed526b",
+  "prompts": {},
+  "sessions": {
+    "s_66d07b1824b7d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c9c8c42-86b8-4c2a-8fc1-bef65914612e",
+        "model": "unknown"
+      },
+      "human_author": "Thomas Camlong <thomas@ajnart.fr>"
+    }
+  }
+}
